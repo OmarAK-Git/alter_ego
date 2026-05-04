@@ -1,4 +1,4 @@
-<![CDATA[<p align="center">
+<p align="center">
   <img src="docs/banner.png" alt="ALTER_EGO" width="100%"/>
 </p>
 
@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Behavioral Identity Detection System</strong><br/>
-  Detect compromised accounts by learning what "normal" looks like — then finding what doesn't.
+  Profile. Score. Explain. Catch compromised accounts before they cause damage.
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 
 ## Overview
 
-ALTER\_EGO is a local-first behavioral identity detection system designed to identify compromised user and service accounts by profiling entity behavior over time and flagging statistically anomalous activity. It is built for single-operator deployment with an emphasis on auditability, determinism, and explainability.
+ALTER\_EGO is a local-first behavioral identity detection system. It builds statistical profiles of how users and service accounts normally behave, then scores incoming telemetry against those profiles to surface anomalies — credential misuse, lateral movement, insider drift — with full auditability.
 
 The system works by:
 1. **Ingesting** authentication and process telemetry events
@@ -35,30 +35,24 @@ The system works by:
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        ALTER_EGO                            │
-│                                                             │
-│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌─────────┐  │
-│  │  Ingest  │──▶│ Resolver │──▶│ Profiler │──▶│ Scorer  │  │
-│  │          │   │          │   │ (DuckDB) │   │         │  │
-│  └──────────┘   └──────────┘   └──────────┘   └────┬────┘  │
-│       ▲                                            │       │
-│       │              ┌──────────┐                  │       │
-│       │              │ Recorder │◀─────────────────┘       │
-│       │              │ (append) │                          │
-│  ┌────┴────┐         └──────────┘                          │
-│  │ Synth.  │                                               │
-│  │Generator│         ┌──────────────────────┐              │
-│  └─────────┘         │   PostgreSQL + pgvec │              │
-│                      │   ─────────────────  │              │
-│                      │   events             │              │
-│                      │   resolved_events    │              │
-│                      │   profiles           │              │
-│                      │   decisions (append)  │              │
-│                      │   eval_ground_truth  │              │
-│                      └──────────────────────┘              │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph Pipeline
+        A[Ingest] --> B[Resolver]
+        B --> C["Profiler (DuckDB)"]
+        C --> D[Scorer]
+        D --> E["Recorder (append-only)"]
+    end
+
+    subgraph Data
+        F[("PostgreSQL + pgvector")]
+    end
+
+    G["Synthetic Generator"] -.-> A
+    A --> F
+    B --> F
+    C --> F
+    E --> F
 ```
 
 ### Scoring Features
@@ -79,9 +73,9 @@ When an entity lacks sufficient local data, scoring falls back through a confide
 
 ```
 Entity Local (≥10 events, confidence=1.0)
-    → Primary Cohort / Role (≥100 events, confidence=0.8)
-        → Parent Cohort / Entity Type (≥500 events, confidence=0.8)
-            → Global Terminus (confidence=0.5, cohort_unsupported flag)
+  └─→ Primary Cohort / Role (≥100 events, confidence=0.8)
+      └─→ Parent Cohort / Entity Type (≥500 events, confidence=0.8)
+          └─→ Global Terminus (confidence=0.5, cohort_unsupported flag)
 ```
 
 ---
@@ -109,17 +103,10 @@ alter_ego/
 │   │   └── profiles.py          # ProfileArtifact
 │   └── settings.py              # Pydantic settings from .env
 ├── docs/
-│   ├── banner.png
 │   └── llm-determinism-check.md # LLM output variance analysis
 ├── scripts/
 │   └── llm_determinism_check.py # Provider determinism verification
-├── tests/
-│   ├── test_audit.py            # Insert-only decision immutability
-│   ├── test_generator.py        # Synthetic generator determinism
-│   ├── test_schemas.py          # Pydantic contract validation
-│   └── worker/
-│       ├── test_resolver.py     # Entity resolution logic
-│       └── test_scorer.py       # Scoring determinism, confidence, isolation
+├── tests/                       # 11 tests covering scoring, audit, schemas
 ├── worker/
 │   ├── ingest.py                # JSONL → database ingestion
 │   ├── recorder.py              # Append-only decision recording
@@ -127,8 +114,7 @@ alter_ego/
 │   └── scorer.py                # Multi-feature anomaly scoring engine
 ├── alembic/                     # Database migrations
 ├── docker-compose.yml           # PostgreSQL + pgvector
-├── pyproject.toml
-└── README.md
+└── pyproject.toml
 ```
 
 ---
@@ -143,50 +129,34 @@ alter_ego/
 ### Setup
 
 ```bash
-# Clone the repository
+# Clone
 git clone https://github.com/OmarAK-Git/alter_ego.git
 cd alter_ego
 
-# Create virtual environment
+# Virtual environment
 python -m venv .venv
-source .venv/bin/activate  # Linux/Mac
-# .\.venv\Scripts\activate  # Windows
+source .venv/bin/activate        # Linux/Mac
+# .\.venv\Scripts\activate       # Windows
 
-# Install dependencies
+# Install
 pip install -e ".[dev]"
 
-# Start PostgreSQL with pgvector
+# Database
 docker compose up -d
-
-# Configure environment
 cp .env.example .env
-
-# Run database migrations
 alembic upgrade head
 ```
 
-### Generate Synthetic Data
+### Generate Synthetic Data & Run
 
 ```bash
+# Generate 14 days of telemetry with 4 adversarial scenarios
 python -m batch.synthetic.generator
-# Outputs: events.jsonl (~4MB, 14 days of telemetry) and ground_truth.jsonl
-```
 
-### Run the Pipeline
-
-```bash
+# Run the time-stepping evaluation pipeline
 python -m batch.eval.runner events.jsonl ground_truth.jsonl
-```
 
-The evaluation harness processes events in configurable daily windows:
-- **Ingests** events for each day
-- **Resolves** entity identifiers
-- **Builds** behavioral profiles (shadow profiles for blocked entities)
-- **Scores** events against the active non-shadow profile
-
-### Run Tests
-
-```bash
+# Run tests
 pytest -v
 ```
 
@@ -207,22 +177,15 @@ A fifth injection (`inject_tooling_rollout`) generates **correlated benign chang
 
 ---
 
-## Design Decisions
+## Key Design Decisions
 
-### Deterministic Decision IDs
-Every `DecisionRecord` has an idempotent ID: `SHA-256(event_id || profile_version || scoring_config_version)`. Same inputs always produce the same decision, enabling replay and audit.
-
-### Append-Only Audit Trail
-Decision records are insert-only. The application layer rejects duplicate inserts via `IntegrityError`, and the Postgres role will enforce `REVOKE UPDATE` on the `decisions` table.
-
-### Shadow Profile Mechanism
-When an entity has an active anomaly alert, profiles are still computed but marked `is_shadow = True`. The scorer only reads non-shadow profiles, but drift calculation reads the full chain — ensuring behavioral drift continues to accumulate even while the entity is blocked.
-
-### Confidence Aggregation
-Decision-level confidence is the weighted mean of per-feature confidences, weighted by absolute contribution magnitude. Features evaluated at the global terminus carry `confidence=0.5`, enabling the suppressed-decisions mechanism to filter low-confidence alerts.
-
-### Local Embedding Model
-The system defaults to `nomic-embed-text` (768 dimensions) for local deployment without external API dependencies, following the principle that a security detection system should not depend on third-party inference endpoints.
+| Decision | Rationale |
+|----------|-----------|
+| **Deterministic Decision IDs** | `SHA-256(event_id ‖ profile_version ‖ scoring_config_version)` — same inputs always produce the same decision, enabling replay and audit |
+| **Append-Only Decisions** | Insert-only at the application layer (`IntegrityError` on duplicates) and Postgres role level (`REVOKE UPDATE`) |
+| **Shadow Profiles** | Blocked entities still get profiled (`is_shadow=True`) so drift accumulates; scorer reads only non-shadow profiles |
+| **Confidence Aggregation** | Weighted mean of per-feature confidences by contribution magnitude — terminus-level features carry 0.5 confidence, enabling suppressed-decisions filtering |
+| **Local Embeddings** | Defaults to `nomic-embed-text` (768d) — no external API dependency for a security detection system |
 
 ---
 
@@ -240,11 +203,11 @@ The system defaults to `nomic-embed-text` (768 dimensions) for local deployment 
 
 ## Configuration
 
-All scoring parameters are defined in [`config/scoring_config.yaml`](config/scoring_config.yaml) and are designed to be swept during Phase 2 calibration:
+All scoring parameters live in [`config/scoring_config.yaml`](config/scoring_config.yaml) and are designed to be swept during Phase 2 calibration:
 
 ```yaml
-anomaly_threshold: 75.0      # Score threshold for anomaly flag
-confidence_floor: 0.6        # Minimum confidence to surface a decision
+anomaly_threshold: 75.0
+confidence_floor: 0.6
 
 features:
   login_hour_rarity:
@@ -252,7 +215,7 @@ features:
   process_name_rarity:
     weight: 1.0
   command_line_embedding_similarity:
-    weight: 2.0               # Currently zeroed (stub) until Phase 0.5
+    weight: 2.0  # Zeroed (stub) until Phase 0.5
 ```
 
 ---
@@ -261,9 +224,6 @@ features:
 
 This project is for portfolio and educational purposes.
 
----
-
 <p align="center">
-  <sub>Built with adversarial specification review, DuckDB analytics, and pgvector similarity search.</sub>
+  <sub>Built with adversarial specification review · DuckDB analytics · pgvector similarity search</sub>
 </p>
-]]>
