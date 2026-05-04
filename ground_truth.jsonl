@@ -1,0 +1,12 @@
+{"event_id": "dd4d6d04-42a5-41f5-b1db-7189e484e128", "is_malicious": true, "scenario": "scenario_1_sharp_misuse"}
+{"event_id": "f92fc665-e7d9-440c-99b6-78f3ff67ec06", "is_malicious": true, "scenario": "scenario_2_slow_roll"}
+{"event_id": "319b42b0-6ecc-41d8-a207-a271350afda9", "is_malicious": true, "scenario": "scenario_2_slow_roll"}
+{"event_id": "c15400d2-62f8-488d-a956-e0a3516ed6d5", "is_malicious": true, "scenario": "scenario_2_slow_roll"}
+{"event_id": "94d3d517-e448-461b-a61a-b5a78335f169", "is_malicious": true, "scenario": "scenario_2_slow_roll"}
+{"event_id": "68dbe7d7-e106-4849-adf1-ede49ea5e6ee", "is_malicious": true, "scenario": "scenario_2_slow_roll"}
+{"event_id": "66cef98d-cfde-4cb5-af8c-6f5ec1339469", "is_malicious": true, "scenario": "scenario_2_slow_roll"}
+{"event_id": "cec1fea6-1321-4df2-9f0e-001904bdee49", "is_malicious": true, "scenario": "scenario_2_slow_roll"}
+{"event_id": "5ee011d3-51d2-4468-bf9e-963dbfef1e7a", "is_malicious": true, "scenario": "scenario_3_coordinated"}
+{"event_id": "1a331e7e-7d08-4d7d-908c-2f5ce8973439", "is_malicious": true, "scenario": "scenario_3_coordinated"}
+{"event_id": "0769a212-8e1d-4481-867a-1f1466f98e7c", "is_malicious": true, "scenario": "scenario_3_coordinated"}
+{"event_id": "f915fead-de1b-46f7-b025-3018d5119f4f", "is_malicious": true, "scenario": "scenario_4_service_abuse"}

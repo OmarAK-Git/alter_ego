@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: alter_ego
+Version: 0.1.0
+Summary: A local behavioral identity detection system
+Requires-Python: >=3.11
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: pydantic-settings>=2.0.0
+Requires-Dist: sqlalchemy>=2.0.0
+Requires-Dist: alembic>=1.13.0
+Requires-Dist: psycopg2-binary>=2.9.0
+Requires-Dist: pgvector>=0.2.0
+Requires-Dist: duckdb>=0.10.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0.0; extra == "dev"
+Requires-Dist: ruff>=0.3.0; extra == "dev"
+Requires-Dist: mypy>=1.9.0; extra == "dev"

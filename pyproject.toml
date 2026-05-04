@@ -1,0 +1,31 @@
+[project]
+name = "alter_ego"
+version = "0.1.0"
+description = "A local behavioral identity detection system"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.13.0",
+    "psycopg2-binary>=2.9.0",
+    "pgvector>=0.2.0",
+    "duckdb>=0.10.0",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.3.0",
+    "mypy>=1.9.0",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.mypy]
+strict = true
+
+[tool.setuptools.packages.find]
+include = ["core*", "batch*", "worker*", "web*"]

@@ -1,0 +1,29 @@
+version: "1.0"
+
+# Operating points (to be calibrated in Phase 2)
+anomaly_threshold: 75.0
+confidence_floor: 0.6
+drift_weight: 1.0
+
+# Feature configurations
+features:
+  login_hour_rarity:
+    weight: 1.0
+  geolocation_rarity:
+    weight: 1.5
+  endpoint_set_rarity:
+    weight: 1.2
+  process_name_rarity:
+    weight: 1.0
+  command_line_embedding_similarity:
+    weight: 2.0
+  service_account_execution_frequency_deviation:
+    weight: 1.5
+
+# Cohort configuration
+cohort_minimums:
+  min_events_for_entity_baseline: 100
+  min_entities_for_cohort: 5
+
+suppressed_decision_aging_days: 7
+replay_window_limits_days: 30
