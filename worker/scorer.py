@@ -98,7 +98,7 @@ def score_event(resolved_event: ResolvedEvent, profile: ProfileArtifact, config:
     # 4. command_line_embedding_similarity (Mock)
     if resolved_event.event_type == "process" and hasattr(resolved_event.event_data, 'command_line'):
         # Mock embedding distance since Phase 0.5 is not built
-        cosine_dist = 0.1 
+        cosine_dist = 0.0 
         weight = features_config.get("command_line_embedding_similarity", {}).get("weight", 2.0)
         score = cosine_dist * 50.0 * weight
         total_score += score
@@ -106,7 +106,7 @@ def score_event(resolved_event: ResolvedEvent, profile: ProfileArtifact, config:
 
     # 5. service_account_execution_frequency_deviation
     if resolved_event.entity_type == "service_account" and resolved_event.event_type == "process":
-        deviation = 0.2
+        deviation = 0.0
         weight = features_config.get("service_account_execution_frequency_deviation", {}).get("weight", 2.0)
         score = deviation * 20.0 * weight
         total_score += score
@@ -125,6 +125,11 @@ def score_event(resolved_event: ResolvedEvent, profile: ProfileArtifact, config:
     
     scoring_config_version = str(config.get("version", "1.0"))
     
+    # Calculate decision-level confidence (weighted mean by absolute contribution magnitude)
+    conf_sum = sum(abs(c.contribution_score) * c.confidence_weight for c in contributions)
+    weight_sum = sum(abs(c.contribution_score) for c in contributions)
+    decision_confidence = conf_sum / weight_sum if weight_sum > 0 else 1.0
+    
     raw_id = f"{resolved_event.event_id}{profile.profile_version}{scoring_config_version}".encode('utf-8')
     decision_id = hashlib.sha256(raw_id).hexdigest()
     
@@ -134,7 +139,7 @@ def score_event(resolved_event: ResolvedEvent, profile: ProfileArtifact, config:
         entity_id=resolved_event.entity_id,
         timestamp=datetime.utcnow(),
         score=total_score,
-        confidence=1.0,
+        confidence=decision_confidence,
         profile_version=profile.profile_version,
         scoring_config_version=scoring_config_version,
         contributions=contributions,
@@ -159,7 +164,8 @@ def process_unscored_events(db: Session | None = None) -> int:
         
         for db_event in events_to_score:
             prof_stmt = select(ProfileArtifactModel).where(
-                ProfileArtifactModel.entity_id == db_event.entity_id
+                ProfileArtifactModel.entity_id == db_event.entity_id,
+                ProfileArtifactModel.is_shadow == False
             ).order_by(desc(ProfileArtifactModel.created_at)).limit(1)
             
             db_profile = db_session.execute(prof_stmt).scalar_one_or_none()
@@ -196,6 +202,7 @@ def process_unscored_events(db: Session | None = None) -> int:
                 created_at=db_profile.created_at,
                 data_window_start=db_profile.data_window_start,
                 data_window_end=db_profile.data_window_end,
+                is_shadow=db_profile.is_shadow,
                 features=db_profile.features,
                 embedding=db_profile.embedding,
                 embedding_model_id=db_profile.embedding_model_id,

@@ -97,7 +97,7 @@ class EventGenerator:
                                 timestamp=current_time,
                                 event_type=event_type,
                                 raw_entity_id=entity.entity_id,
-                                simulation_partition=False,
+                                simulation_partition="production",
                                 event_data=data
                             ))
                 
@@ -111,7 +111,7 @@ class EventGenerator:
                             timestamp=current_time,
                             event_type="process",
                             raw_entity_id=entity.entity_id,
-                            simulation_partition=False,
+                            simulation_partition="production",
                             event_data=ProcessEventData(
                                 process_name=self.rng.choice(entity.typical_processes),
                                 command_line="run_job.sh --auto",
@@ -141,7 +141,7 @@ class EventGenerator:
                         timestamp=ts,
                         event_type="process",
                         raw_entity_id=entity.entity_id,
-                        simulation_partition=False, # Benign, so it should be learned
+                        simulation_partition="production", # Benign, so it should be learned
                         event_data=ProcessEventData(
                             process_name=new_process,
                             command_line=f"{new_process} --install",
@@ -166,7 +166,7 @@ class EventGenerator:
             timestamp=ts,
             event_type="auth",
             raw_entity_id=entity.entity_id,
-            simulation_partition=True,
+            simulation_partition="eval_scenario_1",
             event_data=AuthEventData(
                 action="login",
                 ip_address="198.51.100.22",
@@ -199,7 +199,7 @@ class EventGenerator:
                 timestamp=shifted_ts,
                 event_type="process",
                 raw_entity_id=entity.entity_id,
-                simulation_partition=True,
+                simulation_partition="eval_scenario_2",
                 event_data=ProcessEventData(
                     process_name="powershell.exe",
                     command_line=f"powershell.exe -EncodedCommand XYZ{step}",
@@ -227,7 +227,7 @@ class EventGenerator:
                 timestamp=ts + timedelta(minutes=self.rng.randint(1,5)),
                 event_type="process",
                 raw_entity_id=entity.entity_id,
-                simulation_partition=True,
+                simulation_partition="eval_scenario_3",
                 event_data=ProcessEventData(
                     process_name="mimikatz.exe",
                     command_line="mimikatz.exe sekurlsa::logonpasswords",
@@ -256,7 +256,7 @@ class EventGenerator:
             timestamp=off_schedule_ts,
             event_type="process",
             raw_entity_id=entity.entity_id,
-            simulation_partition=True,
+            simulation_partition="eval_scenario_4",
             event_data=ProcessEventData(
                 process_name="cmd.exe",
                 command_line="cmd.exe /c whoami",

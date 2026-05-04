@@ -9,8 +9,9 @@ class ProfileArtifact(BaseModel):
     created_at: datetime
     data_window_start: datetime
     data_window_end: datetime
+    is_shadow: bool = False
     features: Dict[str, Any]
     embedding: Optional[List[float]] = None
-    embedding_model_id: str = "text-embedding-3-small"
+    embedding_model_id: str = "nomic-embed-text"
     embedding_model_version: str = "1.0"
-    embedding_dimensionality: int = 1536
+    embedding_dimensionality: int = 768

@@ -10,7 +10,7 @@ class EventModel(Base):
     timestamp = Column(DateTime, nullable=False)
     event_type = Column(String, nullable=False)
     raw_entity_id = Column(String, nullable=False)
-    simulation_partition = Column(Boolean, default=False, nullable=False)
+    simulation_partition = Column(String, default="production", nullable=False)
     event_data = Column(JSONB, nullable=False)
 
 class ResolvedEventModel(Base):
@@ -22,7 +22,7 @@ class ResolvedEventModel(Base):
     entity_id = Column(String, nullable=False, index=True)
     entity_type = Column(String, nullable=False)
     resolution_confidence = Column(Float, nullable=False)
-    simulation_partition = Column(Boolean, default=False, nullable=False)
+    simulation_partition = Column(String, default="production", nullable=False)
     event_data = Column(JSONB, nullable=False)
 
 class ProfileArtifactModel(Base):
@@ -33,11 +33,12 @@ class ProfileArtifactModel(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     data_window_start = Column(DateTime, nullable=False)
     data_window_end = Column(DateTime, nullable=False)
+    is_shadow = Column(Boolean, default=False, nullable=False)
     features = Column(JSONB, nullable=False)
-    embedding = Column(Vector(1536), nullable=True) # For command_line_embedding_similarity
-    embedding_model_id = Column(String, default="text-embedding-3-small", nullable=False)
+    embedding = Column(Vector(768), nullable=True) # For command_line_embedding_similarity
+    embedding_model_id = Column(String, default="nomic-embed-text", nullable=False)
     embedding_model_version = Column(String, default="1.0", nullable=False)
-    embedding_dimensionality = Column(Integer, default=1536, nullable=False)
+    embedding_dimensionality = Column(Integer, default=768, nullable=False)
 
 class DecisionRecordModel(Base):
     __tablename__ = "decisions"

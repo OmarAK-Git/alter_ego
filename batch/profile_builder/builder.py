@@ -34,7 +34,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5) -> int:
         blocked_entities = set(db_session.execute(blocked_entities_stmt).scalars().all())
 
         # 2. Fetch resolved events excluding simulation partition
-        stmt = select(ResolvedEventModel).where(ResolvedEventModel.simulation_partition == False)
+        stmt = select(ResolvedEventModel).where(ResolvedEventModel.simulation_partition == "production")
         events = db_session.execute(stmt).scalars().all()
         
         if not events:
@@ -43,9 +43,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5) -> int:
         # Write to JSONL for DuckDB, injecting role
         with open(temp_file, "w") as f:
             for e in events:
-                if e.entity_id in blocked_entities:
-                    continue # Skip active-alert entities
-                    
+                # Removed 'continue' to build shadow profiles for blocked entities
                 data = {
                     "event_id": e.event_id,
                     "timestamp": e.timestamp.isoformat(),
@@ -210,6 +208,8 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5) -> int:
                 
             features["cumulative_drift"] = drift_score
             
+            is_shadow_profile = entity_id in blocked_entities
+
             artifact = ProfileArtifact(
                 entity_id=entity_id,
                 entity_type=entity_type,
@@ -217,10 +217,11 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5) -> int:
                 created_at=datetime.utcnow(),
                 data_window_start=window_start,
                 data_window_end=window_end,
+                is_shadow=is_shadow_profile,
                 features=features,
-                embedding_model_id="text-embedding-3-small",
+                embedding_model_id="nomic-embed-text",
                 embedding_model_version="1.0",
-                embedding_dimensionality=1536
+                embedding_dimensionality=768
             )
             
             db_profile = ProfileArtifactModel(
@@ -230,6 +231,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5) -> int:
                 created_at=artifact.created_at,
                 data_window_start=artifact.data_window_start,
                 data_window_end=artifact.data_window_end,
+                is_shadow=artifact.is_shadow,
                 features=artifact.features,
                 embedding_model_id=artifact.embedding_model_id,
                 embedding_model_version=artifact.embedding_model_version,
