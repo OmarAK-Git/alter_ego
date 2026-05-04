@@ -10,9 +10,11 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/OmarAK-Git/alter_ego/actions/workflows/ci.yml"><img src="https://github.com/OmarAK-Git/alter_ego/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
   <img src="https://img.shields.io/badge/python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.11+"/>
   <img src="https://img.shields.io/badge/postgres-pgvector-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL + pgvector"/>
   <img src="https://img.shields.io/badge/DuckDB-analytics-FFF000?style=flat-square&logo=duckdb&logoColor=black" alt="DuckDB"/>
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License"/>
   <img src="https://img.shields.io/badge/status-Phase%201%20Complete-4CAF50?style=flat-square" alt="Phase 1 Complete"/>
 </p>
 
@@ -203,26 +205,51 @@ A fifth injection (`inject_tooling_rollout`) generates **correlated benign chang
 
 ## Configuration
 
-All scoring parameters live in [`config/scoring_config.yaml`](config/scoring_config.yaml) and are designed to be swept during Phase 2 calibration:
+All scoring parameters live in [`config/scoring_config.yaml`](config/scoring_config.yaml). These are provisional defaults — Phase 2 calibration will sweep thresholds and weights against the synthetic scenario P/R curves.
 
 ```yaml
-anomaly_threshold: 75.0
-confidence_floor: 0.6
+version: "1.0"
+
+anomaly_threshold: 75.0          # Score above which an event is flagged
+confidence_floor: 0.6            # Minimum confidence to surface a decision
+drift_weight: 1.0                # Multiplier for cumulative drift contribution
 
 features:
   login_hour_rarity:
     weight: 1.0
+  geolocation_rarity:
+    weight: 1.5
+  endpoint_set_rarity:
+    weight: 1.2
   process_name_rarity:
     weight: 1.0
   command_line_embedding_similarity:
-    weight: 2.0  # Zeroed (stub) until Phase 0.5
+    weight: 2.0                  # Stub zeroed until Phase 0.5 embedding model
+  service_account_execution_frequency_deviation:
+    weight: 1.5                  # Stub zeroed until Phase 0.5 periodicity model
+
+cohort_minimums:
+  min_events_for_entity_baseline: 100
+  min_entities_for_cohort: 5
+
+suppressed_decision_aging_days: 7
+replay_window_limits_days: 30
 ```
+
+---
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [`docs/SPEC.md`](docs/SPEC.md) | Full architecture specification (v2) — produced through adversarial LLM debate before any code was written |
+| [`docs/llm-determinism-check.md`](docs/llm-determinism-check.md) | Empirical analysis of LLM output variance at temperature=0 |
 
 ---
 
 ## License
 
-This project is for portfolio and educational purposes.
+This project is licensed under the [MIT License](LICENSE).
 
 <p align="center">
   <sub>Built with adversarial specification review · DuckDB analytics · pgvector similarity search</sub>
