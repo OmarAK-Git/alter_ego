@@ -3,6 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 
 class FeatureContribution(BaseModel):
+    contribution_id: str
     feature_name: str
     raw_value: float
     contribution_score: float
@@ -19,6 +20,8 @@ class DecisionRecord(BaseModel):
     scoring_config_version: str
     contributions: List[FeatureContribution]
     is_anomaly: bool
+    cohort_used: str
+    cohort_unsupported: bool
     flags: List[str]
 
 from enum import Enum

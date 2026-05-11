@@ -2,242 +2,334 @@ import os
 import json
 import duckdb
 import re
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, and_
+import logging
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
+
 from core.database import SessionLocal
-from core.models import ResolvedEventModel, ProfileArtifactModel, DecisionRecordModel
+from core.models import ResolvedEventModel, ProfileArtifactModel, DecisionRecordModel, ContainmentQueueModel
 from core.schemas.profiles import ProfileArtifact
-from core.math_utils import get_laplace_prob, compute_kl_divergence
+from core.math_utils import get_laplace_prob, compute_kl_divergence, compute_distribution_kl, exponential_decay
+from worker.vectorizer import vectorize_command_line, compute_cosine_distance, NORMALIZER_VERSION
+import numpy as np
+import yaml
+from statistics import median
 
 def extract_role(entity_id: str, entity_type: str) -> str:
     if entity_type == "service_account":
         return "service_account"
-    # Expected format: user_engineer_1
     match = re.match(r"user_([a-z]+)_", entity_id)
     if match:
         return match.group(1)
     return "unknown"
 
-def build_profiles(db: Session | None = None, drift_compare_n: int = 5) -> int:
+def parse_duckdb_histogram(hist_data) -> dict:
+    """Safely parse DuckDB histogram output into a string-keyed dict."""
+    if not hist_data:
+        return {}
+    if isinstance(hist_data, dict):
+        return {str(k): int(v) for k, v in hist_data.items()}
+    if isinstance(hist_data, list):
+        res = {}
+        for item in hist_data:
+            if isinstance(item, dict):
+                res[str(item.get('key'))] = int(item.get('value', 0))
+            elif isinstance(item, tuple) and len(item) == 2:
+                res[str(item[0])] = int(item[1])
+        return res
+    return {}
+
+def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: datetime | None = None) -> int:
     if db is None:
         db_session = SessionLocal()
     else:
         db_session = db
         
-    temp_file = Path("temp_events_for_duckdb.jsonl")
+    if as_of is None:
+        as_of = datetime.utcnow()
+
+    # Load scoring config for weights and thresholds
+    config_path = Path("config/scoring_config.yaml")
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+    
+    drift_weights = config.get("drift_weights", {
+        "login_hour": 1.0, "geolocation": 1.0, "endpoint_set": 1.0, "process_name": 1.0, "embedding": 2.0
+    })
+    drift_threshold = config.get("drift_threshold", 45.0)
+    history_count = config.get("drift_comparison_history_count", 5)
+    half_life = config.get("drift_half_life_days", 7.0)
+    laplace_alpha = config.get("laplace_alpha", 1.0)
+
+    temp_file = Path(f"temp_events_{uuid.uuid4()}.jsonl")
     try:
-        # 1. Identify blocked entities (Active-alert profile-build blocking)
-        blocked_entities_stmt = select(DecisionRecordModel.entity_id).where(DecisionRecordModel.is_anomaly == True)
+        blocked_entities_stmt = select(ContainmentQueueModel.entity_id).where(ContainmentQueueModel.status == "pending")
         blocked_entities = set(db_session.execute(blocked_entities_stmt).scalars().all())
 
-        # 2. Fetch resolved events excluding simulation partition
-        stmt = select(ResolvedEventModel).where(ResolvedEventModel.simulation_partition == "production")
-        events = db_session.execute(stmt).scalars().all()
+        window_days = config.get("max_replay_window_days", 30)
+        recent_days = config.get("recent_drift_window_days", 3)
+        window_start_limit = as_of - timedelta(days=window_days)
+        recent_start_limit = as_of - timedelta(days=recent_days)
+
+        # Historical window (for profile content)
+        stmt_hist = select(ResolvedEventModel).where(
+            and_(
+                ResolvedEventModel.simulation_partition == "production",
+                ResolvedEventModel.timestamp <= as_of,
+                ResolvedEventModel.timestamp >= window_start_limit
+            )
+        )
         
-        if not events:
+        # Recent window (for drift detection)
+        stmt_recent = select(ResolvedEventModel).where(
+            and_(
+                ResolvedEventModel.simulation_partition == "production",
+                ResolvedEventModel.timestamp <= as_of,
+                ResolvedEventModel.timestamp >= recent_start_limit
+            )
+        )
+        
+        import time
+        t0 = time.time()
+        events_hist = db_session.execute(stmt_hist).scalars().all()
+        events_recent = db_session.execute(stmt_recent).scalars().all()
+        logger.info(f"Fetched {len(events_hist)} hist and {len(events_recent)} recent events in {time.time()-t0:.2f}s")
+        
+        if not events_hist:
             return 0
             
-        # Write to JSONL for DuckDB, injecting role
-        with open(temp_file, "w") as f:
-            for e in events:
-                # Removed 'continue' to build shadow profiles for blocked entities
-                data = {
-                    "event_id": e.event_id,
-                    "timestamp": e.timestamp.isoformat(),
-                    "entity_id": e.entity_id,
-                    "entity_type": e.entity_type,
-                    "role": extract_role(e.entity_id, e.entity_type),
-                    "action": e.event_data.get("action"),
-                    "endpoint_id": e.event_data.get("endpoint_id"),
-                    "process_name": e.event_data.get("process_name"),
-                    "hour_of_day": e.timestamp.hour
-                }
-                f.write(json.dumps(data) + "\n")
+        temp_file_hist = Path(f"temp_events_hist_{uuid.uuid4().hex}.jsonl")
+        temp_file_recent = Path(f"temp_events_recent_{uuid.uuid4().hex}.jsonl")
+        
+        t1 = time.time()
+        def write_jsonl(path, evts):
+            with open(path, "w") as f:
+                for e in evts:
+                    data = {
+                        "event_id": e.event_id,
+                        "timestamp": e.timestamp.isoformat(),
+                        "entity_id": e.entity_id,
+                        "entity_type": e.entity_type,
+                        "role": extract_role(e.entity_id, e.entity_type),
+                        "action": e.event_data.get("action"),
+                        "endpoint_id": e.event_data.get("endpoint_id"),
+                        "process_name": e.event_data.get("process_name"),
+                        "command_line": e.event_data.get("command_line", ""),
+                        "hour_of_day": e.timestamp.hour
+                    }
+                    f.write(json.dumps(data) + "\n")
+        
+        write_jsonl(temp_file_hist, events_hist)
+        write_jsonl(temp_file_recent, events_recent)
+        logger.info(f"Wrote temp JSONLs in {time.time()-t1:.2f}s")
                 
-        # 3. DuckDB Aggregation
         con = duckdb.connect()
+        t2 = time.time()
         
-        # --- Cohort Hierarchies ---
-        # Parent Cohort (entity_type)
-        parent_cohort_query = f"""
-        SELECT 
-            entity_type,
-            histogram(hour_of_day) as hours,
-            histogram(endpoint_id) as endpoints,
-            histogram(process_name) as processes
-        FROM read_json_auto('{temp_file}')
-        GROUP BY entity_type
-        """
+        # We only need cohorts from the historical window
+        parent_cohort_query = f"SELECT entity_type, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') GROUP BY entity_type"
         parent_res = con.execute(parent_cohort_query).fetchall()
-        parent_cohorts = {}
-        for row in parent_res:
-            parent_cohorts[row[0]] = {
-                "login_hours": {str(k): int(v) for k, v in row[1].items()} if isinstance(row[1], dict) else {},
-                "endpoints": {str(k): int(v) for k, v in row[2].items() if k is not None} if isinstance(row[2], dict) else {},
-                "process_names": {str(k): int(v) for k, v in row[3].items() if k is not None} if isinstance(row[3], dict) else {}
-            }
-            
-        # Primary Cohort (role)
-        primary_cohort_query = f"""
-        SELECT 
-            role,
-            histogram(hour_of_day) as hours,
-            histogram(endpoint_id) as endpoints,
-            histogram(process_name) as processes
-        FROM read_json_auto('{temp_file}')
-        GROUP BY role
-        """
+        parent_cohorts = {row[0]: {"login_hours": parse_duckdb_histogram(row[1]), "endpoints": parse_duckdb_histogram(row[2]), "process_names": parse_duckdb_histogram(row[3])} for row in parent_res}
+        
+        primary_cohort_query = f"SELECT role, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') GROUP BY role"
         primary_res = con.execute(primary_cohort_query).fetchall()
-        primary_cohorts = {}
-        for row in primary_res:
-            primary_cohorts[row[0]] = {
-                "login_hours": {str(k): int(v) for k, v in row[1].items()} if isinstance(row[1], dict) else {},
-                "endpoints": {str(k): int(v) for k, v in row[2].items() if k is not None} if isinstance(row[2], dict) else {},
-                "process_names": {str(k): int(v) for k, v in row[3].items() if k is not None} if isinstance(row[3], dict) else {}
-            }
-            
-        # Global Terminus Fallback
-        global_query = f"""
-        SELECT 
-            histogram(hour_of_day) as hours,
-            histogram(endpoint_id) as endpoints,
-            histogram(process_name) as processes
-        FROM read_json_auto('{temp_file}')
-        """
-        global_res = con.execute(global_query).fetchone()
-        global_cohort = {
-            "login_hours": {str(k): int(v) for k, v in global_res[0].items()} if global_res and isinstance(global_res[0], dict) else {},
-            "endpoints": {str(k): int(v) for k, v in global_res[1].items() if k is not None} if global_res and isinstance(global_res[1], dict) else {},
-            "process_names": {str(k): int(v) for k, v in global_res[2].items() if k is not None} if global_res and isinstance(global_res[2], dict) else {}
-        }
+        primary_cohorts = {row[0]: {"login_hours": parse_duckdb_histogram(row[1]), "endpoints": parse_duckdb_histogram(row[2]), "process_names": parse_duckdb_histogram(row[3])} for row in primary_res}
         
-        # --- Entity Local Profiles ---
-        query = f"""
-        SELECT 
-            entity_id,
-            MAX(entity_type) as entity_type,
-            MAX(role) as role,
-            MIN(CAST(timestamp AS TIMESTAMP)) as window_start,
-            MAX(CAST(timestamp AS TIMESTAMP)) as window_end,
-            COUNT(*) as total_events,
-            histogram(hour_of_day) as login_hours,
-            histogram(endpoint_id) as endpoints,
-            histogram(process_name) as process_names
-        FROM read_json_auto('{temp_file}')
-        GROUP BY entity_id
-        """
+        global_res = con.execute(f"SELECT histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}')").fetchone()
+        global_cohort = {"login_hours": parse_duckdb_histogram(global_res[0]), "endpoints": parse_duckdb_histogram(global_res[1]), "process_names": parse_duckdb_histogram(global_res[2])} if global_res else {"login_hours": {}, "endpoints": {}, "process_names": {}}
         
-        result = con.execute(query).fetchall()
+        # HISTORICAL PROFILE AGGREGATION
+        query_hist = f"SELECT entity_id, MAX(entity_type), MAX(role), MIN(CAST(timestamp AS TIMESTAMP)), MAX(CAST(timestamp AS TIMESTAMP)), COUNT(*), histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), list(command_line) FROM read_json_auto('{temp_file_hist}') GROUP BY entity_id"
+        result_hist = con.execute(query_hist).fetchall()
         
-        profile_version = f"v_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        # RECENT BEHAVIOR AGGREGATION (for drift)
+        query_recent = f"SELECT entity_id, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), list(command_line) FROM read_json_auto('{temp_file_recent}') GROUP BY entity_id"
+        result_recent_rows = con.execute(query_recent).fetchall()
+        recent_features_map = {row[0]: row[1:] for row in result_recent_rows}
+        # Cleanup
+        for p in [temp_file_hist, temp_file_recent]:
+            if p.exists():
+                p.unlink()
+        
+        build_timestamp = datetime.utcnow()
+        profile_version_suffix = build_timestamp.strftime('%Y%m%d%H%M%S')
         count = 0
+        cohorts = {"primary": primary_cohorts, "parent": parent_cohorts, "terminus": global_cohort}
         
-        # Save cohort distributions
-        cohorts = {
-            "primary": primary_cohorts,
-            "parent": parent_cohorts,
-            "terminus": global_cohort
-        }
-        
-        for row in result:
-            entity_id = row[0]
-            entity_type = row[1]
-            role = row[2]
-            window_start = row[3]
-            window_end = row[4]
-            total_events = int(row[5])
+        # Phase 1: Compute Raw Drifts (Recent vs Historical)
+        raw_drift_records = []
+        for row in result_hist:
+            entity_id, entity_type, role, window_start, window_end, total_events, login_hours, endpoints, process_names, cmd_lines = row
+            total_events = int(total_events)
             
-            login_hours = {str(k): int(v) for k, v in row[6].items()} if isinstance(row[6], dict) else {}
-            endpoints = {str(k): int(v) for k, v in row[7].items() if k is not None} if isinstance(row[7], dict) else {}
-            process_names = {str(k): int(v) for k, v in row[8].items() if k is not None} if isinstance(row[8], dict) else {}
+            # 1. Profile Features (30-day window)
+            cur_login_hours = parse_duckdb_histogram(login_hours)
+            cur_endpoints = parse_duckdb_histogram(endpoints)
+            cur_process_names = parse_duckdb_histogram(process_names)
+            
+            vectors = [vectorize_command_line(cmd) for cmd in cmd_lines if cmd]
+            centroid_arr = np.mean(vectors, axis=0) if vectors else None
+            if centroid_arr is not None:
+                c_norm = np.linalg.norm(centroid_arr)
+                if c_norm > 0: centroid_arr = centroid_arr / c_norm
+
+            # 2. Recent Features (3-day window) - ONLY for drift
+            recent_row = recent_features_map.get(entity_id)
+            if recent_row:
+                rec_login_hours, rec_endpoints, rec_process_names, rec_cmd_lines = recent_row
+                rec_login_hours = parse_duckdb_histogram(rec_login_hours)
+                rec_endpoints = parse_duckdb_histogram(rec_endpoints)
+                rec_process_names = parse_duckdb_histogram(rec_process_names)
+                
+                rec_vectors = [vectorize_command_line(cmd) for cmd in rec_cmd_lines if cmd]
+                rec_centroid = np.mean(rec_vectors, axis=0) if rec_vectors else None
+                if rec_centroid is not None:
+                    rc_norm = np.linalg.norm(rec_centroid)
+                    if rc_norm > 0: rec_centroid = rec_centroid / rc_norm
+            else:
+                # No recent activity? Use current 30d as fallback (shouldn't happen if they have hist)
+                rec_login_hours, rec_endpoints, rec_process_names, rec_centroid = cur_login_hours, cur_endpoints, cur_process_names, centroid_arr
+
+            # 3. Retrieve Historical Baseline (Previous Profile)
+            prev_clean_stmt = select(ProfileArtifactModel).where(
+                and_(
+                    ProfileArtifactModel.entity_id == entity_id,
+                    ProfileArtifactModel.is_shadow == False,
+                    ProfileArtifactModel.promoted_at != None
+                )
+            ).order_by(desc(ProfileArtifactModel.data_window_end)).limit(history_count)
+            prev_profiles = db_session.execute(prev_clean_stmt).scalars().all()
+            
+            feature_drifts = []
+            if prev_profiles:
+                deltas = {"login_hour": [], "endpoint_set": [], "process_name": [], "embedding": []}
+                for prev in prev_profiles:
+                    deltas["login_hour"].append(compute_distribution_kl(rec_login_hours, prev.features.get("login_hours", {}), alpha=laplace_alpha))
+                    deltas["endpoint_set"].append(compute_distribution_kl(rec_endpoints, prev.features.get("endpoints", {}), alpha=laplace_alpha))
+                    deltas["process_name"].append(compute_distribution_kl(rec_process_names, prev.features.get("process_names", {}), alpha=laplace_alpha))
+                    
+                    if rec_centroid is not None and prev.embedding is not None:
+                        deltas["embedding"].append(compute_cosine_distance(rec_centroid, np.array(prev.embedding)))
+                
+                avg_deltas = {k: float(np.mean(v)) if v else 0.0 for k, v in deltas.items()}
+                raw_drift = sum(avg_deltas[k] * drift_weights.get(k, 1.0) for k in avg_deltas)
+            else:
+                raw_drift = 0.0
+
+            raw_drift_records.append({
+                "entity_id": entity_id,
+                "entity_type": entity_type,
+                "role": role,
+                "raw_drift": raw_drift,
+                # Store full 30d features in profile
+                "features": {
+                    "total_events": total_events,
+                    "login_hours": cur_login_hours,
+                    "endpoints": cur_endpoints,
+                    "process_names": cur_process_names
+                },
+                "embedding": centroid_arr.tolist() if centroid_arr is not None else None,
+                "window_start": window_start,
+                "window_end": window_end
+            })
+
+        # Phase 2: Cohort Normalization
+        cohort_drifts = {}
+        for rec in raw_drift_records:
+            cohort_drifts.setdefault(rec["role"], []).append(rec["raw_drift"])
+        
+        cohort_medians = {r: median(drifts) for r, drifts in cohort_drifts.items()}
+
+        # Phase 3: Update Accumulators and Persist
+        for rec in raw_drift_records:
+            entity_id = rec["entity_id"]
+            raw_drift = rec["raw_drift"]
+            norm_drift = raw_drift - cohort_medians.get(rec["role"], 0.0)
+            
+            # Get latest profile (even if shadow) to find accumulator state
+            latest_any = db_session.query(ProfileArtifactModel).filter(
+                ProfileArtifactModel.entity_id == entity_id
+            ).order_by(desc(ProfileArtifactModel.data_window_end)).first()
+            
+            prev_accumulator = latest_any.features.get("cumulative_drift", 0.0) if latest_any else 0.0
+            time_delta = 0.0
+            if latest_any:
+                dt = rec["window_end"] - latest_any.data_window_end
+                time_delta = dt.total_seconds() / 86400.0 # days
+            
+            new_accumulator = exponential_decay(prev_accumulator, norm_drift, half_life, time_delta)
+            # Ensure it doesn't go negative
+            new_accumulator = max(0.0, new_accumulator)
+            
+            logger.info(f"Entity {entity_id} drift: raw={raw_drift:.2f}, normalized={norm_drift:.2f}, accum={new_accumulator:.2f}")
 
             features = {
-                "total_events": total_events,
-                "login_hours": login_hours,
-                "endpoints": endpoints,
-                "process_names": process_names,
-                "role": role,
-                "cohort_data": cohorts # Store for the scorer to do confidence-adaptive fallback
+                "total_events": rec["features"]["total_events"],
+                "login_hours": rec["features"]["login_hours"],
+                "endpoints": rec["features"]["endpoints"],
+                "process_names": rec["features"]["process_names"],
+                "role": rec["role"],
+                "cohort_data": cohorts,
+                "cumulative_drift": new_accumulator,
+                "normalized_drift": norm_drift
             }
             
-            # --- Cumulative Drift Detection (KL-Divergence) ---
-            # Fetch last N profiles for this entity to calculate delta against an aggregated baseline
-            last_prof_stmt = select(ProfileArtifactModel).where(
-                ProfileArtifactModel.entity_id == entity_id
-            ).order_by(desc(ProfileArtifactModel.created_at)).limit(drift_compare_n)
-            last_profiles = db_session.execute(last_prof_stmt).scalars().all()
-            
-            drift_score = 0.0
-            if last_profiles:
-                # Aggregate histograms from last N profiles
-                agg_hours = {}
-                agg_procs = {}
-                for p in last_profiles:
-                    p_hours = p.features.get("login_hours", {})
-                    p_procs = p.features.get("process_names", {})
-                    for k, v in p_hours.items():
-                        agg_hours[k] = agg_hours.get(k, 0) + v
-                    for k, v in p_procs.items():
-                        agg_procs[k] = agg_procs.get(k, 0) + v
-                
-                # Calculate KL-Divergence between new histograms and aggregated old histograms
-                kl_sum = 0.0
-                
-                def calc_feature_kl(new_hist, old_hist, vocab_size):
-                    total_new = sum(new_hist.values())
-                    total_old = sum(old_hist.values())
-                    if total_new == 0 or total_old == 0:
-                        return 0.0
-                        
-                    kl = 0.0
-                    all_keys = set(new_hist.keys()) | set(old_hist.keys())
-                    for k in all_keys:
-                        p_prob = get_laplace_prob(new_hist.get(k, 0), total_new, vocab_size)
-                        q_prob = get_laplace_prob(old_hist.get(k, 0), total_old, vocab_size)
-                        kl += compute_kl_divergence(p_prob, q_prob)
-                    return kl
-                
-                # Weight drift contributions
-                kl_sum += calc_feature_kl(login_hours, agg_hours, 24) * 0.5
-                kl_sum += calc_feature_kl(process_names, agg_procs, 500) * 1.5
-                
-                drift_score = kl_sum
-                
-            features["cumulative_drift"] = drift_score
-            
             is_shadow_profile = entity_id in blocked_entities
+            promoted_at = as_of if not is_shadow_profile else None
+            
+            if not is_shadow_profile:
+                prev_active = db_session.query(ProfileArtifactModel).filter(and_(ProfileArtifactModel.entity_id == entity_id, ProfileArtifactModel.is_shadow == False, ProfileArtifactModel.promoted_at != None, ProfileArtifactModel.superseded_at == None)).first()
+                if prev_active:
+                    prev_active.superseded_at = promoted_at
 
-            artifact = ProfileArtifact(
+            # Ensure version uniqueness even within the same second
+            profile_version = f"{entity_id}_{profile_version_suffix}_{uuid.uuid4().hex[:8]}"
+
+            db_profile = ProfileArtifactModel(
+                profile_version=profile_version,
                 entity_id=entity_id,
                 entity_type=entity_type,
-                profile_version=profile_version,
-                created_at=datetime.utcnow(),
-                data_window_start=window_start,
-                data_window_end=window_end,
+                created_at=build_timestamp,
+                data_window_start=rec["window_start"],
+                data_window_end=rec["window_end"],
+                promoted_at=promoted_at,
+                superseded_at=None,
                 is_shadow=is_shadow_profile,
                 features=features,
-                embedding_model_id="nomic-embed-text",
+                embedding=rec["embedding"],
+                embedding_model_id="alter-ego-ngram-v1",
                 embedding_model_version="1.0",
-                embedding_dimensionality=768
+                embedding_dimensionality=768,
+                embedding_input_normalizer_version=NORMALIZER_VERSION
             )
+            db_session.add(db_profile)
             
-            db_profile = ProfileArtifactModel(
-                profile_version=f"{artifact.entity_id}_{profile_version}",
-                entity_id=artifact.entity_id,
-                entity_type=artifact.entity_type,
-                created_at=artifact.created_at,
-                data_window_start=artifact.data_window_start,
-                data_window_end=artifact.data_window_end,
-                is_shadow=artifact.is_shadow,
-                features=artifact.features,
-                embedding_model_id=artifact.embedding_model_id,
-                embedding_model_version=artifact.embedding_model_version,
-                embedding_dimensionality=artifact.embedding_dimensionality
-            )
-            db_session.merge(db_profile)
+            # Emit Drift Decision if threshold crossed
+            if new_accumulator >= drift_threshold:
+                decision_id = f"drift_{profile_version}"
+                contributions={"cumulative_drift": new_accumulator},
+                db_decision = DecisionRecordModel(
+                    decision_id=decision_id,
+                    event_id="PROFILE_BUILD",
+                    entity_id=entity_id,
+                    timestamp=build_timestamp,
+                    score=new_accumulator,
+                    confidence=0.8, # Static confidence for drift engine
+                    profile_version=profile_version,
+                    scoring_config_version=config.get("version", "unknown"),
+                    contributions=contributions,
+                    is_anomaly=True,
+                    cohort_used=rec["role"],
+                    cohort_unsupported=False,
+                    flags={"drift_alert": True, "prev_accumulator": prev_accumulator, "norm_drift": norm_drift}
+                )
+                db_session.add(db_decision)
+
             count += 1
             
         db_session.commit()
@@ -246,9 +338,6 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5) -> int:
     finally:
         if db is None:
             db_session.close()
-        if temp_file.exists():
-            os.remove(temp_file)
-
-if __name__ == "__main__":
-    count = build_profiles()
-    print(f"Built {count} profiles.")
+        for p in [temp_file_hist, temp_file_recent]:
+            if 'p' in locals() and p.exists():
+                p.unlink()

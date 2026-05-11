@@ -1,6 +1,29 @@
 import math
 from core.math_utils import compute_kl_divergence, get_laplace_prob
 import hashlib
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.dialects.postgresql import JSONB, ARRAY
+from core.database import Base
+
+@compiles(JSONB, "sqlite")
+def compile_jsonb_sqlite(type_, compiler, **kw):
+    return "JSON"
+
+@compiles(ARRAY, "sqlite")
+def compile_array_sqlite(type_, compiler, **kw):
+    return "JSON"
+
+@pytest.fixture
+def db_session():
+    engine = create_engine('sqlite:///:memory:')
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    yield session
+    session.close()
 
 def test_kl_divergence():
     p = 1.0
@@ -24,7 +47,7 @@ def test_idempotent_decision_id():
     raw2 = f"{event_id}{profile_version}{scoring_version}".encode('utf-8')
     assert hashlib.sha256(raw2).hexdigest() == expected_hash
 
-def test_decision_determinism():
+def test_decision_determinism(db_session):
     """Same inputs to score_event must produce identical decision_id and raw_score."""
     from core.schemas.events import ResolvedEvent, AuthEventData
     from core.schemas.profiles import ProfileArtifact
@@ -60,8 +83,8 @@ def test_decision_determinism():
 
     config = {"features": {}, "anomaly_threshold": 75.0, "version": "1.0"}
 
-    decision1 = score_event(resolved_event, profile, config)
-    decision2 = score_event(resolved_event, profile, config)
+    decision1 = score_event(db_session, resolved_event, profile, config)
+    decision2 = score_event(db_session, resolved_event, profile, config)
 
     assert decision1.decision_id == decision2.decision_id
     assert decision1.score == decision2.score
@@ -82,7 +105,7 @@ def test_scorer_ground_truth_isolation():
                 assert alias.name != "EvalGroundTruthModel", "Scorer must not import EvalGroundTruthModel"
                 assert alias.name != "EvalGroundTruth", "Scorer must not import EvalGroundTruth"
 
-def test_confidence_not_hardcoded():
+def test_confidence_not_hardcoded(db_session):
     """Decision confidence must reflect per-feature confidences, not be hardcoded to 1.0."""
     from core.schemas.events import ResolvedEvent, AuthEventData
     from core.schemas.profiles import ProfileArtifact
@@ -123,7 +146,7 @@ def test_confidence_not_hardcoded():
     )
 
     config = {"features": {}, "anomaly_threshold": 75.0, "version": "1.0"}
-    decision = score_event(resolved_event, profile, config)
+    decision = score_event(db_session, resolved_event, profile, config)
     
     # With terminus-level data, confidence_weight per feature should be 0.5
     # So decision confidence should NOT be 1.0

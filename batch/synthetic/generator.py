@@ -189,28 +189,27 @@ class EventGenerator:
         current_ts = start_ts
         for step in range(7): # 7 days
             current_ts += timedelta(days=1)
-            event_id = str(uuid.UUID(int=self.rng.getrandbits(128), version=4))
-            
-            # Slightly shift hour later each day
-            shifted_ts = current_ts.replace(hour=min(23, entity.base_shift_hour + step))
-            
-            events.append(Event(
-                event_id=event_id,
-                timestamp=shifted_ts,
-                event_type="process",
-                raw_entity_id=entity.entity_id,
-                simulation_partition="eval_scenario_2",
-                event_data=ProcessEventData(
-                    process_name="powershell.exe",
-                    command_line=f"powershell.exe -EncodedCommand XYZ{step}",
-                    endpoint_id=entity.primary_endpoint
-                )
-            ))
-            labels.append({
-                "event_id": event_id,
-                "is_malicious": True,
-                "scenario": "scenario_2_slow_roll"
-            })
+            for burst in range(5): # 5 events per day
+                event_id = str(uuid.UUID(int=self.rng.getrandbits(128), version=4))
+                shifted_ts = current_ts.replace(hour=min(23, entity.base_shift_hour + step), minute=burst*10)
+                
+                events.append(Event(
+                    event_id=event_id,
+                    timestamp=shifted_ts,
+                    event_type="process",
+                    raw_entity_id=entity.entity_id,
+                    simulation_partition="production",
+                    event_data=ProcessEventData(
+                        process_name="powershell.exe",
+                        command_line=f"powershell.exe -EncodedCommand XYZ{step}_{burst}",
+                        endpoint_id=entity.primary_endpoint
+                    )
+                ))
+                labels.append({
+                    "event_id": event_id,
+                    "is_malicious": True,
+                    "scenario": "scenario_2_slow_roll"
+                })
             
         events.sort(key=lambda x: x.timestamp)
         return events, labels
@@ -219,26 +218,29 @@ class EventGenerator:
         # 3 users in same cohort doing same rare process
         role = "Finance"
         targets = [e for e in self.entities.values() if e.role == role][:3]
-        
         for entity in targets:
-            event_id = str(uuid.UUID(int=self.rng.getrandbits(128), version=4))
-            events.append(Event(
-                event_id=event_id,
-                timestamp=ts + timedelta(minutes=self.rng.randint(1,5)),
-                event_type="process",
-                raw_entity_id=entity.entity_id,
-                simulation_partition="eval_scenario_3",
-                event_data=ProcessEventData(
-                    process_name="mimikatz.exe",
-                    command_line="mimikatz.exe sekurlsa::logonpasswords",
-                    endpoint_id=entity.primary_endpoint
-                )
-            ))
-            labels.append({
-                "event_id": event_id,
-                "is_malicious": True,
-                "scenario": "scenario_3_coordinated"
-            })
+            current_ts = ts
+            for step in range(3):
+                current_ts += timedelta(days=2)
+                for burst in range(5):
+                    event_id = str(uuid.UUID(int=self.rng.getrandbits(128), version=4))
+                    events.append(Event(
+                        event_id=event_id,
+                        timestamp=current_ts + timedelta(minutes=burst*5),
+                        event_type="process",
+                        raw_entity_id=entity.entity_id,
+                        simulation_partition="production",
+                        event_data=ProcessEventData(
+                            process_name="mimikatz.exe",
+                            command_line=f"mimikatz.exe -dump {burst}",
+                            endpoint_id=entity.primary_endpoint
+                        )
+                    ))
+                    labels.append({
+                        "event_id": event_id,
+                        "is_malicious": True,
+                        "scenario": "scenario_3_subtle"
+                    })
             
         events.sort(key=lambda x: x.timestamp)
         return events, labels

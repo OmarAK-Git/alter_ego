@@ -21,6 +21,8 @@ def record_decision(decision: DecisionRecord, db: Session | None = None):
             scoring_config_version=decision.scoring_config_version,
             contributions=[c.model_dump() for c in decision.contributions],
             is_anomaly=decision.is_anomaly,
+            cohort_used=decision.cohort_used,
+            cohort_unsupported=decision.cohort_unsupported,
             flags=decision.flags
         )
         from sqlalchemy.exc import IntegrityError

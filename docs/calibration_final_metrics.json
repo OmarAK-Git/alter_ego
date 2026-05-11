@@ -1,0 +1,40 @@
+{
+  "calibrated": {
+    "precision": 1.0,
+    "recall": 0.4166666666666667,
+    "f1": 0.5882352941176471,
+    "tp": 5,
+    "fp": 0,
+    "fn": 7,
+    "tn": 12486,
+    "scenarios": {
+      "scenario_1_sharp_misuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0
+      },
+      "scenario_2_slow_roll": {
+        "recall": 0.0,
+        "tp": 0,
+        "fn": 7
+      },
+      "scenario_3_coordinated": {
+        "recall": 1.0,
+        "tp": 3,
+        "fn": 0
+      },
+      "scenario_4_service_abuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0
+      }
+    }
+  },
+  "baseline": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 12
+  }
+}

@@ -1,29 +1,55 @@
-version: "1.0"
-
-# Operating points (to be calibrated in Phase 2)
-anomaly_threshold: 75.0
+version: "2.2"
+anomaly_threshold: 45.0
+drift_threshold: 1.0
+max_profile_staleness_days: 14
+drift_comparison_history_count: 5
+drift_half_life_days: 7
 confidence_floor: 0.6
-drift_weight: 1.0
+containment_threshold: 85.0
+contribution_scale_max: 50.0
 
-# Feature configurations
+laplace_alpha: 1.0
+max_calendar_adjustment: 0.3
+max_replay_window_days: 30
+max_profile_build_block_days: 30
+recent_drift_window_days: 3
+cohort_gate_window_days: 7
+age_jitter_hours: 4
+
+decay_lambdas:
+  staleness: 0.1
+  drift: 0.05
+
+cohort_gating_constants:
+  min_cohort_size: 10
+  min_clean_observation_count: 5
+  max_changed_fraction: 0.2
+
+gap_windows:
+  gap_correlation_window: 60
+  investigation_context_window: 14
+
 features:
   login_hour_rarity:
     weight: 1.0
   geolocation_rarity:
-    weight: 1.5
+    weight: 2.0
   endpoint_set_rarity:
-    weight: 1.2
+    weight: 2.0
   process_name_rarity:
-    weight: 1.0
+    weight: 3.0
   command_line_embedding_similarity:
     weight: 2.0
+  drift_alert:
+    weight: 100.0
   service_account_execution_frequency_deviation:
-    weight: 1.5
+    weight: 5.0
+  total_volume_delta:
+    weight: 1.0
 
-# Cohort configuration
-cohort_minimums:
-  min_events_for_entity_baseline: 100
-  min_entities_for_cohort: 5
-
-suppressed_decision_aging_days: 7
-replay_window_limits_days: 30
+drift_weights:
+  login_hour: 5.0
+  geolocation: 5.0
+  endpoint_set: 5.0
+  process_name: 20.0
+  embedding: 40.0
