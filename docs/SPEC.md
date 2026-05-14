@@ -7,28 +7,6 @@
 
 ---
 
-## 0. Changelog from v1
-
-▲ Phase ordering reversed: Phase 1 is now Core Detection, Phase 2 is Calibration Gate. Calibration cannot precede the system that gets calibrated.
-▲ Active-alert profile-build blocking and basic cohort shrinkage moved from Phase 4 to Phase 1 as correctness invariants required for valid calibration.
-▲ §8.4: "temperature=0 for determinism" replaced with "temperature=0 to reduce output variance"; lineage is the single authoritative record, not provider determinism.
-▲ §6.4: Profile version delta metric specified (per-feature KL-divergence with Laplace smoothing for categorical features, cosine distance for embeddings, feature-class-weighted sum).
-▲ §4.3: pgvector column dimensionality migration requirement documented.
-▲ §5.5: Maximum profile-build-block duration added, with separate supervisor escalation.
-▲ §6.3: Cohort fallback chain terminus operationalized.
-▲ §7.3: "Simultaneously novel behavior" defined as raw_score crossings within cohort_gate_window_days.
-▲ §8: ExplanationRecord Pydantic schema specified as Phase 0 deliverable; pinned non-alias LLM model ID required; empirical determinism check required in Phase 0.
-▲ §11: Suppressed-decisions view added; aging escalation jitter; minimum analyst workflow transitions specified.
-▲ §4.4: v1 deployment topology compressed to 4 containers (logical service boundaries preserved as code modules).
-▲ §5.6: embedding_model_id, embedding_model_version, embedding_dimensionality required fields on every profile artifact; mismatch triggers profile rebuild and pgvector migration.
-▲ §5.7: Staleness + active-alert interaction resolved via mandatory escalation queue.
-▲ §9.2: Audit immutability mechanism specified (Postgres INSERT-only role + hash chaining); honest scoping documented.
-▲ §10.2: Synthetic generator specified as Phase 0 deliverable with production-shape requirements; ground-truth labels in side table.
-▲ §6.2: Initial six-feature scoring contract specified.
-▲ §13: Schedule cut priority documented.
-
----
-
 ## 1. Problem Statement
 
 Most enterprise threat detection is reactive. It depends on signatures, CTI feeds, and pre-written rules to recognize known-bad patterns, leaving organizations blind to novel attacks, insider threats, and credential misuse that doesn't match anything in the rulebook. Existing UEBA products attempt behavioral baselining but rely on hand-tuned statistical features and surface alerts without meaningful explanations, forcing SOC analysts to reverse-engineer why the system flagged something.
