@@ -2,10 +2,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
+import logging
+
+logger = logging.getLogger(__name__)
+
 try:
     from pgvector.sqlalchemy import Vector
 except ImportError:
     Vector = None
+    logger.warning("pgvector not found. Falling back to SQLite/JSON storage for vectors. Phase 3 semantic search may fail.")
 
 from core.settings import settings
 

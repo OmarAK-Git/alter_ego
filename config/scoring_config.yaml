@@ -1,6 +1,10 @@
 version: "2.2"
 anomaly_threshold: 45.0
-drift_threshold: 1.0
+# drift_threshold works with drift_alert.weight via proportional formula:
+#   score_drift = min(contribution_scale_max, drift_accum / drift_threshold * weight)
+# At drift_threshold=5.0, weight=100 → full weight only at extreme drift (5.0).
+# WARNING: setting drift_threshold < 1.0 with weight=100 creates score storms.
+drift_threshold: 5.0
 max_profile_staleness_days: 14
 drift_comparison_history_count: 5
 drift_half_life_days: 7

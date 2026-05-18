@@ -111,3 +111,12 @@ class ScoringConfigModel(Base):
     timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
     change_reason = Column(String, nullable=False)
     config_data = Column(JSONB, nullable=False)
+
+class AlertWorkflowStateModel(Base):
+    __tablename__ = "alert_workflow_state"
+    decision_id = Column(String, primary_key=True)
+    entity_id = Column(String, nullable=False, index=True)
+    state = Column(String, nullable=False, default="new") # new, acknowledged, investigating, cleared
+    assignee = Column(String, nullable=True)
+    clear_reason = Column(String, nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

@@ -45,6 +45,8 @@ def test_decision_record_is_insert_only(db_session):
         scoring_config_version="v1",
         contributions=[],
         is_anomaly=False,
+        cohort_used="terminus",
+        cohort_unsupported=True,
         flags=[]
     )
     

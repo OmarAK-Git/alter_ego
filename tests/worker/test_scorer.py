@@ -106,14 +106,30 @@ def test_scorer_ground_truth_isolation():
                 assert alias.name != "EvalGroundTruth", "Scorer must not import EvalGroundTruth"
 
 def test_confidence_not_hardcoded(db_session):
-    """Decision confidence must reflect per-feature confidences, not be hardcoded to 1.0."""
+    """Decision confidence must be a weighted average of per-feature confidences.
+    
+    When all contributions are zero (benign event), weight_sum=0 and confidence=1.0
+    by convention (no evidence of anomaly → full confidence in normality).
+    This test verifies confidence is NOT hardcoded by using an anomalous event
+    that produces non-zero contributions, then checking confidence is < 1.0
+    (because the mixed confidence_weights of 0.9/0.7/0.6/0.8 produce a value < 1).
+    """
     from core.schemas.events import ResolvedEvent, AuthEventData
     from core.schemas.profiles import ProfileArtifact
     from worker.scorer import score_event
     from datetime import datetime
 
-    ts = datetime(2026, 1, 1, 12, 0)
-    event_data = AuthEventData(action="login", ip_address="1.1.1.1", endpoint_id="ep1")
+    profile_end = datetime(2026, 1, 10, 12, 0)
+    ts = datetime(2026, 1, 12, 12, 0)   # familiar hour (noon), within staleness window
+    # Use dict event_data to set process_name explicitly
+    event_data = {
+        "action": "login",
+        "ip_address": "1.1.1.1",
+        "endpoint_id": "ep1",
+        "geolocation": "US",
+        "process_name": "never_seen.exe",    # completely absent from profile
+        "command_line": "",
+    }
     resolved_event = ResolvedEvent(
         event_id="evt_conf_test",
         timestamp=ts,
@@ -123,31 +139,47 @@ def test_confidence_not_hardcoded(db_session):
         entity_type="human",
         resolution_confidence=1.0,
         simulation_partition="production",
-        event_data=event_data
+        event_data=event_data,
     )
 
-    # Use terminus-level cohort data so the confidence weights will be 0.5 (not 1.0)
+    # Profile has 50 known process names — 'never_seen.exe' is absent.
+    # With vocab=1000 and total=50: rarity = -log2((0+1)/(50+1000)) ≈ 10.04 > baseline 10.
+    known_procs = {f"proc_{i}.exe": 1 for i in range(50)}
     profile = ProfileArtifact(
         entity_id="u1",
         entity_type="human",
         profile_version="prof_conf",
-        created_at=ts,
-        data_window_start=ts,
-        data_window_end=ts,
+        created_at=profile_end,
+        data_window_start=datetime(2026, 1, 1, 0, 0),
+        data_window_end=profile_end,
         features={
             "role": "Engineer",
-            "login_hours": {"12": 1},  # Only 1 event -> falls below 10 threshold
-            "endpoints": {"ep1": 1},
-            "cohort_data": {"terminus": {"login_hours": {"12": 5}, "endpoints": {"ep1": 5}}}
+            "login_hours": {"12": 50},
+            "endpoints": {"ep1": 50},
+            "geolocations": {"US": 50},
+            "process_names": known_procs,
+            "cohort_data": {},
         },
         embedding_model_id="nomic-embed-text",
         embedding_model_version="1.0",
-        embedding_dimensionality=768
+        embedding_dimensionality=768,
     )
 
     config = {"features": {}, "anomaly_threshold": 75.0, "version": "1.0"}
     decision = score_event(db_session, resolved_event, profile, config)
-    
-    # With terminus-level data, confidence_weight per feature should be 0.5
-    # So decision confidence should NOT be 1.0
-    assert decision.confidence < 1.0, f"Expected confidence < 1.0 for terminus fallback, got {decision.confidence}"
+
+    # Non-zero contributions exist: process_name 'never_seen.exe' is absent from
+    # a profile with 50 known entries; rarity (-log2(1/1050)) ≈ 10.04 > baseline 10
+    non_zero = [c for c in decision.contributions if c.contribution_score > 0]
+    assert non_zero, (
+        f"Expected at least one non-zero contribution for anomalous event. "
+        f"Contributions: {[(c.feature_name, c.contribution_score, c.raw_value) for c in decision.contributions]}"
+    )
+
+    # Confidence must be a weighted average, NOT hardcoded to 1.0
+    assert decision.confidence < 1.0, (
+        f"Expected confidence < 1.0 for anomalous event with mixed weights, got {decision.confidence}"
+    )
+    # Must be in valid range
+    assert 0.0 <= decision.confidence <= 1.0
+

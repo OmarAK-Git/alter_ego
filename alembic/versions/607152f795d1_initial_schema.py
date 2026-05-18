@@ -22,8 +22,10 @@ from sqlalchemy.dialects import postgresql
 import pgvector.sqlalchemy
 
 def upgrade() -> None:
-    # Ensure pgvector extension is available
-    op.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+    # Ensure pgvector extension is available only on postgres
+    bind = op.get_bind()
+    if bind.dialect.name == 'postgresql':
+        op.execute("CREATE EXTENSION IF NOT EXISTS vector;")
 
     op.create_table('events',
         sa.Column('event_id', sa.String(), nullable=False),

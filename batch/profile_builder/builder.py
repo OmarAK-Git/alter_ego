@@ -66,9 +66,15 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
     half_life = config.get("drift_half_life_days", 7.0)
     laplace_alpha = config.get("laplace_alpha", 1.0)
 
-    temp_file = Path(f"temp_events_{uuid.uuid4()}.jsonl")
+    # Fix #7 — initialize temp file paths before try block to prevent NameError in finally
+    temp_file_hist: Path | None = None
+    temp_file_recent: Path | None = None
     try:
-        blocked_entities_stmt = select(ContainmentQueueModel.entity_id).where(ContainmentQueueModel.status == "pending")
+        # Check for active alerts in the new workflow state model
+        from core.models import AlertWorkflowStateModel
+        blocked_entities_stmt = select(AlertWorkflowStateModel.entity_id).where(
+            AlertWorkflowStateModel.state.in_(["new", "acknowledged", "investigating"])
+        )
         blocked_entities = set(db_session.execute(blocked_entities_stmt).scalars().all())
 
         window_days = config.get("max_replay_window_days", 30)
@@ -131,16 +137,24 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         con = duckdb.connect()
         t2 = time.time()
         
-        # We only need cohorts from the historical window
-        parent_cohort_query = f"SELECT entity_type, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') GROUP BY entity_type"
+        # Fix #6 — exclude blocked entities from cohort histograms so that an
+        # attacker's lateral-movement events cannot inflate cohort baselines and
+        # suppress alerts for complicit/adjacent accounts.
+        blocked_filter = ""
+        if blocked_entities:
+            escaped = ",".join(f"'{e}'" for e in blocked_entities)
+            blocked_filter = f"WHERE entity_id NOT IN ({escaped})"
+
+        parent_cohort_query = f"SELECT entity_type, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') {blocked_filter} GROUP BY entity_type"
         parent_res = con.execute(parent_cohort_query).fetchall()
         parent_cohorts = {row[0]: {"login_hours": parse_duckdb_histogram(row[1]), "endpoints": parse_duckdb_histogram(row[2]), "process_names": parse_duckdb_histogram(row[3])} for row in parent_res}
-        
-        primary_cohort_query = f"SELECT role, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') GROUP BY role"
+
+        blocked_filter_role = blocked_filter.replace("WHERE", "WHERE") if blocked_filter else ""
+        primary_cohort_query = f"SELECT role, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') {blocked_filter} GROUP BY role"
         primary_res = con.execute(primary_cohort_query).fetchall()
         primary_cohorts = {row[0]: {"login_hours": parse_duckdb_histogram(row[1]), "endpoints": parse_duckdb_histogram(row[2]), "process_names": parse_duckdb_histogram(row[3])} for row in primary_res}
-        
-        global_res = con.execute(f"SELECT histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}')").fetchone()
+
+        global_res = con.execute(f"SELECT histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') {blocked_filter}").fetchone()
         global_cohort = {"login_hours": parse_duckdb_histogram(global_res[0]), "endpoints": parse_duckdb_histogram(global_res[1]), "process_names": parse_duckdb_histogram(global_res[2])} if global_res else {"login_hours": {}, "endpoints": {}, "process_names": {}}
         
         # HISTORICAL PROFILE AGGREGATION
@@ -243,7 +257,16 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         for rec in raw_drift_records:
             cohort_drifts.setdefault(rec["role"], []).append(rec["raw_drift"])
         
-        cohort_medians = {r: median(drifts) for r, drifts in cohort_drifts.items()}
+        # Fix #4 — MIN_NORM_COHORT guard: single-entity roles get cohort_medians[role]
+        # = their own drift, making norm_drift = 0 always — permanently disabling drift
+        # detection for privileged solo accounts. Fall back to global cross-role median.
+        MIN_NORM_COHORT = 3
+        all_drifts_flat = [d for drifts in cohort_drifts.values() for d in drifts]
+        global_drift_median = median(all_drifts_flat) if all_drifts_flat else 0.0
+        cohort_medians = {
+            r: (median(drifts) if len(drifts) >= MIN_NORM_COHORT else global_drift_median)
+            for r, drifts in cohort_drifts.items()
+        }
 
         # Phase 3: Update Accumulators and Persist
         for rec in raw_drift_records:
@@ -336,8 +359,9 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         return count
         
     finally:
+        # Fix #7 — null-initialized above; safe even if exception raised before assignment
+        for p in [temp_file_hist, temp_file_recent]:
+            if p is not None and p.exists():
+                p.unlink()
         if db is None:
             db_session.close()
-        for p in [temp_file_hist, temp_file_recent]:
-            if 'p' in locals() and p.exists():
-                p.unlink()

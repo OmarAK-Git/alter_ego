@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALTER_EGO Analyst Console</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <h1>ALTER_EGO</h1>
+                <span class="badge">Phase 3</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active" data-view="triage">Triage Queue</a></li>
+                <li><a href="#" data-view="suppressed">Suppressed Decisions</a></li>
+                <li><a href="#" data-view="replay">Replay Runner</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Triage View -->
+            <section id="view-triage" class="view active">
+                <header>
+                    <h2>Active Alerts</h2>
+                    <div class="actions">
+                        <button id="refresh-alerts" class="btn secondary">Refresh</button>
+                    </div>
+                </header>
+                <div class="table-container">
+                    <table id="alerts-table">
+                        <thead>
+                            <tr>
+                                <th>Entity</th>
+                                <th>Timestamp</th>
+                                <th>Score</th>
+                                <th>Confidence</th>
+                                <th>State</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alerts-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Detail View (Split Pane) -->
+            <section id="view-detail" class="view">
+                <header>
+                    <h2>Alert Investigation</h2>
+                    <div class="actions">
+                        <button id="back-to-triage" class="btn secondary">Back</button>
+                        <button id="btn-acknowledge" class="btn primary">Acknowledge</button>
+                        <button id="btn-investigate" class="btn primary">Investigate</button>
+                        <button id="btn-contain" class="btn warning">Contain</button>
+                        <button id="btn-clear" class="btn success">Clear</button>
+                    </div>
+                </header>
+                <div class="split-pane">
+                    <!-- Left: Evidence & Context -->
+                    <div class="pane-left">
+                        <div class="card">
+                            <h3>Score Overview</h3>
+                            <div class="metric-row">
+                                <div class="metric">
+                                    <span class="label">Raw Score</span>
+                                    <span class="value" id="detail-score">--</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="label">Confidence</span>
+                                    <span class="value" id="detail-confidence">--</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="label">State</span>
+                                    <span class="value badge" id="detail-state">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <h3>Feature Contributions</h3>
+                            <ul id="detail-contributions" class="contribution-list">
+                                <!-- Populated by JS -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Right: Explanation & Counterfactuals -->
+                    <div class="pane-right">
+                        <div class="card">
+                            <div class="card-header-flex">
+                                <h3>LLM Explanation</h3>
+                                <button id="btn-generate-explanation" class="btn secondary small">Generate</button>
+                            </div>
+                            <div id="explanation-content" class="explanation-box">
+                                <p class="text-muted">No explanation generated yet.</p>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <h3>Top Counterfactuals</h3>
+                            <ul id="detail-counterfactuals" class="cf-list">
+                                <li class="text-muted">Not available until explanation is generated.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Suppressed View -->
+            <section id="view-suppressed" class="view">
+                <header>
+                    <h2>Suppressed Decisions (Low Confidence)</h2>
+                </header>
+                <div class="table-container">
+                    <table id="suppressed-table">
+                        <thead>
+                            <tr>
+                                <th>Entity</th>
+                                <th>Timestamp</th>
+                                <th>Score</th>
+                                <th>Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody id="suppressed-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- Replay View -->
+            <section id="view-replay" class="view">
+                <header>
+                    <h2>Replay Runner</h2>
+                </header>
+                <div class="card">
+                    <p class="text-muted">Replay runner UI pending implementation.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Clear Alert Modal -->
+    <div id="clear-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Clear Alert</h3>
+            <p>Please provide a reason for clearing this alert.</p>
+            <textarea id="clear-reason-input" rows="4" placeholder="Enter reason..."></textarea>
+            <div class="modal-actions">
+                <button id="btn-cancel-clear" class="btn secondary">Cancel</button>
+                <button id="btn-confirm-clear" class="btn success">Confirm Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/static/app.js?v=3"></script>
+</body>
+</html>

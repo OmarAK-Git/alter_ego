@@ -6,7 +6,7 @@ from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
 from core.database import Base
-from core.models import ResolvedEventModel, ProfileArtifactModel, ContainmentQueueModel
+from core.models import ResolvedEventModel, ProfileArtifactModel, AlertWorkflowStateModel
 from batch.profile_builder.builder import build_profiles
 from worker.profile_store import ProfileStore
 
@@ -45,9 +45,9 @@ def test_shadow_profile_logic(db_session):
     
     print(f"P1: version={p1.profile_version}, promoted_at={p1.promoted_at}, is_shadow={p1.is_shadow}")
     
-    # 2. Block entity
-    db_session.add(ContainmentQueueModel(
-        decision_id="d1", entity_id=entity_id, action="block", status="pending"
+    # 2. Block entity via the Phase 3 workflow state (replaces ContainmentQueue gating)
+    db_session.add(AlertWorkflowStateModel(
+        decision_id="d1", entity_id=entity_id, state="investigating"
     ))
     db_session.commit()
     
