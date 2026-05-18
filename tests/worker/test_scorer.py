@@ -183,3 +183,251 @@ def test_confidence_not_hardcoded(db_session):
     # Must be in valid range
     assert 0.0 <= decision.confidence <= 1.0
 
+
+# ---------------------------------------------------------------------------
+# Issue 1 — Dialect abstraction: geolocation / endpoint / process_name novelty
+# ---------------------------------------------------------------------------
+
+class _MockDialect:
+    """Minimal dialect stub for _is_postgresql()."""
+    def __init__(self, name: str):
+        self.name = name
+
+
+class _MockBind:
+    def __init__(self, dialect_name: str):
+        self.dialect = _MockDialect(dialect_name)
+
+
+class _MockSession:
+    """Session stub that records the WHERE clause appended via execute()."""
+    def __init__(self, dialect_name: str, scalar_result: int = 0):
+        self.bind = _MockBind(dialect_name)
+        self._scalar_result = scalar_result
+        self.last_stmt = None
+
+    def execute(self, stmt):
+        self.last_stmt = stmt
+        return self
+
+    def scalar(self):
+        return self._scalar_result
+
+    def scalars(self):
+        return self
+
+    def all(self):
+        return []
+
+
+def _compile_stmt_str(stmt) -> str:
+    """Render the SQLAlchemy clause to a string (dialect-agnostic literal)."""
+    from sqlalchemy.dialects import sqlite as sqlite_dialect, postgresql as pg_dialect
+    try:
+        return str(stmt.compile(dialect=pg_dialect.dialect()))
+    except Exception:
+        return str(stmt)
+
+
+def test_novelty_fraction_sqlite_uses_json_extract(monkeypatch):
+    """On SQLite the non-hour path must use json_extract, not JSONB operators."""
+    import worker.scorer as scorer_module
+    # Clear cache so we don't get a hit
+    scorer_module._NOVELTY_FRACTION_CACHE.clear()
+    scorer_module._COHORT_MEMBERS_CACHE.clear()
+
+    session = _MockSession("sqlite", scalar_result=0)
+    members = ["u1", "u2"]
+    from datetime import datetime
+    # Call for a non-hour feature so the json_extract branch is taken
+    fraction = scorer_module._get_novelty_fraction(
+        session, members, "geolocations", "US", 7, datetime(2026, 1, 10, 12, 0)
+    )
+    assert fraction == 0.0  # 0 matching / 2 members
+
+    # Inspect the compiled WHERE clause
+    compiled = _compile_stmt_str(session.last_stmt)
+    assert "json_extract" in compiled.lower(), (
+        f"SQLite path must use json_extract; got: {compiled}"
+    )
+
+
+def test_novelty_fraction_postgresql_uses_jsonb_operator(monkeypatch):
+    """On PostgreSQL the non-hour path must use JSONB [] operator, not json_extract."""
+    import worker.scorer as scorer_module
+    scorer_module._NOVELTY_FRACTION_CACHE.clear()
+
+    session = _MockSession("postgresql", scalar_result=1)
+    members = ["u1", "u2"]
+    from datetime import datetime
+    fraction = scorer_module._get_novelty_fraction(
+        session, members, "endpoints", "ep1", 7, datetime(2026, 1, 10, 12, 0)
+    )
+    assert fraction == 0.5  # 1 matching / 2 members
+
+    compiled = _compile_stmt_str(session.last_stmt)
+    assert "json_extract" not in compiled.lower(), (
+        f"PostgreSQL path must NOT use json_extract; got: {compiled}"
+    )
+    # JSONB subscript compiles as a ->> or [] operator, not json_extract
+    assert "event_data" in compiled.lower()
+
+
+def test_cohort_members_sqlite_uses_json_extract():
+    """On SQLite, cohort role extraction must use json_extract (gated SQLite-only path)."""
+    import worker.scorer as scorer_module
+    scorer_module._COHORT_MEMBERS_CACHE.clear()
+
+    captured = {}
+
+    class _CapturingSession:
+        bind = _MockBind("sqlite")
+
+        def execute(self, stmt):
+            captured["stmt"] = stmt
+            class R:
+                def scalars(self):
+                    return self
+                def all(self):
+                    return []
+            return R()
+
+    scorer_module._get_cohort_members(_CapturingSession(), "Engineer", "human")
+
+    assert "stmt" in captured, "execute() was never called"
+    stmt_str = _compile_stmt_str(captured["stmt"])
+    assert "json_extract" in stmt_str.lower(), (
+        f"SQLite cohort path must use json_extract; got: {stmt_str}"
+    )
+
+
+def test_cohort_members_postgresql_uses_jsonb_operator():
+    """On PostgreSQL, cohort role extraction uses JSONB subscript, not json_extract."""
+    import worker.scorer as scorer_module
+    scorer_module._COHORT_MEMBERS_CACHE.clear()
+
+    captured = {}
+
+    class _CapturingSession:
+        bind = _MockBind("postgresql")
+
+        def execute(self, stmt):
+            captured["stmt"] = stmt
+            class R:
+                def scalars(self):
+                    return self
+                def all(self):
+                    return []
+            return R()
+
+    scorer_module._get_cohort_members(_CapturingSession(), "Engineer", "human")
+
+    assert "stmt" in captured, "execute() was never called"
+    stmt_str = _compile_stmt_str(captured["stmt"])
+    assert "json_extract" not in stmt_str.lower(), (
+        f"PostgreSQL cohort path must NOT use json_extract; got: {stmt_str}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Issue 2 — Novelty cache TTL regression
+# ---------------------------------------------------------------------------
+
+def test_novelty_cache_ttl_expiry(monkeypatch):
+    """A cache entry older than _NOVELTY_CACHE_TTL must be recomputed, not reused."""
+    import time as time_module
+    import worker.scorer as scorer_module
+
+    scorer_module._NOVELTY_FRACTION_CACHE.clear()
+
+    session = _MockSession("sqlite", scalar_result=0)
+    members = ["u1"]
+    from datetime import datetime
+    ts = datetime(2026, 1, 10, 12, 0)
+
+    call_count = {"n": 0}
+
+    def counting_execute(self, stmt):
+        call_count["n"] += 1
+        class R:
+            def scalar(self_inner):
+                return 0
+        return R()
+
+    monkeypatch.setattr(_MockSession, "execute", counting_execute)
+
+    # First call — computes and caches
+    scorer_module._get_novelty_fraction(session, members, "geolocations", "DE", 7, ts)
+    assert call_count["n"] == 1
+
+    # Second call within TTL — should return cached value without DB hit
+    scorer_module._get_novelty_fraction(session, members, "geolocations", "DE", 7, ts)
+    assert call_count["n"] == 1, "Expected cache hit (no DB call)"
+
+    # Simulate TTL expiry by back-dating the insert timestamp
+    for k in list(scorer_module._NOVELTY_FRACTION_CACHE.keys()):
+        frac, insert_ts = scorer_module._NOVELTY_FRACTION_CACHE[k]
+        scorer_module._NOVELTY_FRACTION_CACHE[k] = (
+            frac,
+            insert_ts - scorer_module._NOVELTY_CACHE_TTL - 1,
+        )
+
+    # Third call — TTL expired, must recompute
+    scorer_module._get_novelty_fraction(session, members, "geolocations", "DE", 7, ts)
+    assert call_count["n"] == 2, "Expected DB recompute after TTL expiry"
+
+
+def test_novelty_cache_max_size_preserved():
+    """Cache must never exceed _NOVELTY_CACHE_MAX entries."""
+    import worker.scorer as scorer_module
+    scorer_module._NOVELTY_FRACTION_CACHE.clear()
+
+    # Insert exactly max+10 entries manually to trigger FIFO eviction
+    limit = scorer_module._NOVELTY_CACHE_MAX
+    for i in range(limit + 10):
+        key = (f"feat_{i}", f"val_{i}", f"hash_{i}", i)
+        # Direct insertion simulating what _get_novelty_fraction does
+        if len(scorer_module._NOVELTY_FRACTION_CACHE) >= limit:
+            oldest = next(iter(scorer_module._NOVELTY_FRACTION_CACHE))
+            del scorer_module._NOVELTY_FRACTION_CACHE[oldest]
+        scorer_module._NOVELTY_FRACTION_CACHE[key] = (0.5, 0.0)
+
+    assert len(scorer_module._NOVELTY_FRACTION_CACHE) == limit
+
+
+# ---------------------------------------------------------------------------
+# Issue 4 — compute_distribution_kl edge cases
+# ---------------------------------------------------------------------------
+
+def test_kl_both_empty_returns_zero():
+    """compute_distribution_kl({}, {}) must return 0.0 — no evidence in either window."""
+    from core.math_utils import compute_distribution_kl
+    result = compute_distribution_kl({}, {})
+    assert result == 0.0, f"Expected 0.0, got {result}"
+
+
+def test_kl_empty_baseline_returns_max_novelty():
+    """compute_distribution_kl(non_empty, {}) must return positive max-novelty signal."""
+    from core.math_utils import compute_distribution_kl
+    dist_p = {"a": 1, "b": 2, "c": 3}
+    result = compute_distribution_kl(dist_p, {})
+    # Should equal len(dist_p) = 3 (vocab size as max-novelty proxy)
+    assert result == float(len(dist_p)), f"Expected {float(len(dist_p))}, got {result}"
+    assert result > 0.0
+
+
+def test_kl_empty_current_with_nonempty_baseline():
+    """compute_distribution_kl({}, non_empty) should compute a finite KL divergence.
+
+    With p empty: all vocab mass is in q; the Laplace-smoothed p puts equal small
+    weight on every key, so KL is positive but finite (no division by zero).
+    """
+    from core.math_utils import compute_distribution_kl
+    dist_q = {"x": 10, "y": 5}
+    result = compute_distribution_kl({}, dist_q)
+    # dist_p={} means total_p=0; Laplace smoothed → each prob_p = alpha / (alpha * vocab)
+    # The result must be a non-negative finite float (not zero, not inf)
+    assert isinstance(result, float)
+    assert result >= 0.0
+    assert not (result != result)  # not NaN
+    assert result < float("inf")

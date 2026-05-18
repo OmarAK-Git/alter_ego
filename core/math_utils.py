@@ -18,8 +18,13 @@ def compute_distribution_kl(dist_p: Dict[str, int], dist_q: Dict[str, int], alph
     identical to the known one, zeroing drift at the most critical inflection point.
     """
     if not dist_q:
-        # No historical baseline — signal maximal novelty proportional to vocabulary
-        return float(max(1, len(dist_p)))
+        # Both distributions empty: no evidence in either window → zero divergence.
+        if not dist_p:
+            return 0.0
+        # Non-empty current vs. empty historical baseline — signal maximal novelty
+        # proportional to vocabulary size so callers see the strongest possible
+        # drift signal at first-profile promotion.
+        return float(len(dist_p))
 
     # Build common vocabulary
     vocab = set(dist_p.keys()).union(set(dist_q.keys()))

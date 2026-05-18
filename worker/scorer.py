@@ -7,12 +7,12 @@ import numpy as np
 from datetime import datetime, timedelta
 from functools import lru_cache
 from sqlalchemy.orm import Session
-from sqlalchemy import select, desc, and_, func, extract, cast, Integer
+from sqlalchemy import select, desc, and_, func, extract, cast, Integer, text
 from pathlib import Path
 
 import yaml
 
-from core.database import SessionLocal
+from core.database import Base
 from core.models import ResolvedEventModel, ProfileArtifactModel, DecisionRecordModel
 from core.schemas.events import ResolvedEvent, Event
 from core.schemas.profiles import ProfileArtifact
@@ -33,10 +33,13 @@ _COHORT_CACHE_TTL = 300  # seconds
 # {(role, entity_type): (members_list, monotonic_ts)}
 _COHORT_MEMBERS_CACHE: dict[tuple, tuple[list, float]] = {}
 
-# Fix #2 cont. — novelty fraction cache: bounded FIFO at 2048 entries,
-# key uses sha256 of sorted members rather than a raw tuple (avoids O(N²) key).
-_NOVELTY_FRACTION_CACHE: dict[tuple, float] = {}
+# Fix #2 — novelty fraction cache: bounded FIFO at 2048 entries + per-entry TTL.
+# Each value is (fraction: float, insert_ts: float) so stale entries are skipped
+# on read. Key uses sha256 of sorted members rather than a raw tuple (avoids
+# O(N²) key).
+_NOVELTY_FRACTION_CACHE: dict[tuple, tuple[float, float]] = {}
 _NOVELTY_CACHE_MAX = 2048
+_NOVELTY_CACHE_TTL = 300  # seconds — stale entries are recomputed on next read
 
 # Feature to DB field mapping for cohort novelty check
 FEATURE_FIELD_MAP = {
@@ -52,8 +55,19 @@ def _members_hash(members: list[str]) -> str:
     return hashlib.sha256(",".join(sorted(members)).encode()).hexdigest()
 
 
+def _is_postgresql(db: Session) -> bool:
+    """Return True when the bound engine is PostgreSQL."""
+    return db.bind.dialect.name == "postgresql"
+
+
 def _get_cohort_members(db: Session, role: str, entity_type: str) -> list[str]:
-    """Returns entity IDs in a cohort, with TTL-bounded caching."""
+    """Returns entity IDs in a cohort, with TTL-bounded caching.
+
+    Role is extracted from the ``features`` JSONB column using a
+    dialect-agnostic approach:
+      - PostgreSQL: ``features['role'].as_string()``  (JSONB subscript, no json_extract)
+      - SQLite:     ``json_extract(features, '$.role')``  (explicitly gated)
+    """
     cache_key = (role, entity_type)
     entry = _COHORT_MEMBERS_CACHE.get(cache_key)
     if entry is not None:
@@ -61,13 +75,25 @@ def _get_cohort_members(db: Session, role: str, entity_type: str) -> list[str]:
         if time.monotonic() - ts < _COHORT_CACHE_TTL:
             return members
 
-    stmt = select(ProfileArtifactModel.entity_id).where(
-        and_(
-            ProfileArtifactModel.entity_type == entity_type,
-            func.json_extract(ProfileArtifactModel.features, "$.role") == role,
-            ProfileArtifactModel.promoted_at != None,
-        )
-    ).distinct()
+    if _is_postgresql(db):
+        # PostgreSQL: use native JSONB subscript operator — no json_extract
+        stmt = select(ProfileArtifactModel.entity_id).where(
+            and_(
+                ProfileArtifactModel.entity_type == entity_type,
+                ProfileArtifactModel.features["role"].as_string() == role,
+                ProfileArtifactModel.promoted_at != None,
+            )
+        ).distinct()
+    else:
+        # SQLite path — json_extract is safe here (explicitly SQLite-only branch)
+        stmt = select(ProfileArtifactModel.entity_id).where(
+            and_(
+                ProfileArtifactModel.entity_type == entity_type,
+                func.json_extract(ProfileArtifactModel.features, "$.role") == role,
+                ProfileArtifactModel.promoted_at != None,
+            )
+        ).distinct()
+
     members = list(db.execute(stmt).scalars().all())
     _COHORT_MEMBERS_CACHE[cache_key] = (members, time.monotonic())
     return members
@@ -81,7 +107,13 @@ def _get_novelty_fraction(
     window_days: int,
     current_ts: datetime,
 ) -> float:
-    """Fraction of the cohort that exhibited this value in the window."""
+    """Fraction of the cohort that exhibited this value in the window.
+
+    For non-hour fields (geolocation, endpoint_id, process_name) the lookup
+    into ``event_data`` is dialect-dispatched:
+      - PostgreSQL: ``event_data['field'].as_string() = value``
+      - SQLite:     ``json_extract(event_data, '$.field') = value``
+    """
     if not members:
         return 0.0
 
@@ -91,8 +123,13 @@ def _get_novelty_fraction(
     # Fix #2 — use sha256 digest as key instead of raw sorted tuple
     members_key = _members_hash(members)
     cache_key = (feature_name, value, members_key, window_start)
-    if cache_key in _NOVELTY_FRACTION_CACHE:
-        return _NOVELTY_FRACTION_CACHE[cache_key]
+
+    cached = _NOVELTY_FRACTION_CACHE.get(cache_key)
+    if cached is not None:
+        fraction, insert_ts = cached
+        if time.monotonic() - insert_ts < _NOVELTY_CACHE_TTL:
+            return fraction
+        # TTL expired — fall through and recompute
 
     field = FEATURE_FIELD_MAP.get(feature_name)
     if not field:
@@ -105,12 +142,19 @@ def _get_novelty_fraction(
         )
     )
 
-    # Fix #1 — dialect-agnostic hour extraction (SQLite + PostgreSQL)
+    # Dialect-agnostic field extraction
     if field == "hour":
+        # extract("hour", ...) works on both SQLite (via strftime) and PostgreSQL
         stmt = stmt.where(
             cast(extract("hour", ResolvedEventModel.timestamp), Integer) == int(value)
         )
+    elif _is_postgresql(db):
+        # PostgreSQL JSONB subscript operator — no json_extract
+        stmt = stmt.where(
+            ResolvedEventModel.event_data[field].as_string() == value
+        )
     else:
+        # SQLite path — json_extract is explicitly gated here
         stmt = stmt.where(
             func.json_extract(ResolvedEventModel.event_data, f"$.{field}") == value
         )
@@ -121,11 +165,11 @@ def _get_novelty_fraction(
         f"Novelty fraction {feature_name}={value}: {count}/{len(members)} = {fraction:.3f}"
     )
 
-    # FIFO eviction when cache is full
+    # FIFO eviction when cache is full (preserves max size = _NOVELTY_CACHE_MAX)
     if len(_NOVELTY_FRACTION_CACHE) >= _NOVELTY_CACHE_MAX:
         oldest_key = next(iter(_NOVELTY_FRACTION_CACHE))
         del _NOVELTY_FRACTION_CACHE[oldest_key]
-    _NOVELTY_FRACTION_CACHE[cache_key] = fraction
+    _NOVELTY_FRACTION_CACHE[cache_key] = (fraction, time.monotonic())
     return fraction
 
 
@@ -301,7 +345,14 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
     v_delta = 0.0
     flags.append("volume_delta_suppressed_no_current_count")
 
-    # Fix #5 — proportional drift scoring (replaces binary threshold gate)
+    # Fix #5 — proportional drift scoring (replaces binary threshold gate).
+    # Intended operating point (threshold=5, weight=100, max_contrib=50):
+    #   score_drift = min(50, drift_accum / 5 * 100)
+    #   Contribution cap (50) is reached at drift_accum = 2.5
+    #   anomaly_threshold (45) is crossed by drift alone at drift_accum ≈ 2.25
+    # This is deliberate: a sustained high-drift entity trips the alarm at ~2.25
+    # accumulated drift units, well before the 5-unit "full" threshold. The cap
+    # and threshold are intentionally asymmetric to give drift early-warning power.
     drift_accum = profile.features.get("cumulative_drift", 0.0)
     drift_threshold = config.get("drift_threshold", 5.0)
     weight_drift = features_config.get("drift_alert", {}).get("weight", 100.0)

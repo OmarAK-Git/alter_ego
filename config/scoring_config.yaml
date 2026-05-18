@@ -1,9 +1,16 @@
 version: "2.2"
 anomaly_threshold: 45.0
-# drift_threshold works with drift_alert.weight via proportional formula:
+# Drift scoring formula (proportional, capped):
 #   score_drift = min(contribution_scale_max, drift_accum / drift_threshold * weight)
-# At drift_threshold=5.0, weight=100 → full weight only at extreme drift (5.0).
-# WARNING: setting drift_threshold < 1.0 with weight=100 creates score storms.
+#
+# Operating point (threshold=5, weight=100, max_contrib=50, anomaly_threshold=45):
+#   Contribution cap  (50) is reached at drift_accum = 2.5
+#   Anomaly threshold (45) is crossed by drift alone at drift_accum ≈ 2.25
+#
+# This asymmetry is intentional: drift alone can trip the alarm at 2.25 while the
+# normalised "full-drift" reference point stays at 5.0.  Do NOT raise weight or
+# lower drift_threshold without recalibrating anomaly_threshold.
+# WARNING: drift_threshold < 1.0 with weight=100 creates score storms.
 drift_threshold: 5.0
 max_profile_staleness_days: 14
 drift_comparison_history_count: 5
