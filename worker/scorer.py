@@ -12,7 +12,7 @@ from pathlib import Path
 
 import yaml
 
-from core.database import Base
+from core.database import SessionLocal
 from core.models import ResolvedEventModel, ProfileArtifactModel, DecisionRecordModel
 from core.schemas.events import ResolvedEvent, Event
 from core.schemas.profiles import ProfileArtifact

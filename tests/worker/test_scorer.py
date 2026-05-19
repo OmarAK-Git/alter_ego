@@ -431,3 +431,30 @@ def test_kl_empty_current_with_nonempty_baseline():
     assert result >= 0.0
     assert not (result != result)  # not NaN
     assert result < float("inf")
+
+
+# ---------------------------------------------------------------------------
+# Regression — process_unscored_events must not raise NameError when db=None
+# ---------------------------------------------------------------------------
+
+def test_process_unscored_events_can_create_default_session(monkeypatch):
+    """process_unscored_events(db=None) must use SessionLocal, not raise NameError.
+
+    Regression guard for: 'from core.database import Base' (broken import that
+    dropped SessionLocal, causing NameError on the default production path).
+    """
+    import worker.scorer as scorer
+
+    class FakeSession:
+        def execute(self, stmt):
+            class R:
+                def yield_per(self, n):
+                    return iter([])
+            return R()
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(scorer, "SessionLocal", lambda: FakeSession())
+
+    assert scorer.process_unscored_events() == 0
