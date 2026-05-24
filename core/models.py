@@ -32,7 +32,7 @@ class ResolvedEventModel(Base):
 class ProfileArtifactModel(Base):
     __tablename__ = "profiles"
     # Choose vector type based on environment
-    VectorType = Vector(768) if (Vector and not SQLiteVector) else (SQLiteVector if SQLiteVector else JSONB)
+    VectorType = Vector(128) if (Vector and not SQLiteVector) else (SQLiteVector if SQLiteVector else JSONB)
     
     profile_version = Column(String, primary_key=True)
     entity_id = Column(String, nullable=False, index=True)
@@ -47,7 +47,7 @@ class ProfileArtifactModel(Base):
     embedding = Column(VectorType, nullable=True) # For command_line_embedding_similarity
     embedding_model_id = Column(String, default="nomic-embed-text", nullable=False)
     embedding_model_version = Column(String, default="1.0", nullable=False)
-    embedding_dimensionality = Column(Integer, default=768, nullable=False)
+    embedding_dimensionality = Column(Integer, default=128, nullable=False)
     embedding_input_normalizer_version = Column(String, default="1.0", nullable=False)
 
 class DecisionRecordModel(Base):
@@ -64,6 +64,7 @@ class DecisionRecordModel(Base):
     is_anomaly = Column(Boolean, nullable=False, index=True)
     cohort_used = Column(String, nullable=False)
     cohort_unsupported = Column(Boolean, nullable=False)
+    embedding_model_version = Column(String, nullable=False, default='unknown')
     flags = Column(JSONB, nullable=False)
 
 class ExplanationRecordModel(Base):

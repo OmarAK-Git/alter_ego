@@ -78,7 +78,7 @@ def test_decision_determinism(db_session):
         features={"role": "Engineer", "cohort_data": {"terminus": {"login_hours": {"12": 1}, "endpoints": {"ep1": 1}}}},
         embedding_model_id="nomic-embed-text",
         embedding_model_version="1.0",
-        embedding_dimensionality=768
+        embedding_dimensionality=128
     )
 
     config = {"features": {}, "anomaly_threshold": 75.0, "version": "1.0"}
@@ -162,7 +162,7 @@ def test_confidence_not_hardcoded(db_session):
         },
         embedding_model_id="nomic-embed-text",
         embedding_model_version="1.0",
-        embedding_dimensionality=768,
+        embedding_dimensionality=128,
     )
 
     config = {"features": {}, "anomaly_threshold": 75.0, "version": "1.0"}

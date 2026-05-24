@@ -28,16 +28,16 @@ def upgrade() -> None:
     # 2. Shadow profiles: add is_shadow to profiles
     op.add_column('profiles', sa.Column('is_shadow', sa.Boolean(), nullable=False, server_default='false'))
 
-    # 3. Embedding model: update dimension from 1536 to 768 and add metadata columns
+    # 3. Embedding model: update dimension from 1536 to 128 and add metadata columns
     #    Add embedding_model_id, embedding_model_version, embedding_dimensionality if missing
     op.add_column('profiles', sa.Column('embedding_model_id', sa.String(), nullable=False, server_default='nomic-embed-text'))
     op.add_column('profiles', sa.Column('embedding_model_version', sa.String(), nullable=False, server_default='1.0'))
-    op.add_column('profiles', sa.Column('embedding_dimensionality', sa.Integer(), nullable=False, server_default='768'))
+    op.add_column('profiles', sa.Column('embedding_dimensionality', sa.Integer(), nullable=False, server_default='128'))
 
-    # Update the embedding vector column dimension from 1536 to 768
+    # Update the embedding vector column dimension from 1536 to 128
     # pgvector ALTER COLUMN requires dropping and re-adding
     op.drop_column('profiles', 'embedding')
-    op.add_column('profiles', sa.Column('embedding', pgvector.sqlalchemy.Vector(dim=768), nullable=True))
+    op.add_column('profiles', sa.Column('embedding', pgvector.sqlalchemy.Vector(dim=128), nullable=True))
 
 
 def downgrade() -> None:

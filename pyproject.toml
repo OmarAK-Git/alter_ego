@@ -32,3 +32,6 @@ strict = true
 
 [tool.setuptools.packages.find]
 include = ["core*", "batch*", "worker*", "web*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

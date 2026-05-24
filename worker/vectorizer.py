@@ -3,7 +3,7 @@ import hashlib
 import re
 
 # Normalizer Version per SPEC §6.8
-NORMALIZER_VERSION = "1.0-char-3gram-hash-768"
+NORMALIZER_VERSION = "1.0-char-3gram-hash-128"
 
 def normalize_command_line(cmd: str) -> str:
     """
@@ -29,7 +29,7 @@ def normalize_command_line(cmd: str) -> str:
     cmd = " ".join(cmd.split())
     return cmd
 
-def vectorize_command_line(cmd: str, dim: int = 768) -> np.ndarray:
+def vectorize_command_line(cmd: str, dim: int = 128) -> np.ndarray:
     """
     Produces a deterministic character-level 3-gram hashing vector.
     """

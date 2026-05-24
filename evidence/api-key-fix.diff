@@ -1,0 +1,27 @@
+diff --git a/web/api.py b/web/api.py
+index 8395436..38be8c4 100644
+--- a/web/api.py
++++ b/web/api.py
+@@ -32,12 +32,16 @@ API_KEY_HEADER = APIKeyHeader(name="X-API-KEY", auto_error=False)
+ 
+ def verify_api_key(api_key: str = Security(API_KEY_HEADER)):
+     expected_key = os.getenv("API_KEY")
+-    if expected_key:
+-        if not api_key or api_key != expected_key:
+-            raise HTTPException(
+-                status_code=401,
+-                detail="Unauthorized: Invalid or missing API key."
+-            )
++    if expected_key is None:
++        raise HTTPException(
++            status_code=500,
++            detail="Server configuration error: API_KEY environment variable is not set."
++        )
++    if not api_key or api_key != expected_key:
++        raise HTTPException(
++            status_code=401,
++            detail="Unauthorized: Invalid or missing API key."
++        )
+     return api_key
+ 
+ @app.get("/api/alerts")

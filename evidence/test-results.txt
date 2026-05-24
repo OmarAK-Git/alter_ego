@@ -1,0 +1,53 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.12, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\oalan\alter_ego\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\oalan\alter_ego
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.13.0
+collecting ... collected 42 items
+
+tests/batch/test_profile_build_snapshot.py::test_profile_build_is_repeatable PASSED [  2%]
+tests/batch/test_shadow_profiles.py::test_shadow_profile_logic PASSED    [  4%]
+tests/live/test_live_smoke.py::test_server_is_up PASSED                  [  7%]
+tests/live/test_live_smoke.py::test_seed_and_triage_full_lifecycle PASSED [  9%]
+tests/live/test_live_smoke_staged.py::test_stage_1_server_up PASSED      [ 11%]
+tests/live/test_live_smoke_staged.py::test_stage_2_seed_anomaly PASSED   [ 14%]
+tests/live/test_live_smoke_staged.py::test_stage_3_acknowledge PASSED    [ 16%]
+tests/live/test_live_smoke_staged.py::test_stage_4_investigate PASSED    [ 19%]
+tests/live/test_live_smoke_staged.py::test_stage_5_explanation PASSED    [ 21%]
+tests/live/test_live_smoke_staged.py::test_stage_6_clear PASSED          [ 23%]
+tests/test_audit.py::test_decision_record_is_insert_only PASSED          [ 26%]
+tests/test_generator.py::test_event_generator_deterministic PASSED       [ 28%]
+tests/test_profile_immutability.py::test_profile_artifact_is_frozen PASSED [ 30%]
+tests/test_schemas.py::test_auth_event_schema_validation PASSED          [ 33%]
+tests/test_schemas.py::test_process_event_schema_validation PASSED       [ 35%]
+tests/test_scoring_config_governance.py::test_scoring_config_is_frozen PASSED [ 38%]
+tests/test_scoring_config_governance.py::test_scoring_config_governance_chain PASSED [ 40%]
+tests/test_simple_print.py::test_print PASSED                            [ 42%]
+tests/web/test_api.py::test_get_triage_alerts PASSED                     [ 45%]
+tests/web/test_api.py::test_workflow_state_transition PASSED             [ 47%]
+tests/web/test_api.py::test_clear_alert_hides_from_triage PASSED         [ 50%]
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json PASSED [ 52%]
+tests/worker/test_explainer.py::test_prohibited_content_validation PASSED [ 54%]
+tests/worker/test_profile_selection.py::test_profile_selection_point_in_time PASSED [ 57%]
+tests/worker/test_resolver.py::test_resolve_entity PASSED                [ 59%]
+tests/worker/test_scorer.py::test_kl_divergence PASSED                   [ 61%]
+tests/worker/test_scorer.py::test_laplace_prob PASSED                    [ 64%]
+tests/worker/test_scorer.py::test_idempotent_decision_id PASSED          [ 66%]
+tests/worker/test_scorer.py::test_decision_determinism PASSED            [ 69%]
+tests/worker/test_scorer.py::test_scorer_ground_truth_isolation PASSED   [ 71%]
+tests/worker/test_scorer.py::test_confidence_not_hardcoded PASSED        [ 73%]
+tests/worker/test_scorer.py::test_novelty_fraction_sqlite_uses_json_extract PASSED [ 76%]
+tests/worker/test_scorer.py::test_novelty_fraction_postgresql_uses_jsonb_operator PASSED [ 78%]
+tests/worker/test_scorer.py::test_cohort_members_sqlite_uses_json_extract PASSED [ 80%]
+tests/worker/test_scorer.py::test_cohort_members_postgresql_uses_jsonb_operator PASSED [ 83%]
+tests/worker/test_scorer.py::test_novelty_cache_ttl_expiry PASSED        [ 85%]
+tests/worker/test_scorer.py::test_novelty_cache_max_size_preserved PASSED [ 88%]
+tests/worker/test_scorer.py::test_kl_both_empty_returns_zero PASSED      [ 90%]
+tests/worker/test_scorer.py::test_kl_empty_baseline_returns_max_novelty PASSED [ 92%]
+tests/worker/test_scorer.py::test_kl_empty_current_with_nonempty_baseline PASSED [ 95%]
+tests/worker/test_scorer.py::test_process_unscored_events_can_create_default_session PASSED [ 97%]
+tests/worker/test_six_feature_scorer.py::test_six_feature_scorer_basic PASSED [100%]
+
+============================= 42 passed in 37.68s =============================

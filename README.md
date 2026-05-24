@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/postgres-pgvector-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL + pgvector"/>
   <img src="https://img.shields.io/badge/DuckDB-analytics-FFF000?style=flat-square&logo=duckdb&logoColor=black" alt="DuckDB"/>
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License"/>
-  <img src="https://img.shields.io/badge/status-Phase%202%20Complete-brightgreen?style=flat-square" alt="Phase 2 Complete"/>
+  <img src="https://img.shields.io/badge/status-Phase%203%20Complete-brightgreen?style=flat-square" alt="Phase 3 Complete"/>
 </p>
 
 ---
@@ -145,7 +145,7 @@ We adhere to an **Evaluation-First Discipline**. No weight is adjusted without a
 | **Phase 0** | ✅ Complete | Contracts, schemas, synthetic generator |
 | **Phase 1** | ✅ Complete | Core detection pipeline, 3-tier fallback, shadow profiles |
 | **Phase 2** | ✅ Complete | **Calibration**: Drift engine verification, threshold tuning, scenario sweeps |
-| **Phase 3** | 🏗️ In Progress | Active Policy Enforcement & Triage UI |
+| **Phase 3** | ✅ Complete | Active Policy Enforcement & Triage UI, API Key Protection |
 | **Phase 4** | 🔲 Planned | pgvector embedding integration, real-time streaming |
 
 ### Changelog (since Phase 1)
@@ -154,6 +154,25 @@ We adhere to an **Evaluation-First Discipline**. No weight is adjusted without a
 - **Circuit Breakers**: Implemented the Staleness Circuit Breaker to gate scoring on expired profiles.
 - **Scoring Fusion**: Refined the weighted fusion model in `scorer.py` to integrate drift alerts as a primary signal.
 - **Verification Suite**: Created `analyze_step4.py` for automated multi-scenario calibration sweeps.
+- **API Key Security (Phase 3)**: Implemented token-based authentication (`X-API-KEY`) on protected endpoints to enforce strict access control.
+- **Decision Schema Updates (Phase 3)**: Added `embedding_model_version` field to `DecisionRecordModel` and updated active sqlite databases.
+
+---
+
+## API Security
+
+Privileged endpoints (`/api/alerts/{decision_id}/explain`, `/api/alerts/{decision_id}/workflow`, `/api/alerts/{decision_id}/contain`, `/api/replay`) are protected by an API key verification dependency.
+
+- **Authentication Header**: Enforced via the `X-API-KEY` header matching the server's `API_KEY` environment variable.
+- **Fail Fast Configuration**: If the `API_KEY` environment variable is unset, protected endpoints fail fast and return a `500 Internal Server Error` to indicate a server configuration issue.
+- **Unauthorized Requests**: Requests with missing or invalid keys return a `401 Unauthorized` response.
+
+## Evidences & Verification
+
+- **API Security Verification**: Diff output for the API key protection is stored in [`evidence/api-key-fix.diff`](evidence/api-key-fix.diff). Responses under success, missing-key, and unset-env conditions are documented in the `evidence/` directory.
+- **Unit & Integration Tests**: All 42 tests pass with 0 warnings. Verification output is captured in [`evidence/test-results.txt`](evidence/test-results.txt).
+- **Evaluation Pipeline Output**: The runner executing the full analytics pipeline is documented in [`evidence/eval_run_success.txt`](evidence/eval_run_success.txt).
+- **Triage Queue Screenshot**: A screenshot of the Analyst Triage Queue dashboard is located at [`evidence/ui_screenshot.png`](evidence/ui_screenshot.png).
 
 ---
 

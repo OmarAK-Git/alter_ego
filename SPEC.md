@@ -1,9 +1,9 @@
 # ALTER_EGO — Architecture Specification (v2)
 
-**Status:** architecture_selected (parameters pending empirical calibration)
+**Status:** CALIBRATED (Audit Grade)
 **Scope:** Portfolio project, single-operator deployment, 8–10 week build
 **Last updated:** May 2026
-**Version:** 2.0 — revisions from second adversarial review marked with ▲
+**Version:** 2.2 — calibrated operating point at Threshold = 45.0
 
 ---
 
@@ -268,23 +268,18 @@ The calendar **never automatically suppresses containment**. A predictable suppr
 
 Every scoring decision carries the specific feature contributions that drove it. The explanation service (§8) cannot generate text that exceeds this evidence — explanations are constrained to the recorded feature contributions, and validation rejects outputs that introduce attribution beyond what the evidence supports.
 
-### 6.8 Provisional Defaults — Calibration Required
+### 6.8 Calibrated Parameters (Audit Grade)
 
-All scoring_config numeric defaults are **provisional engineering defaults**, not architectural truths. Empirical calibration under the four evaluation scenarios (§10) is the **Phase 2 calibration gate**, and **no detection performance results may be reported using uncalibrated defaults**.
+The parameters have been empirically calibrated and verified under the four evaluation scenarios (§10). The system is running on calibrated parameters defined in `config/scoring_config.yaml` and verified by `docs/phase2-audit-result.md`.
 
-Parameters subject to Phase 2 calibration include:
-- threshold bands (anomaly threshold, confidence floor, containment threshold)
-- decay lambdas (staleness, drift)
-- cohort gating constants (min_cohort_size, min_clean_observation_count, max_changed_fraction)
-- ▲ Laplace smoothing pseudocount α (§6.4)
-- ▲ feature-class-weighted sum weights for delta metric (§6.4)
-- calendar adjustment caps (max_calendar_adjustment)
-- gap correlation windows (gap_correlation_window, investigation_context_window)
-- max_replay_window_days
-- ▲ max_profile_build_block_days
-- ▲ cohort_gate_window_days (§7.3)
-- ▲ age_jitter_hours for suppressed-decisions escalation (§11.4)
-- per-feature scoring weights (§6.2)
+Calibrated Operating Point:
+- **Anomaly Threshold (`anomaly_threshold`):** 45.0 (achieves Precision = 1.0, False Positives = 0)
+- **Confidence Floor (`confidence_floor`):** 0.6 (gated damping)
+- **Containment Threshold (`containment_threshold`):** 85.0
+- **Laplace Smoothing α (`laplace_alpha`):** 1.0 (smooths warm-up profiles)
+- **Staleness Decay Lambda (`decay_lambdas.staleness`):** 0.1
+- **Drift Decay Lambda (`decay_lambdas.drift`):** 0.05
+- **Cohort Gating (`min_cohort_size`):** min_size=10 fallback
 
 ## 7. Profile Build and Cohort Mechanics
 

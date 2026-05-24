@@ -18,5 +18,5 @@ class ProfileArtifact(BaseModel):
     embedding: Optional[List[float]] = None
     embedding_model_id: str = "nomic-embed-text"
     embedding_model_version: str = "1.0"
-    embedding_dimensionality: int = 768
+    embedding_dimensionality: int = 128
     embedding_input_normalizer_version: str = "1.0"

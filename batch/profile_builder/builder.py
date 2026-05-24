@@ -110,7 +110,9 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
             return 0
             
         temp_file_hist = Path(f"temp_events_hist_{uuid.uuid4().hex}.jsonl")
-        temp_file_recent = Path(f"temp_events_recent_{uuid.uuid4().hex}.jsonl")
+        temp_file_recent = None
+        if events_recent:
+            temp_file_recent = Path(f"temp_events_recent_{uuid.uuid4().hex}.jsonl")
         
         t1 = time.time()
         def write_jsonl(path, evts):
@@ -131,7 +133,8 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
                     f.write(json.dumps(data) + "\n")
         
         write_jsonl(temp_file_hist, events_hist)
-        write_jsonl(temp_file_recent, events_recent)
+        if events_recent:
+            write_jsonl(temp_file_recent, events_recent)
         logger.info(f"Wrote temp JSONLs in {time.time()-t1:.2f}s")
                 
         con = duckdb.connect()
@@ -141,20 +144,21 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         # attacker's lateral-movement events cannot inflate cohort baselines and
         # suppress alerts for complicit/adjacent accounts.
         blocked_filter = ""
+        params = []
         if blocked_entities:
-            escaped = ",".join(f"'{e}'" for e in blocked_entities)
-            blocked_filter = f"WHERE entity_id NOT IN ({escaped})"
+            placeholders = ",".join(["?"] * len(blocked_entities))
+            blocked_filter = f"WHERE entity_id NOT IN ({placeholders})"
+            params = list(blocked_entities)
 
         parent_cohort_query = f"SELECT entity_type, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') {blocked_filter} GROUP BY entity_type"
-        parent_res = con.execute(parent_cohort_query).fetchall()
+        parent_res = con.execute(parent_cohort_query, params).fetchall()
         parent_cohorts = {row[0]: {"login_hours": parse_duckdb_histogram(row[1]), "endpoints": parse_duckdb_histogram(row[2]), "process_names": parse_duckdb_histogram(row[3])} for row in parent_res}
 
-        blocked_filter_role = blocked_filter.replace("WHERE", "WHERE") if blocked_filter else ""
         primary_cohort_query = f"SELECT role, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') {blocked_filter} GROUP BY role"
-        primary_res = con.execute(primary_cohort_query).fetchall()
+        primary_res = con.execute(primary_cohort_query, params).fetchall()
         primary_cohorts = {row[0]: {"login_hours": parse_duckdb_histogram(row[1]), "endpoints": parse_duckdb_histogram(row[2]), "process_names": parse_duckdb_histogram(row[3])} for row in primary_res}
 
-        global_res = con.execute(f"SELECT histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') {blocked_filter}").fetchone()
+        global_res = con.execute(f"SELECT histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') {blocked_filter}", params).fetchone()
         global_cohort = {"login_hours": parse_duckdb_histogram(global_res[0]), "endpoints": parse_duckdb_histogram(global_res[1]), "process_names": parse_duckdb_histogram(global_res[2])} if global_res else {"login_hours": {}, "endpoints": {}, "process_names": {}}
         
         # HISTORICAL PROFILE AGGREGATION
@@ -162,12 +166,15 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         result_hist = con.execute(query_hist).fetchall()
         
         # RECENT BEHAVIOR AGGREGATION (for drift)
-        query_recent = f"SELECT entity_id, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), list(command_line) FROM read_json_auto('{temp_file_recent}') GROUP BY entity_id"
-        result_recent_rows = con.execute(query_recent).fetchall()
-        recent_features_map = {row[0]: row[1:] for row in result_recent_rows}
+        if events_recent:
+            query_recent = f"SELECT entity_id, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), list(command_line) FROM read_json_auto('{temp_file_recent}') GROUP BY entity_id"
+            result_recent_rows = con.execute(query_recent).fetchall()
+            recent_features_map = {row[0]: row[1:] for row in result_recent_rows}
+        else:
+            recent_features_map = {}
         # Cleanup
         for p in [temp_file_hist, temp_file_recent]:
-            if p.exists():
+            if p and p.exists():
                 p.unlink()
         
         build_timestamp = datetime.utcnow()
@@ -327,7 +334,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
                 embedding=rec["embedding"],
                 embedding_model_id="alter-ego-ngram-v1",
                 embedding_model_version="1.0",
-                embedding_dimensionality=768,
+                embedding_dimensionality=128,
                 embedding_input_normalizer_version=NORMALIZER_VERSION
             )
             db_session.add(db_profile)

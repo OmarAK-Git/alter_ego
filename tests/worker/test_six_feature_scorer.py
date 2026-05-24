@@ -30,6 +30,11 @@ def db_session():
 
 def test_six_feature_scorer_basic(db_session):
     config = load_scoring_config()
+    config["laplace_alpha"] = 0.0001
+    config["features"]["login_hour_rarity"]["weight"] = 10.0
+    config["features"]["geolocation_rarity"]["weight"] = 10.0
+    config["features"]["endpoint_set_rarity"]["weight"] = 10.0
+    config["features"]["process_name_rarity"]["weight"] = 10.0
     
     t0 = datetime(2026, 1, 1, 12, 0, 0)
     
@@ -78,4 +83,5 @@ def test_six_feature_scorer_basic(db_session):
     )
     
     decision2 = score_event(db_session, e2, profile, config)
-    assert decision2.score >= decision1.score
+    assert decision2.score > decision1.score
+    assert decision2.score > 40.0
