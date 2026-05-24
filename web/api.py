@@ -1,6 +1,8 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Security
+from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+import os
 from sqlalchemy.orm import Session
 from sqlalchemy import select, and_, desc
 from typing import List, Dict, Any
@@ -25,6 +27,18 @@ def get_db():
         yield db
     finally:
         db.close()
+
+API_KEY_HEADER = APIKeyHeader(name="X-API-KEY", auto_error=False)
+
+def verify_api_key(api_key: str = Security(API_KEY_HEADER)):
+    expected_key = os.getenv("API_KEY")
+    if expected_key:
+        if not api_key or api_key != expected_key:
+            raise HTTPException(
+                status_code=401,
+                detail="Unauthorized: Invalid or missing API key."
+            )
+    return api_key
 
 @app.get("/api/alerts")
 def get_triage_alerts(db: Session = Depends(get_db)):
@@ -96,7 +110,7 @@ def get_alert_detail(decision_id: str, db: Session = Depends(get_db)):
         } if explanation else None
     }
 
-@app.post("/api/alerts/{decision_id}/explain")
+@app.post("/api/alerts/{decision_id}/explain", dependencies=[Depends(verify_api_key)])
 def trigger_explanation(decision_id: str, db: Session = Depends(get_db)):
     try:
         record = generate_explanation(decision_id, db=db)
@@ -104,7 +118,7 @@ def trigger_explanation(decision_id: str, db: Session = Depends(get_db)):
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-@app.put("/api/alerts/{decision_id}/workflow")
+@app.put("/api/alerts/{decision_id}/workflow", dependencies=[Depends(verify_api_key)])
 def update_workflow_state(decision_id: str, update: AlertStateUpdate, db: Session = Depends(get_db)):
     dec = db.query(DecisionRecordModel).filter(DecisionRecordModel.decision_id == decision_id).first()
     if not dec:
@@ -128,7 +142,7 @@ def update_workflow_state(decision_id: str, update: AlertStateUpdate, db: Sessio
     db.commit()
     return {"status": "success", "state": state.state}
 
-@app.post("/api/alerts/{decision_id}/contain")
+@app.post("/api/alerts/{decision_id}/contain", dependencies=[Depends(verify_api_key)])
 def queue_containment(decision_id: str, db: Session = Depends(get_db)):
     dec = db.query(DecisionRecordModel).filter(DecisionRecordModel.decision_id == decision_id).first()
     if not dec:
@@ -177,7 +191,7 @@ static_dir = os.path.join(os.path.dirname(__file__), "static")
 os.makedirs(static_dir, exist_ok=True)
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-@app.post("/api/replay")
+@app.post("/api/replay", dependencies=[Depends(verify_api_key)])
 def trigger_replay(req: ReplayRequest, db: Session = Depends(get_db)):
     summary = run_replay(
         start_time=req.start_time,
