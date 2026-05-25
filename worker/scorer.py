@@ -261,6 +261,7 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
             cohort_used="none",
             cohort_unsupported=True,
             flags=flags,
+            embedding_model_version=profile.embedding_model_version,
         )
 
     def get_rarity_score(val, hist, vocab_size, weight_key, feature_name, baseline_bits=0):
@@ -431,6 +432,7 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
         cohort_used=worst_level,
         cohort_unsupported=(worst_level == "terminus"),
         flags=flags,
+        embedding_model_version=profile.embedding_model_version,
     )
 
 

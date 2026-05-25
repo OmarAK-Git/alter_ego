@@ -136,4 +136,4 @@ tests/worker/test_explainer.py::test_prohibited_content_validation
     data_window_end=datetime.utcnow(),
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-====================== 44 passed, 43 warnings in 36.70s =======================
+====================== 44 passed, 43 warnings in 36.34s =======================

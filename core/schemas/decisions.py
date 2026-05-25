@@ -23,6 +23,7 @@ class DecisionRecord(BaseModel):
     cohort_used: str
     cohort_unsupported: bool
     flags: List[str]
+    embedding_model_version: str = "unknown"
 
 from enum import Enum
 

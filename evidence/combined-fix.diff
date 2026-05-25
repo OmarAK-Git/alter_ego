@@ -1,0 +1,132 @@
+diff --git a/check_sqlite.py b/check_sqlite.py
+deleted file mode 100644
+index e0bcf3c..0000000
+--- a/check_sqlite.py
++++ /dev/null
+@@ -1,32 +0,0 @@
+-from datetime import datetime, timedelta
+-from sqlalchemy import create_engine, select, and_, Column, String, DateTime
+-from sqlalchemy.orm import sessionmaker, declarative_base
+-
+-Base = declarative_base()
+-
+-class TestModel(Base):
+-    __tablename__ = "test"
+-    id = Column(String, primary_key=True)
+-    ts = Column(DateTime)
+-
+-engine = create_engine('sqlite:///:memory:')
+-Base.metadata.create_all(engine)
+-Session = sessionmaker(bind=engine)
+-db = Session()
+-
+-t0 = datetime(2026, 1, 1, 0, 0, 0)
+-t1 = t0 + timedelta(days=1)
+-
+-db.add(TestModel(id="1", ts=t0))
+-db.add(TestModel(id="2", ts=t1))
+-db.commit()
+-
+-stmt = select(TestModel).where(TestModel.ts <= t0)
+-res = db.execute(stmt).scalars().all()
+-print(f"Query at {t0}: found {len(res)} items")
+-for r in res:
+-    print(f"  Item {r.id} ts={r.ts}")
+-
+-stmt2 = select(TestModel).where(TestModel.ts <= t1)
+-res2 = db.execute(stmt2).scalars().all()
+-print(f"Query at {t1}: found {len(res2)} items")
+diff --git a/core/schemas/decisions.py b/core/schemas/decisions.py
+index 10365c8..ca439a9 100644
+--- a/core/schemas/decisions.py
++++ b/core/schemas/decisions.py
+@@ -23,6 +23,7 @@ class DecisionRecord(BaseModel):
+     cohort_used: str
+     cohort_unsupported: bool
+     flags: List[str]
++    embedding_model_version: str = "unknown"
+ 
+ from enum import Enum
+ 
+diff --git a/tests/batch/profile_builder/builder.py b/tests/batch/profile_builder/builder.py
+index 19924a1..5cb87b6 100644
+--- a/tests/batch/profile_builder/builder.py
++++ b/tests/batch/profile_builder/builder.py
+@@ -1,2 +1,55 @@
+-def test_dummy_builder():
+-    pass
++import pytest
++from datetime import datetime
++from sqlalchemy import create_engine
++from sqlalchemy.orm import sessionmaker
++from sqlalchemy.ext.compiler import compiles
++from sqlalchemy.dialects.postgresql import JSONB, ARRAY
++
++from core.database import Base
++from core.models import ResolvedEventModel, ProfileArtifactModel
++from batch.profile_builder.builder import build_profiles
++
++@compiles(JSONB, "sqlite")
++def compile_jsonb_sqlite(type_, compiler, **kw):
++    return "JSON"
++
++@compiles(ARRAY, "sqlite")
++def compile_array_sqlite(type_, compiler, **kw):
++    return "JSON"
++
++@pytest.fixture
++def db_session():
++    engine = create_engine('sqlite:///:memory:')
++    Base.metadata.create_all(engine)
++    Session = sessionmaker(bind=engine)
++    session = Session()
++    yield session
++    session.close()
++
++def test_profile_builder_aggregates_correctly(db_session):
++    entity_id = "user_test"
++    t0 = datetime(2026, 1, 1, 15, 30, 0)
++    
++    e1 = ResolvedEventModel(
++        event_id="test_evt_1", timestamp=t0, event_type="login", raw_entity_id=entity_id,
++        entity_id=entity_id, entity_type="human", resolution_confidence=1.0,
++        simulation_partition="production", event_data={
++            "action": "login",
++            "endpoint_id": "endpoint_a",
++            "process_name": "bash",
++            "geolocation": "US"
++        }
++    )
++    db_session.add(e1)
++    db_session.commit()
++    
++    # Run the profile builder
++    build_profiles(db_session, as_of=t0)
++    
++    # Retrieve the built profile
++    profile = db_session.query(ProfileArtifactModel).filter(ProfileArtifactModel.entity_id == entity_id).first()
++    assert profile is not None, "Profile was not built"
++    assert profile.features["total_events"] == 1
++    assert profile.features["login_hours"]["15"] == 1
++    assert profile.features["endpoints"]["endpoint_a"] == 1
++    assert profile.features["process_names"]["bash"] == 1
+diff --git a/worker/scorer.py b/worker/scorer.py
+index 7b7e883..7976f80 100644
+--- a/worker/scorer.py
++++ b/worker/scorer.py
+@@ -261,6 +261,7 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
+             cohort_used="none",
+             cohort_unsupported=True,
+             flags=flags,
++            embedding_model_version=profile.embedding_model_version,
+         )
+ 
+     def get_rarity_score(val, hist, vocab_size, weight_key, feature_name, baseline_bits=0):
+@@ -431,6 +432,7 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
+         cohort_used=worst_level,
+         cohort_unsupported=(worst_level == "terminus"),
+         flags=flags,
++        embedding_model_version=profile.embedding_model_version,
+     )
+ 
+ 
