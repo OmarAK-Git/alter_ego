@@ -388,9 +388,11 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
             )
         )
 
-    conf_sum = sum(abs(c.contribution_score) * c.confidence_weight for c in contributions)
-    weight_sum = sum(abs(c.contribution_score) for c in contributions)
-    decision_confidence = conf_sum / weight_sum if weight_sum > 0 else 1.0
+    n = profile.features.get("total_events")
+    if n is None:
+        n = sum(profile.features.get("login_hours", {}).values())
+    confidence_k = config.get("confidence_k", 10.0)
+    decision_confidence = n / (n + confidence_k) if (n + confidence_k) > 0 else 0.0
 
     threshold = config.get("anomaly_threshold", 45.0)
     if decision_confidence < config.get("confidence_floor", 0.6):

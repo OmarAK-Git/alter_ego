@@ -48,6 +48,71 @@ class LLMProvider:
         """Override with actual LLM call."""
         raise NotImplementedError("Use a concrete provider")
 
+class RealLLMProvider(LLMProvider):
+    def __init__(self):
+        super().__init__()
+        self.api_key = os.getenv("ANTHROPIC_API_KEY")
+        if self.api_key:
+            self.provider_type = "anthropic"
+            self.model_id = "claude-3-haiku-20240307"
+        else:
+            self.api_key = os.getenv("OPENAI_API_KEY")
+            if self.api_key:
+                self.provider_type = "openai"
+                self.model_id = "gpt-4o-mini"
+            else:
+                self.provider_type = None
+                self.model_id = "none"
+
+    def generate(self, prompt: str, temperature: float = 0.0) -> str:
+        if not self.api_key:
+            raise ValueError("No LLM API key configured in environment.")
+
+        import requests
+
+        if self.provider_type == "anthropic":
+            url = "https://api.anthropic.com/v1/messages"
+            headers = {
+                "x-api-key": self.api_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json"
+            }
+            data = {
+                "model": self.model_id,
+                "max_tokens": 1000,
+                "temperature": temperature,
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            response = requests.post(url, headers=headers, json=data, timeout=30)
+            response.raise_for_status()
+            res_json = response.json()
+            content_list = res_json.get("content", [])
+            if content_list and isinstance(content_list, list):
+                return content_list[0].get("text", "")
+            raise ValueError("Invalid Anthropic API response format.")
+
+        elif self.provider_type == "openai":
+            url = "https://api.openai.com/v1/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "content-type": "application/json"
+            }
+            data = {
+                "model": self.model_id,
+                "temperature": temperature,
+                "messages": [{"role": "user", "content": prompt}]
+            }
+            response = requests.post(url, headers=headers, json=data, timeout=30)
+            response.raise_for_status()
+            res_json = response.json()
+            choices = res_json.get("choices", [])
+            if choices and isinstance(choices, list):
+                return choices[0].get("message", {}).get("content", "")
+            raise ValueError("Invalid OpenAI API response format.")
+
+        else:
+            raise ValueError("Unknown LLM provider configuration.")
+
 class StubLLMProvider(LLMProvider):
     def generate(self, prompt: str, temperature: float = 0.0) -> str:
         # A mock implementation returning JSON that matches the LLM output requirements
@@ -138,7 +203,7 @@ def generate_explanation(decision_id: str, db: Session = None, provider: LLMProv
     config = load_scoring_config()
     
     if provider is None:
-        provider = StubLLMProvider()
+        provider = RealLLMProvider()
         
     # Build deterministic top-K counterfactuals
     conts = decision.contributions
@@ -165,7 +230,17 @@ def generate_explanation(decision_id: str, db: Session = None, provider: LLMProv
         raw_response = provider.generate(prompt)
         response_hash = hashlib.sha256(raw_response.encode('utf-8')).hexdigest()
         
-        parsed = json.loads(raw_response)
+        # Clean markdown code blocks if the LLM wrapped it in ```json ... ```
+        clean_response = raw_response.strip()
+        if clean_response.startswith("```"):
+            lines = clean_response.splitlines()
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            clean_response = "\n".join(lines).strip()
+            
+        parsed = json.loads(clean_response)
         summary = parsed.get("summary_text", "")
         raw_claims = parsed.get("claim_objects", [])
         

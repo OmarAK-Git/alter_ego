@@ -1,53 +1,139 @@
 ============================= test session starts =============================
-platform win32 -- Python 3.13.12, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\oalan\alter_ego\.venv\Scripts\python.exe
-cachedir: .pytest_cache
+platform win32 -- Python 3.13.12, pytest-9.0.3, pluggy-1.6.0
 rootdir: C:\Users\oalan\alter_ego
 configfile: pyproject.toml
-testpaths: tests
 plugins: anyio-4.13.0
-collecting ... collected 42 items
+collected 44 items
 
-tests/batch/test_profile_build_snapshot.py::test_profile_build_is_repeatable PASSED [  2%]
-tests/batch/test_shadow_profiles.py::test_shadow_profile_logic PASSED    [  4%]
-tests/live/test_live_smoke.py::test_server_is_up PASSED                  [  7%]
-tests/live/test_live_smoke.py::test_seed_and_triage_full_lifecycle PASSED [  9%]
-tests/live/test_live_smoke_staged.py::test_stage_1_server_up PASSED      [ 11%]
-tests/live/test_live_smoke_staged.py::test_stage_2_seed_anomaly PASSED   [ 14%]
-tests/live/test_live_smoke_staged.py::test_stage_3_acknowledge PASSED    [ 16%]
-tests/live/test_live_smoke_staged.py::test_stage_4_investigate PASSED    [ 19%]
-tests/live/test_live_smoke_staged.py::test_stage_5_explanation PASSED    [ 21%]
-tests/live/test_live_smoke_staged.py::test_stage_6_clear PASSED          [ 23%]
-tests/test_audit.py::test_decision_record_is_insert_only PASSED          [ 26%]
-tests/test_generator.py::test_event_generator_deterministic PASSED       [ 28%]
-tests/test_profile_immutability.py::test_profile_artifact_is_frozen PASSED [ 30%]
-tests/test_schemas.py::test_auth_event_schema_validation PASSED          [ 33%]
-tests/test_schemas.py::test_process_event_schema_validation PASSED       [ 35%]
-tests/test_scoring_config_governance.py::test_scoring_config_is_frozen PASSED [ 38%]
-tests/test_scoring_config_governance.py::test_scoring_config_governance_chain PASSED [ 40%]
-tests/test_simple_print.py::test_print PASSED                            [ 42%]
-tests/web/test_api.py::test_get_triage_alerts PASSED                     [ 45%]
-tests/web/test_api.py::test_workflow_state_transition PASSED             [ 47%]
-tests/web/test_api.py::test_clear_alert_hides_from_triage PASSED         [ 50%]
-tests/worker/test_explainer.py::test_template_fallback_on_invalid_json PASSED [ 52%]
-tests/worker/test_explainer.py::test_prohibited_content_validation PASSED [ 54%]
-tests/worker/test_profile_selection.py::test_profile_selection_point_in_time PASSED [ 57%]
-tests/worker/test_resolver.py::test_resolve_entity PASSED                [ 59%]
-tests/worker/test_scorer.py::test_kl_divergence PASSED                   [ 61%]
-tests/worker/test_scorer.py::test_laplace_prob PASSED                    [ 64%]
-tests/worker/test_scorer.py::test_idempotent_decision_id PASSED          [ 66%]
-tests/worker/test_scorer.py::test_decision_determinism PASSED            [ 69%]
-tests/worker/test_scorer.py::test_scorer_ground_truth_isolation PASSED   [ 71%]
-tests/worker/test_scorer.py::test_confidence_not_hardcoded PASSED        [ 73%]
-tests/worker/test_scorer.py::test_novelty_fraction_sqlite_uses_json_extract PASSED [ 76%]
-tests/worker/test_scorer.py::test_novelty_fraction_postgresql_uses_jsonb_operator PASSED [ 78%]
-tests/worker/test_scorer.py::test_cohort_members_sqlite_uses_json_extract PASSED [ 80%]
-tests/worker/test_scorer.py::test_cohort_members_postgresql_uses_jsonb_operator PASSED [ 83%]
-tests/worker/test_scorer.py::test_novelty_cache_ttl_expiry PASSED        [ 85%]
-tests/worker/test_scorer.py::test_novelty_cache_max_size_preserved PASSED [ 88%]
-tests/worker/test_scorer.py::test_kl_both_empty_returns_zero PASSED      [ 90%]
-tests/worker/test_scorer.py::test_kl_empty_baseline_returns_max_novelty PASSED [ 92%]
-tests/worker/test_scorer.py::test_kl_empty_current_with_nonempty_baseline PASSED [ 95%]
-tests/worker/test_scorer.py::test_process_unscored_events_can_create_default_session PASSED [ 97%]
-tests/worker/test_six_feature_scorer.py::test_six_feature_scorer_basic PASSED [100%]
+tests\batch\test_profile_build_snapshot.py .                             [  2%]
+tests\batch\test_shadow_profiles.py .                                    [  4%]
+tests\live\test_live_smoke.py ..                                         [  9%]
+tests\live\test_live_smoke_staged.py ......                              [ 22%]
+tests\test_audit.py .                                                    [ 25%]
+tests\test_generator.py .                                                [ 27%]
+tests\test_profile_immutability.py .                                     [ 29%]
+tests\test_schemas.py ..                                                 [ 34%]
+tests\test_scoring_config_governance.py ..                               [ 38%]
+tests\test_simple_print.py .                                             [ 40%]
+tests\test_spec_alignment.py ..                                          [ 45%]
+tests\web\test_api.py ...                                                [ 52%]
+tests\worker\test_explainer.py ..                                        [ 56%]
+tests\worker\test_profile_selection.py .                                 [ 59%]
+tests\worker\test_resolver.py .                                          [ 61%]
+tests\worker\test_scorer.py ................                             [ 97%]
+tests\worker\test_six_feature_scorer.py .                                [100%]
 
-============================= 42 passed in 37.68s =============================
+============================== warnings summary ===============================
+tests/batch/test_profile_build_snapshot.py::test_profile_build_is_repeatable
+tests/batch/test_profile_build_snapshot.py::test_profile_build_is_repeatable
+tests/batch/test_shadow_profiles.py::test_shadow_profile_logic
+tests/batch/test_shadow_profiles.py::test_shadow_profile_logic
+  C:\Users\oalan\alter_ego\batch\profile_builder\builder.py:180: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    build_timestamp = datetime.utcnow()
+
+tests/batch/test_shadow_profiles.py: 1 warning
+tests/live/test_live_smoke.py: 3 warnings
+tests/live/test_live_smoke_staged.py: 3 warnings
+tests/test_spec_alignment.py: 3 warnings
+tests/web/test_api.py: 2 warnings
+  C:\Users\oalan\alter_ego\.venv\Lib\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+tests/live/test_live_smoke.py::test_seed_and_triage_full_lifecycle
+  C:\Users\oalan\alter_ego\tests\live\test_live_smoke.py:32: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    decision_id = f"smoke_test_{datetime.utcnow().strftime('%H%M%S%f')}"
+
+tests/live/test_live_smoke.py::test_seed_and_triage_full_lifecycle
+  C:\Users\oalan\alter_ego\tests\live\test_live_smoke.py:48: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    datetime.utcnow().isoformat(),
+
+tests/live/test_live_smoke.py::test_seed_and_triage_full_lifecycle
+tests/live/test_live_smoke_staged.py::test_stage_5_explanation
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json
+tests/worker/test_explainer.py::test_prohibited_content_validation
+  C:\Users\oalan\alter_ego\worker\explainer.py:183: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow()
+
+tests/live/test_live_smoke_staged.py::test_stage_1_server_up
+  C:\Users\oalan\alter_ego\tests\live\test_live_smoke_staged.py:41: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return f"staged_smoke_{datetime.utcnow().strftime('%H%M%S%f')}"
+
+tests/live/test_live_smoke_staged.py::test_stage_2_seed_anomaly
+  C:\Users\oalan\alter_ego\tests\live\test_live_smoke_staged.py:92: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    datetime.utcnow().isoformat(),
+
+tests/test_audit.py::test_decision_record_is_insert_only
+  C:\Users\oalan\alter_ego\tests\test_audit.py:41: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/test_profile_immutability.py::test_profile_artifact_is_frozen
+  C:\Users\oalan\alter_ego\tests\test_profile_immutability.py:11: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/test_profile_immutability.py::test_profile_artifact_is_frozen
+  C:\Users\oalan\alter_ego\tests\test_profile_immutability.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_start=datetime.utcnow(),
+
+tests/test_profile_immutability.py::test_profile_artifact_is_frozen
+  C:\Users\oalan\alter_ego\tests\test_profile_immutability.py:13: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_end=datetime.utcnow(),
+
+tests/test_schemas.py::test_auth_event_schema_validation
+  C:\Users\oalan\alter_ego\tests\test_schemas.py:13: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/test_schemas.py::test_process_event_schema_validation
+  C:\Users\oalan\alter_ego\tests\test_schemas.py:29: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/test_scoring_config_governance.py::test_scoring_config_governance_chain
+tests/test_scoring_config_governance.py::test_scoring_config_governance_chain
+  C:\Users\oalan\alter_ego\worker\config_store.py:44: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_api.py::test_get_triage_alerts
+  C:\Users\oalan\alter_ego\tests\web\test_api.py:38: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_api.py::test_workflow_state_transition
+  C:\Users\oalan\alter_ego\tests\web\test_api.py:64: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_api.py::test_clear_alert_hides_from_triage
+  C:\Users\oalan\alter_ego\tests\web\test_api.py:92: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:24: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:42: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:43: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_start=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:44: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_end=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_prohibited_content_validation
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:65: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_prohibited_content_validation
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:82: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_prohibited_content_validation
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:83: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_start=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_prohibited_content_validation
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:84: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_end=datetime.utcnow(),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+====================== 44 passed, 43 warnings in 36.70s =======================

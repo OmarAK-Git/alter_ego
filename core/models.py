@@ -87,6 +87,45 @@ class AuditLogModel(Base):
     action = Column(String, nullable=False)
     entity_id = Column(String, nullable=True)
     details = Column(JSONB, nullable=False)
+    previous_log_hash = Column(String, nullable=True)
+
+    def compute_hash(self) -> str:
+        import hashlib
+        import json
+        
+        # Serialize fields deterministically
+        details_str = json.dumps(self.details, sort_keys=True) if isinstance(self.details, (dict, list)) else str(self.details)
+        timestamp_str = self.timestamp.isoformat() if hasattr(self.timestamp, "isoformat") else str(self.timestamp)
+        
+        payload = {
+            "timestamp": timestamp_str,
+            "action": self.action,
+            "entity_id": self.entity_id,
+            "details": details_str,
+            "previous_log_hash": self.previous_log_hash
+        }
+        serialized = json.dumps(payload, sort_keys=True)
+        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+def log_audit_event(db, action: str, entity_id: str | None = None, details: dict | None = None) -> AuditLogModel:
+    from sqlalchemy import desc
+    
+    if details is None:
+        details = {}
+        
+    prev_log = db.query(AuditLogModel).order_by(desc(AuditLogModel.log_id)).first()
+    prev_hash = prev_log.compute_hash() if prev_log else None
+    
+    new_log = AuditLogModel(
+        action=action,
+        entity_id=entity_id,
+        details=details,
+        previous_log_hash=prev_hash
+    )
+    db.add(new_log)
+    db.commit()
+    db.refresh(new_log)
+    return new_log
 
 class EvalGroundTruthModel(Base):
     __tablename__ = "eval_ground_truth"
