@@ -50,7 +50,14 @@ def run_baseline(db):
             baseline_anomalies.add(eid)
             
     from core.models import EvalGroundTruthModel
-    malicious_events = {row[0] for row in db.execute(select(EvalGroundTruthModel.event_id).where(EvalGroundTruthModel.is_malicious == True)).all()}
+    malicious_events = {
+        row[0]
+        for row in db.execute(
+            select(EvalGroundTruthModel.event_id).where(
+                EvalGroundTruthModel.is_malicious.is_(True)
+            )
+        ).all()
+    }
     
     tp = len(baseline_anomalies.intersection(malicious_events))
     fp = len(baseline_anomalies - malicious_events)
@@ -70,7 +77,8 @@ def calibrate():
         return
 
     db = run_pipeline(events_path, labels_path)
-    if not db: return
+    if not db:
+        return
     
     try:
         # 1. Generate Curves

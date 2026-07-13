@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
+from enum import Enum
+
 
 class FeatureContribution(BaseModel):
     contribution_id: str
@@ -24,8 +26,8 @@ class DecisionRecord(BaseModel):
     cohort_unsupported: bool
     flags: List[str]
     embedding_model_version: str = "unknown"
+    replay_run_id: Optional[str] = None
 
-from enum import Enum
 
 class ConfidenceLabel(str, Enum):
     very_low = "very_low"

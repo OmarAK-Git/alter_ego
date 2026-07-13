@@ -1,9 +1,11 @@
 # ALTER_EGO — Architecture Specification (v2)
 
-**Status:** CALIBRATED (Audit Grade)
+**Status:** Phase 2A / closed-with-residual — **not CALIBRATED** (high FP; S3 subtle misses)
 **Scope:** Portfolio project, single-operator deployment, 8–10 week build
-**Last updated:** May 2026
-**Version:** 2.2 — calibrated operating point at Threshold = 45.0
+**Last updated:** July 2026
+**Version:** 2.2 — interim operating point at Threshold = 45.0 (Phase 2 not closed)
+
+**Metrics authority:** `docs/calibration_final_metrics.json`, `docs/phase2-s3-operating-point.md`, and `memory-bank/progress.md`. At thr=45: P≈0.019, R≈0.817, FP=3448; per-scenario S1/S2/S4 recall 1.0, S3 recall 0.667 (15 FN).
 
 ---
 
@@ -59,7 +61,7 @@ The architecture supports arbitrary log types and entity types through pluggable
 - **Insider with config access:** detection_engineer-role user who attempts to disable detection by adjusting scoring_config. *Addressed via authenticated writes, INSERT-only audit log (§9.2), and replay scope limits (§9.3).*
 - **Audit manipulator:** operator attempting to selectively recompute past decisions to hide false negatives or downgrade alerts. *Addressed via contiguous-window-only replay and original-record preservation (§9.3).*
 - ▲ **Detection-invisibility attacker:** sustains suspicious behavior to keep an alert active, blocking profile rebuilds, until the staleness circuit breaker fires and the entity disappears from scoring. *Addressed via mandatory analyst escalation when staleness fires under active alert (§5.7).*
-- ▲ **Confidence-floor evader:** crafts behavior that scores high on raw_score while triggering low confidence (sparse-feature exploitation, cohort_unsupported entities) to bypass the containment queue. *Addressed via the suppressed-decisions view (§11.4) with mandatory aging escalation.*
+- ▲ **Confidence-floor evader:** crafts behavior that scores high on raw_score while triggering low confidence (sparse-feature exploitation, cohort_unsupported entities) to bypass the containment queue. *Partially addressed in v1 via the suppressed-decisions view (§11.4), which surfaces suppressed high-score decisions with audit rather than silently dropping them; mandatory aging escalation is deferred to Phase 4 (S4.3 / Path B, §11.4).*
 
 ### 3.3 Out-of-Scope Adversaries (v1)
 
@@ -157,7 +159,7 @@ A profile contains, per entity:
 - **Categorical attributes:** typical logon hours, geolocation distribution, on-shift schedule, endpoint set, role, account_type, peer cohort assignment
 - **Sequence/semantic attributes:** command-sequence embeddings, URL access pattern embeddings, process-tree shape embeddings (stored in pgvector)
 - **Feature-class confidence:** per-feature observation count and confidence value, used to gate that feature's contribution to scoring
-- **Lifecycle state:** active, dormant, reactivated_dormant, onboarding, role_transition
+- **Lifecycle state (deferred post-v1):** active, dormant, reactivated_dormant, onboarding, role_transition — design target in §5.4; v1 profile artifacts do not carry a `lifecycle_state` field
 - **Build provenance:** training_window range, scoring_config_version, build_timestamp, source event count, simulation_partition exclusions
 - ▲ **Embedding metadata:** embedding_model_id, embedding_model_version, embedding_dimensionality
 
@@ -168,6 +170,8 @@ A profile contains, per entity:
 - Per-build materialization: each profile build re-reads the window from Postgres into DuckDB; no incremental update of profile state
 
 ### 5.4 Lifecycle States
+
+▲ **v1 deferral (S2.7 / Path B).** The lifecycle state machine below is a design target, not shipped in v1. Profile artifacts have no `lifecycle_state` field; the scorer does not branch on dormant, reactivated, onboarding, or role_transition. **Alert workflow states** (`new`, `acknowledged`, `investigating`, etc. per §11.5) are separate and may ship in Phase 3 — they are not profile lifecycle. Partial v1 substitutes only: cohort fallback + `cohort_unsupported` (§6.3) for sparse/new entities; `stale_profile` flag + staleness circuit breaker (§5.7) for profile-age risk (halt ≠ dormant penalty scoring). Full lifecycle machine deferred to Phase 4 / portfolio hardening.
 
 - **active:** entity has events within the training window above minimum observation thresholds
 - **dormant:** entity has no events within the training window. Scored against last committed profile with stale-profile confidence penalty.
@@ -208,14 +212,14 @@ Every scoring decision produces a record with at minimum:
 - `decision_id` (idempotent — same inputs produce same ID)
 - `event_id`, `entity_id`, `event_time`, `decision_time`
 - `profile_version`, `scoring_config_version`, ▲ `embedding_model_version`
-- `raw_score`, `context_adjusted_score` (if applicable)
+- `raw_score` (v1 schema/API field name: `score` — single operational anomaly score; no separate `context_adjusted_score` in v1; dual-score deferred with §6.6)
 - `confidence` (separate from score; reflects evidence sufficiency)
 - `feature_contributions[]` (per-feature contribution to the score, each with `contribution_id`, `raw_value`, `confidence_weight`)
 - `cohort_used` (cohort tier in the fallback hierarchy that was consulted)
 - `cohort_unsupported` boolean (true if scored entity-local-only)
 - `simulation_partition` (label for evaluation isolation)
 - `replay_run_id` (null if original; populated for replays)
-- `flags`: `infrastructure_volatile`, `calendar_context_active`, `stale_profile`, `low_resolution_confidence`, `reactivated_dormant`, etc.
+- `flags`: `stale_profile`, `low_resolution_confidence`, `cohort_unsupported`, etc. ▲ `reactivated_dormant` deferred with §5.4 lifecycle states; ▲ `calendar_context_active` deferred with §6.6; ▲ `infrastructure_volatile` deferred with §12
 
 ▲ **Initial six-feature scoring contract for v1.** Phase 1 implements these six features. Each emits a contribution_id, raw value, and confidence weight:
 
@@ -226,7 +230,7 @@ Every scoring decision produces a record with at minimum:
 5. **command_line_embedding_similarity** (process) — cosine distance between embedding of observed command and entity's profile centroid
 6. **service_account_execution_frequency_deviation** (process, service accounts only) — observed execution rate vs. entity's typical periodicity
 
-Combined via calibrated weights in scoring_config: `raw_score = Σ (contribution_i × weight_i × confidence_i)`. Cohort shrinkage is applied per-feature before aggregation (§6.3). Cumulative drift (§6.4) and calendar adjustment (§6.6) are layered on after this baseline scores all four scenarios.
+Combined via calibrated weights in scoring_config: `raw_score = Σ (contribution_i × weight_i × confidence_i)`. Cohort shrinkage is applied per-feature before aggregation (§6.3). Cumulative drift (§6.4) is layered on after this baseline. ▲ Calendar adjustment (§6.6) is deferred post-v1 — v1 emits the single `score` above with no calendar layer.
 
 ### 6.3 Hierarchical Baselining
 
@@ -249,12 +253,16 @@ Single-event scoring catches sharp deviations. Cumulative drift detection catche
 
 ### 6.5 Telemetry Gap Handling — Two-Tier Policy
 
+▲ **v1 deferral (S4.6 / Path B).** The two-tier telemetry-gap policy below is a design target, not shipped in v1. No gap detector, localized-vs-source correlation scorer, or sensor-health incident path exists in v1. The `gap_windows.*` keys in scoring_config are YAML placeholders with no production reader. v1 profile freshness relies on the staleness circuit breaker (§5.7) only. Full gap handling deferred to Phase 4 (§13).
+
 Telemetry gaps (missing or delayed events from a source) are handled differently for automatic risk vs. analyst context:
 
 - **`gap_correlation_window`** (short, default = configured analysis window for the entity type): gaps within this window automatically influence entity risk — but only for **localized or suspiciously correlated gaps**. Source-wide or collector-wide gaps emit sensor-health incidents and do not inflate per-entity risk.
 - **`investigation_context_window`** (long, e.g., 14–30 days): used in the analyst detail view for timeline reconstruction. Does **not** automatically alter scoring.
 
 ### 6.6 Calendar Context — Dual Score, Triage Hidden
+
+▲ **v1 deferral (S4.6 / Path B).** No scheduled-change calendar store, no `context_adjusted_score` computation, and no `max_calendar_adjustment` reader in v1. The v1 decision record and API expose a single operational `score` (schema field name; equivalent to the SPEC `raw_score` intent below). Triage and detail views show that score only — no calendar icons, dual-score display, or calendar entry linkage. Design invariant retained: calendar must never automatically suppress containment. Full calendar dual-score deferred to Phase 4 (§13).
 
 Scheduled-change calendar entries (declared maintenance windows, deployments, etc.) are **analyst context only** when they appear in the triage view. They produce a `context_adjusted_score` *alongside* the `raw_score`, with a strict adjustment cap (defined in scoring_config) and an immutable audit field naming the calendar entry that drove the adjustment.
 
@@ -268,18 +276,20 @@ The calendar **never automatically suppresses containment**. A predictable suppr
 
 Every scoring decision carries the specific feature contributions that drove it. The explanation service (§8) cannot generate text that exceeds this evidence — explanations are constrained to the recorded feature contributions, and validation rejects outputs that introduce attribution beyond what the evidence supports.
 
-### 6.8 Calibrated Parameters (Audit Grade)
+### 6.8 Operating Parameters (Phase 2A — not audit-grade)
 
-The parameters have been empirically calibrated and verified under the four evaluation scenarios (§10). The system is running on calibrated parameters defined in `config/scoring_config.yaml` and verified by `docs/phase2-audit-result.md`.
+The parameters below are the current YAML operating point from the S3.1 re-sweep (`docs/calibration_final_metrics.json`). This is **not** an audit-grade or CALIBRATED claim — global precision ~1.9% and 3448 FP at thr=45 remain open residuals. See `docs/phase2-s3-operating-point.md` and `docs/phase2-audit-result.md` (historical narrative; metrics superseded by the JSON).
 
-Calibrated Operating Point:
-- **Anomaly Threshold (`anomaly_threshold`):** 45.0 (achieves Precision = 1.0, False Positives = 0)
+Current operating point:
+- **Anomaly Threshold (`anomaly_threshold`):** 45.0 (P≈0.019, R≈0.817, FP=3448 @ saved sweep)
 - **Confidence Floor (`confidence_floor`):** 0.6 (gated damping)
-- **Containment Threshold (`containment_threshold`):** 85.0
+- **Observation-count confidence (`confidence_k`):** 10.0 — `n/(n+k)` in scorer (S2.4)
+- **Containment Threshold (`containment_threshold`):** 85.0 — auto queue write when score ≥ threshold and confidence ≥ floor (S1.3)
 - **Laplace Smoothing α (`laplace_alpha`):** 1.0 (smooths warm-up profiles)
-- **Staleness Decay Lambda (`decay_lambdas.staleness`):** 0.1
-- **Drift Decay Lambda (`decay_lambdas.drift`):** 0.05
+- **Drift accumulator half-life (`drift_half_life_days`):** 7 — replaces legacy `decay_lambdas.drift` (removed S2.8; never read)
 - **Cohort Gating (`min_cohort_size`):** min_size=10 fallback
+
+Deferred / unwired (present in YAML but not production-calibrated): `min_clean_observation_count`, `total_volume_delta` weight, `max_calendar_adjustment`, `gap_windows.*`, `max_profile_build_block_days`, `age_jitter_hours`. See `memory-bank/progress.md` §Scoring config knob inventory.
 
 ## 7. Profile Build and Cohort Mechanics
 
@@ -508,22 +518,22 @@ Beyond detection precision/recall, explanation quality is itself measured:
 ### 11.1 Triage View
 
 - One row per active alert
-- `raw_score` prominently displayed, no other numeric scores in this view
-- Entity ID, timestamp, asset blast-radius indicator, lifecycle state badge
-- Non-numeric icons for: `calendar_context_active`, `infrastructure_volatile`, `stale_profile`, `low_resolution_confidence`, `cohort_unsupported`, ▲ `reactivated_dormant`
-- Sort/filter by score, time, entity type, asset class
+- `raw_score` prominently displayed (v1 API field: `score`), no other numeric scores in this view
+- Entity ID, timestamp, ▲ asset blast-radius indicator deferred with §12, ▲ alert workflow state badge (`new`, `acknowledged`, `investigating` per §11.5) — not profile lifecycle (§5.4, deferred)
+- Non-numeric icons for: `stale_profile`, `low_resolution_confidence`, `cohort_unsupported`. ▲ `calendar_context_active` icon deferred with §6.6; ▲ `infrastructure_volatile` icon deferred with §12; ▲ `reactivated_dormant` icon deferred with §5.4
+- Sort/filter by score, time, entity type. ▲ Sort/filter by asset class deferred with §12
 
 ### 11.2 Detail View
 
 - All triage information, plus:
-- `context_adjusted_score` and the calendar entry that drove it (when applicable)
 - Full feature contribution breakdown (each `feature_contributions[i]` rendered)
 - Top-K counterfactuals (§8.5) rendered from `ExplanationRecord.counterfactuals`
 - LLM explanation rendered from `ExplanationRecord.summary_text` and `claim_objects`, with validation status indicator
 - Profile snapshot at decision time (the slice that scored)
-- Recent timeline within `investigation_context_window` (§6.5)
 - Containment action queue status
 - Decision lineage (replay history if any)
+
+▲ **v1 ships (S4.6 / Path B).** Score (`score` field), feature contributions, explanation/counterfactuals when present, and decision lineage. ▲ **Deferred post-v1:** `context_adjusted_score` and calendar entry display (§6.6); recent entity timeline within `investigation_context_window` (§6.5) — Phase 4 / future packet.
 
 ### 11.3 Confidence Separation
 
@@ -531,12 +541,14 @@ Confidence values are surfaced **separately from scores**, never collapsed into 
 
 ### 11.4 ▲ Suppressed-Decisions View
 
-A dedicated UI surface for decisions that scored above the anomaly threshold but were suppressed because confidence fell below the configurable confidence floor. This closes the adversarial confidence-floor evasion path (§3.2) where an attacker crafts behavior using sparse-feature exploitation to score high while triggering low confidence and bypassing the containment queue.
+A dedicated UI surface for decisions that scored above the anomaly threshold but were suppressed because confidence fell below the configurable confidence floor. This partitions suppressed high-score decisions into an audited surface separate from triage, addressing the adversarial confidence-floor evasion path (§3.2) where an attacker crafts behavior using sparse-feature exploitation to score high while triggering low confidence and bypassing the containment queue.
+
+▲ **v1 partial (S4.3 / Path B).** The suppressed-decisions view itself ships in v1: decisions below the configurable confidence floor are partitioned out of triage into a distinct, audited surface (`/api/suppressed`). Aging indicators, automatic escalation to triage, and aging jitter (the three bullets below) are **deferred to Phase 4 (§13.1)** — `suppressed_decision_age`, `suppressed_decision_aging_days`, and `age_jitter_hours` are documented placeholders, not wired in v1.
 
 - **Visually distinct** from the primary triage queue (separate tab/section, distinct styling) to prevent analysts from learning to deprioritize the queue as routine
-- **Aging indicators** show how long each suppressed decision has been pending review
-- **Automatic escalation to triage view** after `suppressed_decision_age` (scoring_config) elapses without analyst review
-- ▲ **Aging jitter** of `±age_jitter_hours` (scoring_config) applied to escalation timing to prevent simultaneous floods when a cohort of suppressed decisions ages together. Without jitter, analysts face predictable step-function workload increases that they learn to expect and deprioritize.
+- ▲ **Aging indicators** (deferred with §13.1) show how long each suppressed decision has been pending review
+- ▲ **Automatic escalation to triage view** (deferred with §13.1) after `suppressed_decision_age` (scoring_config) elapses without analyst review
+- ▲ **Aging jitter** (deferred with §13.1) of `±age_jitter_hours` (scoring_config) applied to escalation timing to prevent simultaneous floods when a cohort of suppressed decisions ages together. Without jitter, analysts face predictable step-function workload increases that they learn to expect and deprioritize.
 
 ### 11.5 ▲ Analyst Workflow State Transitions
 
@@ -551,6 +563,8 @@ The UI must support these alert state transitions:
 These transitions make active-alert profile blocking, shadow profile promotion, containment queue state, and the replay mechanism operationally real rather than decorative.
 
 ## 12. Asset and Service Dependency Context
+
+▲ **v1 deferral (S4.7 / Path B).** Static asset classification artifacts, service-dependency maps, blast-radius computation, service-account criticality surfacing, and `infrastructure_volatile` entity distinction are design targets, not shipped in v1 portfolio. No committed config artifacts, enrichment loader, scorer flag emission, API fields, or triage UI indicators exist in v1. Full asset/service-dependency context deferred to Phase 4 (§13).
 
 A static asset classification artifact and a static service-dependency map are committed to the repository. These are read-only metadata sources used to:
 
@@ -604,9 +618,9 @@ Repository, CI, four-container deployment topology (§4.4), Postgres + DuckDB + 
 ### Phase 3 — Explanation and Analyst UI
 
 - LLM explanation service with structured input binding (§8.2), pinned non-alias model ID, ExplanationRecord output validation (§8.3), prohibited-content list, top-K counterfactuals, deterministic template fallback, queue depth limit
-- Triage UI with raw_score primacy and lifecycle/confidence flags
+- Triage UI with raw_score primacy and confidence/scoring flags (alert workflow states per §11.5; profile lifecycle §5.4 deferred)
 - Detail UI with confidence separation, ExplanationRecord rendering
-- **Suppressed-decisions view (§11.4)** with aging escalation and jitter
+- **Suppressed-decisions view (§11.4)** ships (confidence-floor partition); ▲ aging escalation and jitter deferred to Phase 4 (S4.3 / Path B)
 - **Analyst workflow state transitions (§11.5)**
 - Replay mechanism with contiguous-window enforcement (§9.3)
 
@@ -640,6 +654,11 @@ If the 8-10 week schedule slips, cuts must protect the core portfolio claim: det
 - Suppressed-decisions view (without escalation if necessary; the view itself is non-negotiable)
 
 **Deferrable (document as future work, not implement):**
+- Telemetry-gap two-tier policy (§6.5): gap detector, localized-vs-source correlation scoring, sensor-health incident path (`gap_windows.*` placeholders only in v1)
+- Calendar dual-score (§6.6): calendar store, `context_adjusted_score`, triage/detail calendar UI (`max_calendar_adjustment` placeholder only in v1)
+- Asset/service-dependency context (§12): static classification artifacts, dependency map, blast-radius indicators, service-account criticality, `infrastructure_volatile` flag (no stub artifacts or UI placeholders in v1)
+- Suppressed-decisions aging escalation + jitter (§11.4): aging indicators, `suppressed_decision_age`/`suppressed_decision_aging_days` auto-escalation, `±age_jitter_hours` scheduling (the confidence-floor suppressed view itself ships; escalation/jitter are placeholders only in v1)
+- Profile lifecycle state machine (§5.4): dormant retention, reactivation penalties, onboarding/role_transition build rules (v1 partial coverage via `cohort_unsupported` + staleness halt only)
 - Full replay UI (replay engine ships; UI for invoking it can be CLI in v1)
 - Advanced cohort poisoning gates beyond basic shrinkage (keep the cohort_unsupported terminus)
 - Multi-service Kubernetes deployment (the four-container topology is sufficient)

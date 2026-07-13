@@ -1,7 +1,7 @@
 import json
 import random
 from datetime import datetime, timedelta
-from typing import List, Dict, Tuple, Any
+from typing import List, Dict, Tuple
 import uuid
 
 from core.schemas.events import Event, AuthEventData, ProcessEventData
@@ -198,7 +198,7 @@ class EventGenerator:
                     timestamp=shifted_ts,
                     event_type="process",
                     raw_entity_id=entity.entity_id,
-                    simulation_partition="production",
+                    simulation_partition="eval_scenario_2",
                     event_data=ProcessEventData(
                         process_name="powershell.exe",
                         command_line=f"powershell.exe -EncodedCommand XYZ{step}_{burst}",
@@ -229,7 +229,7 @@ class EventGenerator:
                         timestamp=current_ts + timedelta(minutes=burst*5),
                         event_type="process",
                         raw_entity_id=entity.entity_id,
-                        simulation_partition="production",
+                        simulation_partition="eval_scenario_3",
                         event_data=ProcessEventData(
                             process_name="mimikatz.exe",
                             command_line=f"mimikatz.exe -dump {burst}",

@@ -1,0 +1,52 @@
+{
+  "anomaly_threshold": 45.0,
+  "calibrated": {
+    "precision": 0.01906116642958748,
+    "recall": 0.8170731707317073,
+    "f1": 0.037253266611064775,
+    "tp": 67,
+    "fp": 3448,
+    "fn": 15,
+    "tn": 8969,
+    "drift_alerts": 46,
+    "scenarios": {
+      "scenario_1_sharp_misuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0
+      },
+      "scenario_2_slow_roll": {
+        "recall": 1.0,
+        "tp": 35,
+        "fn": 0
+      },
+      "scenario_3_subtle": {
+        "recall": 0.6666666666666666,
+        "tp": 30,
+        "fn": 15
+      },
+      "scenario_4_service_abuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0
+      }
+    }
+  },
+  "baseline": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 82
+  },
+  "best_f1": {
+    "threshold": 55,
+    "precision": 0.04054054054054054,
+    "recall": 0.5853658536585366,
+    "f1": 0.07582938388625592,
+    "tp": 48,
+    "fp": 1136,
+    "fn": 34
+  },
+  "curve_points": 29
+}

@@ -2,7 +2,7 @@ import json
 import logging
 from sqlalchemy import select, delete
 from core.database import SessionLocal
-from core.models import ResolvedEventModel, DecisionRecordModel, ProfileArtifactModel
+from core.models import ResolvedEventModel, DecisionRecordModel
 from worker.scorer import score_event, load_scoring_config
 from worker.profile_store import ProfileStore
 from core.schemas.events import ResolvedEvent
@@ -26,7 +26,8 @@ def rescore():
     count = 0
     for db_event in events:
         profile = profile_store.get_active_profile(db_event.entity_id, db_event.timestamp)
-        if not profile: continue
+        if not profile:
+            continue
         
         event_data_dict = json.loads(db_event.event_data) if isinstance(db_event.event_data, str) else db_event.event_data
         resolved_event = ResolvedEvent(

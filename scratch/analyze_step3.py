@@ -1,10 +1,8 @@
-import json
 import numpy as np
 from pathlib import Path
-from core.database import SessionLocal
-from core.models import DecisionRecordModel, EvalGroundTruthModel
+from core.models import DecisionRecordModel
 from batch.eval.runner import run_pipeline, calculate_metrics
-from sqlalchemy import select, func
+from sqlalchemy import select
 
 def analyze_results(db, threshold=45.0, name="DATASET"):
     # Clear caches

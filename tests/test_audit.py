@@ -1,28 +1,30 @@
+import json
+import sqlite3
+
 import pytest
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
 from core.database import Base
 from core.models import DecisionRecordModel
 from core.schemas.decisions import DecisionRecord
 from worker.recorder import record_decision
 
-from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.dialects.postgresql import JSONB, ARRAY
+sqlite3.register_adapter(list, lambda value: json.dumps(value))
+sqlite3.register_adapter(dict, lambda value: json.dumps(value))
+
 
 @compiles(JSONB, "sqlite")
 def compile_jsonb_sqlite(type_, compiler, **kw):
     return "JSON"
 
+
 @compiles(ARRAY, "sqlite")
 def compile_array_sqlite(type_, compiler, **kw):
     return "JSON"
-
-import sqlite3
-import json
-sqlite3.register_adapter(list, lambda l: json.dumps(l))
-sqlite3.register_adapter(dict, lambda d: json.dumps(d))
 
 @pytest.fixture
 def db_session():

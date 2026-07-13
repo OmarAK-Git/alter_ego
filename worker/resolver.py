@@ -5,18 +5,45 @@ from core.database import SessionLocal
 from core.models import EventModel, ResolvedEventModel
 from core.schemas.events import Event, ResolvedEvent
 
+# Confidence below this threshold triggers the low_resolution_confidence decision flag.
+LOW_RESOLUTION_THRESHOLD = 0.75
+COLLISION_SPLIT_CONFIDENCE = 0.3
+
+_COLLISION_PREFIX = "collide::"
+_SPLIT_PREFIX = "split::"
+
+
+def _entity_type_for_canonical(canonical_id: str) -> str:
+    if canonical_id.startswith("user_"):
+        return "human"
+    if canonical_id.startswith("svc_"):
+        return "service_account"
+    return "unknown"
+
+
 def resolve_entity(raw_entity_id: str) -> tuple[str, str, float]:
     """
     Returns (entity_id, entity_type, confidence).
     For Phase 1, we use deterministic prefixes.
     user_X -> human
     svc_X -> service_account
+    collide::<canonical>::<alias> -> collision fixture (low confidence)
+    split::<ref> -> split/ambiguity fixture (low confidence)
     """
+    if raw_entity_id.startswith(_COLLISION_PREFIX):
+        rest = raw_entity_id[len(_COLLISION_PREFIX) :]
+        canonical, _alias = rest.split("::", 1)
+        return canonical, _entity_type_for_canonical(canonical), COLLISION_SPLIT_CONFIDENCE
+
+    if raw_entity_id.startswith(_SPLIT_PREFIX):
+        ref = raw_entity_id[len(_SPLIT_PREFIX) :]
+        return ref, _entity_type_for_canonical(ref), COLLISION_SPLIT_CONFIDENCE
+
     if raw_entity_id.startswith("user_"):
         return raw_entity_id, "human", 1.0
-    elif raw_entity_id.startswith("svc_"):
+    if raw_entity_id.startswith("svc_"):
         return raw_entity_id, "service_account", 1.0
-    
+
     return raw_entity_id, "unknown", 0.5
 
 def process_unresolved_events(db: Session | None = None) -> int:
@@ -33,7 +60,7 @@ def process_unresolved_events(db: Session | None = None) -> int:
         # Find events where event_id is not in resolved_events
         stmt = select(EventModel).outerjoin(
             ResolvedEventModel, EventModel.event_id == ResolvedEventModel.event_id
-        ).where(ResolvedEventModel.event_id == None)
+        ).where(ResolvedEventModel.event_id.is_(None))
         
         events_to_resolve = db_session.execute(stmt).scalars().all()
         

@@ -6,7 +6,7 @@ def analyze():
     db = SessionLocal()
     
     # Missed malicious events
-    stmt = select(EvalGroundTruthModel).where(EvalGroundTruthModel.is_malicious == True)
+    stmt = select(EvalGroundTruthModel).where(EvalGroundTruthModel.is_malicious.is_(True))
     malicious = db.execute(stmt).scalars().all()
     
     print("--- Analysis of Missed Malicious Events ---")
@@ -28,8 +28,8 @@ def analyze():
     stmt = select(DecisionRecordModel).outerjoin(
         EvalGroundTruthModel, DecisionRecordModel.event_id == EvalGroundTruthModel.event_id
     ).where(
-        DecisionRecordModel.is_anomaly == True,
-        (EvalGroundTruthModel.is_malicious == False) | (EvalGroundTruthModel.event_id == None)
+        DecisionRecordModel.is_anomaly.is_(True),
+        EvalGroundTruthModel.is_malicious.is_(False) | EvalGroundTruthModel.event_id.is_(None),
     ).order_by(DecisionRecordModel.score.desc()).limit(5)
     
     fps = db.execute(stmt).scalars().all()

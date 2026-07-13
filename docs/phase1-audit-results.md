@@ -11,4 +11,18 @@ This document summarizes the results of the Phase 1 hardening sprint, documentin
 - **Profile Drift During Alerts**: [CLOSED] Implemented shadow profile logic; entities under containment generate shadow profiles that are never promoted to the active scoring baseline.
 
 ## Final Status
-Phase 1 is formally CLOSED. The foundation is stable, auditable, and has successfully passed the Phase 2 calibration gate with 100% Precision and Recall.
+
+**Phase 1 hardening:** CLOSED. The architectural gaps above are resolved; the foundation is stable and auditable for Phase 1 scope.
+
+**Phase 2 calibration:** **Partial (Phase 2A)** — not a full calibration pass. Authoritative metrics live in `docs/calibration_final_metrics.json` (see also `memory-bank/progress.md`):
+
+| Metric | Value |
+|---|---|
+| Precision | 1.0 (0 FP) |
+| Global recall | ~0.42 (5 TP, 7 FN) |
+| S1 sharp misuse recall | 1.0 |
+| **S2 slow-roll recall** | **0.0 (7 FN)** |
+| S3 coordinated recall | 1.0 |
+| S4 service abuse recall | 1.0 |
+
+Phase 1 foundation work does not imply Phase 2 is calibrated. S2 slow-roll remains an open residual until a re-sweep under S3.

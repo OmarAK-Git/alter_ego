@@ -16,7 +16,6 @@ from batch.synthetic.generator import EventGenerator
 from worker.resolver import process_unresolved_events
 from worker.scorer import process_unscored_events
 from batch.profile_builder.builder import build_profiles
-import yaml
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)

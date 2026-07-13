@@ -37,7 +37,6 @@ def test_profile_selection_point_in_time(db_session):
     
     t0 = datetime(2026, 1, 1, 0, 0, 0)
     t1 = t0 + timedelta(days=1)
-    t2 = t0 + timedelta(days=2)
     
     # Create v1 profile
     p1 = ProfileArtifactModel(

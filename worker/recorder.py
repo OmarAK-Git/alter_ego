@@ -1,7 +1,22 @@
 from sqlalchemy.orm import Session
 from core.database import SessionLocal
-from core.models import DecisionRecordModel
+from core.models import DecisionRecordModel, ContainmentQueueModel
 from core.schemas.decisions import DecisionRecord
+
+
+def queue_simulated_containment(
+    db: Session, decision_id: str, entity_id: str
+) -> ContainmentQueueModel:
+    """Enqueue simulated containment — same semantics as manual API contain path."""
+    cq = ContainmentQueueModel(
+        decision_id=decision_id,
+        entity_id=entity_id,
+        action="simulate_containment",
+        status="pending",
+    )
+    db.add(cq)
+    return cq
+
 
 def record_decision(decision: DecisionRecord, db: Session | None = None):
     if db is None:
@@ -28,6 +43,10 @@ def record_decision(decision: DecisionRecord, db: Session | None = None):
         from sqlalchemy.exc import IntegrityError
         try:
             db_session.add(db_decision)
+            if "simulated_containment_queued" in decision.flags:
+                queue_simulated_containment(
+                    db_session, decision.decision_id, decision.entity_id
+                )
             db_session.commit()
         except IntegrityError:
             db_session.rollback()

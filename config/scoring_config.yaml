@@ -1,3 +1,5 @@
+# S3 governance (2026-07-13): v2.2 @ anomaly_threshold=45 unchanged through S3.1 re-sweep.
+# PR-curve best-F1 thr=55 was diagnostic only — not applied. See docs/scoring-config-governance-s3.md.
 version: "2.2"
 anomaly_threshold: 45.0
 # Drift scoring formula (proportional, capped):
@@ -16,26 +18,29 @@ max_profile_staleness_days: 14
 drift_comparison_history_count: 5
 drift_half_life_days: 7
 confidence_floor: 0.6
+# Observation-count confidence: n / (n + confidence_k). Default k=10.0 (SPEC_V3 §6.5).
+confidence_k: 10.0
 containment_threshold: 85.0
 contribution_scale_max: 50.0
+# Max concurrent in-flight LLM explanation jobs (SPEC §8.6). On overflow, template fallback is used immediately.
+explainer_queue_depth: 8
 
 laplace_alpha: 1.0
+# Deferred S4.6: calendar dual-score not wired; no production reader.
 max_calendar_adjustment: 0.3
 max_replay_window_days: 30
 max_profile_build_block_days: 30
 recent_drift_window_days: 3
 cohort_gate_window_days: 7
+# Deferred S4.3: SPEC §11.4 jitter not wired; no production reader.
 age_jitter_hours: 4
-
-decay_lambdas:
-  staleness: 0.1
-  drift: 0.05
 
 cohort_gating_constants:
   min_cohort_size: 10
   min_clean_observation_count: 5
   max_changed_fraction: 0.2
 
+# Deferred S4.6: telemetry-gap two-tier not wired; no production reader.
 gap_windows:
   gap_correlation_window: 60
   investigation_context_window: 14
@@ -55,6 +60,7 @@ features:
     weight: 100.0
   service_account_execution_frequency_deviation:
     weight: 5.0
+  # Deferred (S2.6): hourly volume spike — weight unused; scorer always score_vol=0.
   total_volume_delta:
     weight: 1.0
 

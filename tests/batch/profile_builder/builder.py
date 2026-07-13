@@ -51,5 +51,6 @@ def test_profile_builder_aggregates_correctly(db_session):
     assert profile is not None, "Profile was not built"
     assert profile.features["total_events"] == 1
     assert profile.features["login_hours"]["15"] == 1
+    assert profile.features["geolocations"]["US"] == 1
     assert profile.features["endpoints"]["endpoint_a"] == 1
     assert profile.features["process_names"]["bash"] == 1

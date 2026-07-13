@@ -1,0 +1,13 @@
+{
+  "checks": [
+    {
+      "name": "tests",
+      "command": "pytest -q --tb=line"
+    },
+    {
+      "name": "lint",
+      "command": "ruff check ."
+    }
+  ],
+  "timeout_seconds": 600
+}

@@ -1,7 +1,6 @@
 import subprocess
 import time
 import os
-import sys
 
 def run_scenario(api_key, headers, output_filename):
     print(f"--- Running scenario for {output_filename} ---")

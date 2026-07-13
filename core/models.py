@@ -1,7 +1,13 @@
 from sqlalchemy import Column, String, DateTime, Float, Boolean, Integer
-from sqlalchemy.dialects.postgresql import JSONB, ARRAY
+from sqlalchemy.dialects.postgresql import JSONB
 from pgvector.sqlalchemy import Vector
 from core.database import Base
+from core.schemas.profiles import (
+    DEFAULT_EMBEDDING_DIMENSIONALITY,
+    DEFAULT_EMBEDDING_MODEL_ID,
+    DEFAULT_EMBEDDING_MODEL_VERSION,
+    DEFAULT_EMBEDDING_INPUT_NORMALIZER_VERSION,
+)
 try:
     from core.database import SQLiteVector
 except ImportError:
@@ -45,10 +51,12 @@ class ProfileArtifactModel(Base):
     is_shadow = Column(Boolean, default=False, nullable=False)
     features = Column(JSONB, nullable=False)
     embedding = Column(VectorType, nullable=True) # For command_line_embedding_similarity
-    embedding_model_id = Column(String, default="nomic-embed-text", nullable=False)
-    embedding_model_version = Column(String, default="1.0", nullable=False)
-    embedding_dimensionality = Column(Integer, default=128, nullable=False)
-    embedding_input_normalizer_version = Column(String, default="1.0", nullable=False)
+    embedding_model_id = Column(String, default=DEFAULT_EMBEDDING_MODEL_ID, nullable=False)
+    embedding_model_version = Column(String, default=DEFAULT_EMBEDDING_MODEL_VERSION, nullable=False)
+    embedding_dimensionality = Column(Integer, default=DEFAULT_EMBEDDING_DIMENSIONALITY, nullable=False)
+    embedding_input_normalizer_version = Column(
+        String, default=DEFAULT_EMBEDDING_INPUT_NORMALIZER_VERSION, nullable=False
+    )
 
 class DecisionRecordModel(Base):
     __tablename__ = "decisions"
@@ -66,6 +74,7 @@ class DecisionRecordModel(Base):
     cohort_unsupported = Column(Boolean, nullable=False)
     embedding_model_version = Column(String, nullable=False, default='unknown')
     flags = Column(JSONB, nullable=False)
+    replay_run_id = Column(String, nullable=True, index=True)
 
 class ExplanationRecordModel(Base):
     __tablename__ = "explanations"

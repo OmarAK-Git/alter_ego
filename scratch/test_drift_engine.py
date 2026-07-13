@@ -1,9 +1,5 @@
-import json
 import uuid
-import numpy as np
 from datetime import datetime, timedelta
-from pathlib import Path
-from sqlalchemy import select
 from core.database import SessionLocal, Base, engine
 from core.models import ResolvedEventModel, ProfileArtifactModel, DecisionRecordModel, ContainmentQueueModel
 from batch.profile_builder.builder import build_profiles

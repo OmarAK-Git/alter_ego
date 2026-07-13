@@ -1,24 +1,28 @@
-import os
 import json
-import duckdb
+import logging
 import re
 import uuid
 from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
-from sqlalchemy import select, desc, and_
-import logging
 from pathlib import Path
+from statistics import median
 
-logger = logging.getLogger(__name__)
-
-from core.database import SessionLocal
-from core.models import ResolvedEventModel, ProfileArtifactModel, DecisionRecordModel, ContainmentQueueModel
-from core.schemas.profiles import ProfileArtifact
-from core.math_utils import get_laplace_prob, compute_kl_divergence, compute_distribution_kl, exponential_decay
-from worker.vectorizer import vectorize_command_line, compute_cosine_distance, NORMALIZER_VERSION
+import duckdb
 import numpy as np
 import yaml
-from statistics import median
+from sqlalchemy import and_, desc, select
+from sqlalchemy.orm import Session
+
+from core.database import SessionLocal
+from core.models import DecisionRecordModel, ProfileArtifactModel, ResolvedEventModel
+from core.schemas.profiles import (
+    DEFAULT_EMBEDDING_DIMENSIONALITY,
+    DEFAULT_EMBEDDING_MODEL_ID,
+    DEFAULT_EMBEDDING_MODEL_VERSION,
+)
+from core.math_utils import compute_distribution_kl, exponential_decay
+from worker.vectorizer import NORMALIZER_VERSION, compute_cosine_distance, vectorize_command_line
+
+logger = logging.getLogger(__name__)
 
 def extract_role(entity_id: str, entity_type: str) -> str:
     if entity_type == "service_account":
@@ -128,6 +132,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
                         "endpoint_id": e.event_data.get("endpoint_id"),
                         "process_name": e.event_data.get("process_name"),
                         "command_line": e.event_data.get("command_line", ""),
+                        "geolocation": e.event_data.get("geolocation"),
                         "hour_of_day": e.timestamp.hour
                     }
                     f.write(json.dumps(data) + "\n")
@@ -138,7 +143,6 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         logger.info(f"Wrote temp JSONLs in {time.time()-t1:.2f}s")
                 
         con = duckdb.connect()
-        t2 = time.time()
         
         # Fix #6 — exclude blocked entities from cohort histograms so that an
         # attacker's lateral-movement events cannot inflate cohort baselines and
@@ -150,24 +154,24 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
             blocked_filter = f"WHERE entity_id NOT IN ({placeholders})"
             params = list(blocked_entities)
 
-        parent_cohort_query = f"SELECT entity_type, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') {blocked_filter} GROUP BY entity_type"
+        parent_cohort_query = f"SELECT entity_type, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), histogram(geolocation) FROM read_json_auto('{temp_file_hist}') {blocked_filter} GROUP BY entity_type"
         parent_res = con.execute(parent_cohort_query, params).fetchall()
-        parent_cohorts = {row[0]: {"login_hours": parse_duckdb_histogram(row[1]), "endpoints": parse_duckdb_histogram(row[2]), "process_names": parse_duckdb_histogram(row[3])} for row in parent_res}
+        parent_cohorts = {row[0]: {"login_hours": parse_duckdb_histogram(row[1]), "endpoints": parse_duckdb_histogram(row[2]), "process_names": parse_duckdb_histogram(row[3]), "geolocations": parse_duckdb_histogram(row[4])} for row in parent_res}
 
-        primary_cohort_query = f"SELECT role, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') {blocked_filter} GROUP BY role"
+        primary_cohort_query = f"SELECT role, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), histogram(geolocation) FROM read_json_auto('{temp_file_hist}') {blocked_filter} GROUP BY role"
         primary_res = con.execute(primary_cohort_query, params).fetchall()
-        primary_cohorts = {row[0]: {"login_hours": parse_duckdb_histogram(row[1]), "endpoints": parse_duckdb_histogram(row[2]), "process_names": parse_duckdb_histogram(row[3])} for row in primary_res}
+        primary_cohorts = {row[0]: {"login_hours": parse_duckdb_histogram(row[1]), "endpoints": parse_duckdb_histogram(row[2]), "process_names": parse_duckdb_histogram(row[3]), "geolocations": parse_duckdb_histogram(row[4])} for row in primary_res}
 
-        global_res = con.execute(f"SELECT histogram(hour_of_day), histogram(endpoint_id), histogram(process_name) FROM read_json_auto('{temp_file_hist}') {blocked_filter}", params).fetchone()
-        global_cohort = {"login_hours": parse_duckdb_histogram(global_res[0]), "endpoints": parse_duckdb_histogram(global_res[1]), "process_names": parse_duckdb_histogram(global_res[2])} if global_res else {"login_hours": {}, "endpoints": {}, "process_names": {}}
+        global_res = con.execute(f"SELECT histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), histogram(geolocation) FROM read_json_auto('{temp_file_hist}') {blocked_filter}", params).fetchone()
+        global_cohort = {"login_hours": parse_duckdb_histogram(global_res[0]), "endpoints": parse_duckdb_histogram(global_res[1]), "process_names": parse_duckdb_histogram(global_res[2]), "geolocations": parse_duckdb_histogram(global_res[3])} if global_res else {"login_hours": {}, "endpoints": {}, "process_names": {}, "geolocations": {}}
         
         # HISTORICAL PROFILE AGGREGATION
-        query_hist = f"SELECT entity_id, MAX(entity_type), MAX(role), MIN(CAST(timestamp AS TIMESTAMP)), MAX(CAST(timestamp AS TIMESTAMP)), COUNT(*), histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), list(command_line) FROM read_json_auto('{temp_file_hist}') GROUP BY entity_id"
+        query_hist = f"SELECT entity_id, MAX(entity_type), MAX(role), MIN(CAST(timestamp AS TIMESTAMP)), MAX(CAST(timestamp AS TIMESTAMP)), COUNT(*), histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), histogram(geolocation), list(command_line) FROM read_json_auto('{temp_file_hist}') GROUP BY entity_id"
         result_hist = con.execute(query_hist).fetchall()
         
         # RECENT BEHAVIOR AGGREGATION (for drift)
         if events_recent:
-            query_recent = f"SELECT entity_id, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), list(command_line) FROM read_json_auto('{temp_file_recent}') GROUP BY entity_id"
+            query_recent = f"SELECT entity_id, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), histogram(geolocation), list(command_line) FROM read_json_auto('{temp_file_recent}') GROUP BY entity_id"
             result_recent_rows = con.execute(query_recent).fetchall()
             recent_features_map = {row[0]: row[1:] for row in result_recent_rows}
         else:
@@ -185,52 +189,57 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         # Phase 1: Compute Raw Drifts (Recent vs Historical)
         raw_drift_records = []
         for row in result_hist:
-            entity_id, entity_type, role, window_start, window_end, total_events, login_hours, endpoints, process_names, cmd_lines = row
+            entity_id, entity_type, role, window_start, window_end, total_events, login_hours, endpoints, process_names, geolocations, cmd_lines = row
             total_events = int(total_events)
             
             # 1. Profile Features (30-day window)
             cur_login_hours = parse_duckdb_histogram(login_hours)
             cur_endpoints = parse_duckdb_histogram(endpoints)
             cur_process_names = parse_duckdb_histogram(process_names)
+            cur_geolocations = parse_duckdb_histogram(geolocations)
             
             vectors = [vectorize_command_line(cmd) for cmd in cmd_lines if cmd]
             centroid_arr = np.mean(vectors, axis=0) if vectors else None
             if centroid_arr is not None:
                 c_norm = np.linalg.norm(centroid_arr)
-                if c_norm > 0: centroid_arr = centroid_arr / c_norm
+                if c_norm > 0:
+                    centroid_arr = centroid_arr / c_norm
 
             # 2. Recent Features (3-day window) - ONLY for drift
             recent_row = recent_features_map.get(entity_id)
             if recent_row:
-                rec_login_hours, rec_endpoints, rec_process_names, rec_cmd_lines = recent_row
+                rec_login_hours, rec_endpoints, rec_process_names, rec_geolocations, rec_cmd_lines = recent_row
                 rec_login_hours = parse_duckdb_histogram(rec_login_hours)
                 rec_endpoints = parse_duckdb_histogram(rec_endpoints)
                 rec_process_names = parse_duckdb_histogram(rec_process_names)
+                rec_geolocations = parse_duckdb_histogram(rec_geolocations)
                 
                 rec_vectors = [vectorize_command_line(cmd) for cmd in rec_cmd_lines if cmd]
                 rec_centroid = np.mean(rec_vectors, axis=0) if rec_vectors else None
                 if rec_centroid is not None:
                     rc_norm = np.linalg.norm(rec_centroid)
-                    if rc_norm > 0: rec_centroid = rec_centroid / rc_norm
+                    if rc_norm > 0:
+                        rec_centroid = rec_centroid / rc_norm
             else:
                 # No recent activity? Use current 30d as fallback (shouldn't happen if they have hist)
-                rec_login_hours, rec_endpoints, rec_process_names, rec_centroid = cur_login_hours, cur_endpoints, cur_process_names, centroid_arr
+                rec_login_hours, rec_endpoints, rec_process_names, rec_geolocations, rec_centroid = cur_login_hours, cur_endpoints, cur_process_names, cur_geolocations, centroid_arr
 
             # 3. Retrieve Historical Baseline (Previous Profile)
             prev_clean_stmt = select(ProfileArtifactModel).where(
                 and_(
                     ProfileArtifactModel.entity_id == entity_id,
-                    ProfileArtifactModel.is_shadow == False,
-                    ProfileArtifactModel.promoted_at != None
+                    ProfileArtifactModel.is_shadow.is_(False),
+                    ProfileArtifactModel.promoted_at.isnot(None),
                 )
             ).order_by(desc(ProfileArtifactModel.data_window_end)).limit(history_count)
             prev_profiles = db_session.execute(prev_clean_stmt).scalars().all()
             
-            feature_drifts = []
+            _feature_drifts = []
             if prev_profiles:
-                deltas = {"login_hour": [], "endpoint_set": [], "process_name": [], "embedding": []}
+                deltas = {"login_hour": [], "geolocation": [], "endpoint_set": [], "process_name": [], "embedding": []}
                 for prev in prev_profiles:
                     deltas["login_hour"].append(compute_distribution_kl(rec_login_hours, prev.features.get("login_hours", {}), alpha=laplace_alpha))
+                    deltas["geolocation"].append(compute_distribution_kl(rec_geolocations, prev.features.get("geolocations", {}), alpha=laplace_alpha))
                     deltas["endpoint_set"].append(compute_distribution_kl(rec_endpoints, prev.features.get("endpoints", {}), alpha=laplace_alpha))
                     deltas["process_name"].append(compute_distribution_kl(rec_process_names, prev.features.get("process_names", {}), alpha=laplace_alpha))
                     
@@ -251,6 +260,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
                 "features": {
                     "total_events": total_events,
                     "login_hours": cur_login_hours,
+                    "geolocations": cur_geolocations,
                     "endpoints": cur_endpoints,
                     "process_names": cur_process_names
                 },
@@ -301,6 +311,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
             features = {
                 "total_events": rec["features"]["total_events"],
                 "login_hours": rec["features"]["login_hours"],
+                "geolocations": rec["features"]["geolocations"],
                 "endpoints": rec["features"]["endpoints"],
                 "process_names": rec["features"]["process_names"],
                 "role": rec["role"],
@@ -313,7 +324,14 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
             promoted_at = as_of if not is_shadow_profile else None
             
             if not is_shadow_profile:
-                prev_active = db_session.query(ProfileArtifactModel).filter(and_(ProfileArtifactModel.entity_id == entity_id, ProfileArtifactModel.is_shadow == False, ProfileArtifactModel.promoted_at != None, ProfileArtifactModel.superseded_at == None)).first()
+                prev_active = db_session.query(ProfileArtifactModel).filter(
+                    and_(
+                        ProfileArtifactModel.entity_id == entity_id,
+                        ProfileArtifactModel.is_shadow.is_(False),
+                        ProfileArtifactModel.promoted_at.isnot(None),
+                        ProfileArtifactModel.superseded_at.is_(None),
+                    )
+                ).first()
                 if prev_active:
                     prev_active.superseded_at = promoted_at
 
@@ -332,9 +350,9 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
                 is_shadow=is_shadow_profile,
                 features=features,
                 embedding=rec["embedding"],
-                embedding_model_id="alter-ego-ngram-v1",
-                embedding_model_version="1.0",
-                embedding_dimensionality=128,
+                embedding_model_id=DEFAULT_EMBEDDING_MODEL_ID,
+                embedding_model_version=DEFAULT_EMBEDDING_MODEL_VERSION,
+                embedding_dimensionality=DEFAULT_EMBEDDING_DIMENSIONALITY,
                 embedding_input_normalizer_version=NORMALIZER_VERSION
             )
             db_session.add(db_profile)

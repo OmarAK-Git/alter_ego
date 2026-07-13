@@ -36,9 +36,9 @@ ALTER\_EGO uses three execution tiers:
 
 
 
-Cold path: profile builds, cohort recomputation, drift calculation, calibration, replay, and synthetic generation.
+Cold path: profile builds (including embedded cohort priors), drift calculation, calibration, replay, and synthetic generation.
 
-Hot path: deterministic per-event scoring. No LLM calls, randomness, or external model calls except already-configured local embedding generation where applicable.
+Hot path: deterministic per-event scoring. No LLM calls, randomness, or external model calls. Command-line vectors are produced locally by deterministic char 3-gram SHA-256 hashing (`worker/vectorizer.py`); no neural embedding model runs on the hot path.
 
 Warm path: post-threshold explanation generation and UI rendering. LLM output is validated and may fall back to deterministic templates.
 
@@ -54,7 +54,7 @@ Logical modules are deployed in a compressed four-container topology:
 
 | worker | entity resolver, scorer, decision recorder |
 
-| batch | profile builder, synthetic generator, eval harness, replay runner, cohort builder |
+| batch | profile builder (embeds cohort priors), synthetic generator, eval harness, replay runner |
 
 | postgres | Postgres, pgvector, operational state |
 
@@ -76,9 +76,9 @@ Profile builder reads events through an as\_of cutoff using either a Postgres RE
 
 Profile builder writes immutable profile artifacts. If an entity has an uncleared active alert, the new profile is stored as shadow and is not promoted.
 
-Cohort builder writes versioned frozen cohort-prior artifacts on an independent cadence.
+Profile builder embeds cohort priors in every profile artifact as `features["cohort_data"]` during each build (`primary` by role, `parent` by entity_type, `terminus` global histograms from the same `as_of` window). v1 does not ship a separate cohort-builder module or independent versioned cohort-prior artifacts.
 
-Scorer selects the point-in-time active profile for the event and a frozen cohort snapshot for the scoring window.
+Scorer selects the point-in-time active profile for the event and reads cohort histograms from that profile's embedded `cohort_data` (entity-local → role → unsupported terminus). Independent cohort artifact selection is deferred to Phase 4 / portfolio hardening (§9, S5.11).
 
 Decision recorder persists idempotent decisions, feature contributions, lineage, and containment-queue entries when thresholds and confidence criteria are met.
 
@@ -94,7 +94,7 @@ Postgres + pgvector: operational state, versioned artifacts, audit records, cont
 
 DuckDB: cold-path profile computation over materialized event windows.
 
-Local embedding model, initially nomic-embed-text: command-line semantic similarity without external per-event dependency. The chosen model ID, version, dimensionality, and input normalizer version are locked before calibration.
+Shipping command-line vectors: deterministic char 3-gram SHA-256 hashing into unit-norm **128-d** vectors (`alter-ego-ngram-v1`, `worker/vectorizer.py`). Structural cosine distance, not semantic BERT similarity; no external per-event model dependency. Model ID, version, dimensionality, and input normalizer version are locked before calibration. **Deferred debt:** Alembic / ORM schema defaults still say `nomic-embed-text` (768-d neural embedder explored early, abandoned); S1.4 aligns code defaults — do not describe nomic as current runtime.
 
 Kubernetes kind/k3d: local four-container deployment target.
 
@@ -129,6 +129,8 @@ P.is\_shadow = false AND P.promoted\_at <= E < P.superseded\_at
 
 
 Profile artifacts include promoted\_at and superseded\_at. Shadow profiles may be stored for analysis but cannot replace active scoring profiles until the relevant alert is cleared.
+
+Profile lifecycle states (§5.4 in SPEC.md: dormant, reactivated\_dormant, onboarding, role\_transition) are **deferred post-v1** (S2.7); v1 has no `lifecycle_state` on artifacts — alert workflow badges (§11.5) are separate.
 
 
 
@@ -188,7 +190,9 @@ The unsupported terminus sets cohort\_unsupported = true, applies a higher conta
 
 
 
-Cohort priors are recomputed on a schedule independent of profile builds. Cohort-prior artifacts are versioned and frozen per scoring window.
+v1 embeds cohort priors at profile-build time in `features["cohort_data"]`. The scorer consumes cohort histograms from the active profile only; there is no separate cohort artifact table and no `cohort_version` in decision lineage today.
+
+Independent cohort-prior artifacts (versioned, frozen per scoring window, recomputed on a cadence separate from profile builds) are **deferred post-v1** to Phase 4 hardening (§9 / S5.11). The three-step fallback, unsupported terminus (`cohort_unsupported`), `cohort_used` metadata, and cohort novelty gate are implemented.
 
 
 
@@ -202,7 +206,15 @@ Scenario 3 performance claims require an implemented cohort novelty gate with pr
 
 Before Phase 2, the embedding model ID, model version, dimensionality, and embedding\_input\_normalizer\_version must be locked and recorded on every profile artifact. Legacy profiles must be rebuilt to populate this metadata. The input normalizer must document preserved and stripped fields because command lines are low-trust, security-relevant strings.
 
+**Locked shipping values (runtime truth):**
 
+- Model ID: `alter-ego-ngram-v1`
+- Model version: `1.0`
+- Dimensionality: **128**
+- Input normalizer version: `1.0-char-3gram-hash-128` (lowercase, hex-address masking, whitespace collapse; preserves arguments)
+- Vectorizer: deterministic char 3-gram SHA-256 hash into a unit-norm vector (`worker/vectorizer.py`)
+
+**Deferred / abandoned:** `nomic-embed-text` (768-d neural embedder) remains a historical schema default in Alembic and ORM until S1.4; it is not what scores events today.
 
 A full future pgvector dimensionality migration playbook is required before portfolio-readiness claims, but Phase 2 only requires the current model/dimensionality lock and current schema correctness.
 
@@ -252,7 +264,7 @@ Observation-count confidence is implemented and configurable.
 
 Three-step cohort fallback and unsupported terminus are implemented.
 
-Frozen cohort-prior snapshots exist.
+Profile-embedded cohort priors exist (`cohort_data` on active profile artifacts). Independent frozen cohort-prior snapshots are deferred to §9 / S5.11.
 
 Scenario 3 novelty gate exists or Scenario 3 claims are deferred.
 

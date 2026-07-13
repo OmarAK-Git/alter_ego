@@ -1,4 +1,3 @@
-import json
 from core.database import SessionLocal
 from core.models import DecisionRecordModel, EvalGroundTruthModel
 from sqlalchemy import select, outerjoin

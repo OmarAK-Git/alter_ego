@@ -1,6 +1,4 @@
-import json
 import uuid
-import numpy as np
 from datetime import datetime, timedelta
 from sqlalchemy import select
 from core.database import SessionLocal, Base, engine

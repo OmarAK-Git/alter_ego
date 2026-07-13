@@ -4,7 +4,6 @@ Run with:  .venv\Scripts\pytest.exe tests/live/test_live_smoke.py -v -s
 
 Prerequisites: uvicorn must be running on http://localhost:8000
 """
-import pytest
 import requests
 from datetime import datetime
 
@@ -26,7 +25,8 @@ def test_seed_and_triage_full_lifecycle():
     Seeds a synthetic decision directly into the DB via the running process,
     walks it through the full state machine, and verifies each transition.
     """
-    import sqlite3, json
+    import sqlite3
+    import json
 
     db_path = "alter_ego_calibrate_v2.db"
     decision_id = f"smoke_test_{datetime.utcnow().strftime('%H%M%S%f')}"
@@ -70,26 +70,26 @@ def test_seed_and_triage_full_lifecycle():
     r = api("/api/alerts")
     ids = [a["decision_id"] for a in r.json()]
     assert decision_id in ids, "Decision not visible in triage queue"
-    print(f"[OK]   Visible in /api/alerts — state: new")
+    print("[OK]   Visible in /api/alerts — state: new")
 
     # --- Acknowledge ---
     r = api(f"/api/alerts/{decision_id}/workflow", method="PUT",
             json={"state": "acknowledged"})
     assert r.status_code == 200
     assert r.json()["state"] == "acknowledged"
-    print(f"[OK]   Transitioned -> acknowledged")
+    print("[OK]   Transitioned -> acknowledged")
 
     # --- Investigate ---
     r = api(f"/api/alerts/{decision_id}/workflow", method="PUT",
             json={"state": "investigating", "assignee": "analyst_1"})
     assert r.status_code == 200
     assert r.json()["state"] == "investigating"
-    print(f"[OK]   Transitioned -> investigating (assignee: analyst_1)")
+    print("[OK]   Transitioned -> investigating (assignee: analyst_1)")
 
     # --- Trigger explanation ---
     r = api(f"/api/alerts/{decision_id}/explain", method="POST")
     assert r.status_code == 200
-    print(f"[OK]   Explanation generated")
+    print("[OK]   Explanation generated")
 
     # --- Detail view has explanation ---
     r = api(f"/api/alerts/{decision_id}")
@@ -102,13 +102,13 @@ def test_seed_and_triage_full_lifecycle():
     r = api(f"/api/alerts/{decision_id}/workflow", method="PUT",
             json={"state": "cleared", "clear_reason": "Confirmed false positive — smoke test"})
     assert r.status_code == 200
-    print(f"[OK]   Transitioned -> cleared")
+    print("[OK]   Transitioned -> cleared")
 
     # --- No longer in triage queue ---
     r = api("/api/alerts")
     ids = [a["decision_id"] for a in r.json()]
     assert decision_id not in ids
-    print(f"[OK]   Removed from /api/alerts triage queue")
+    print("[OK]   Removed from /api/alerts triage queue")
 
     # --- Cleanup ---
     con = sqlite3.connect(db_path)
@@ -117,4 +117,4 @@ def test_seed_and_triage_full_lifecycle():
     con.execute("DELETE FROM explanations WHERE decision_id=?", (decision_id,))
     con.commit()
     con.close()
-    print(f"[CLEAN] Removed smoke test records")
+    print("[CLEAN] Removed smoke test records")

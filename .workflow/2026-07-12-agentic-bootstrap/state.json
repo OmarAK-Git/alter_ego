@@ -1,0 +1,87 @@
+{
+  "goal": "Initialize ALTER_EGO for accountable AI coding (workflow kit, stop gate, memory-bank, honest README).",
+  "success_criteria": [
+    "Preflight shows bootloaders ours and stop-gate configured",
+    "memory-bank initialized",
+    "This run directory passes verify_run.py",
+    "README aligned with calibration_final_metrics.json"
+  ],
+  "constraints": [
+    "Preserve CLAUDE.md architecture notes",
+    "No scoring weight changes",
+    "Do not commit calibrate DB churn"
+  ],
+  "risks": [
+    {
+      "risk": "Stop gate blocks completion if pytest/ruff missing",
+      "approval_required": false,
+      "mitigation": "Install editable package with [dev] extras"
+    }
+  ],
+  "max_concurrent_agents": 1,
+  "max_total_agents": 1,
+  "packets": [
+    {
+      "id": "01-init",
+      "objective": "Install AGENTS/OPS/.claude kit; merge CLAUDE Autopilot",
+      "files_or_sources": ["AGENTS.md", "OPS.md", "CLAUDE.md", ".claude/"],
+      "ownership": "main",
+      "status": "done"
+    },
+    {
+      "id": "02-retro",
+      "objective": "OPS lessons + CLAUDE fact fixes",
+      "files_or_sources": ["OPS.md", "CLAUDE.md"],
+      "ownership": "main",
+      "status": "done"
+    },
+    {
+      "id": "03-stop-gate",
+      "objective": "Add stop-gate.json",
+      "files_or_sources": [".claude/stop-gate.json"],
+      "ownership": "main",
+      "status": "done"
+    },
+    {
+      "id": "04-memory",
+      "objective": "Initialize memory-bank",
+      "files_or_sources": ["memory-bank/"],
+      "ownership": "main",
+      "status": "done"
+    },
+    {
+      "id": "05-workflow",
+      "objective": "Scaffold .workflow and bootstrap slug",
+      "files_or_sources": [".workflow/"],
+      "ownership": "main",
+      "status": "done"
+    },
+    {
+      "id": "06-readme",
+      "objective": "Rewrite README honestly",
+      "files_or_sources": ["README.md"],
+      "ownership": "main",
+      "status": "done"
+    }
+  ],
+  "verification": [
+    {
+      "check": "preflight stop-gate configured",
+      "command": "python C:/Users/oalan/ultimate-agentic-workflow/scripts/preflight.py --project-root .",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "check": "verify_run bootstrap slug",
+      "command": "python C:/Users/oalan/ultimate-agentic-workflow/scripts/verify_run.py --run-dir .workflow/2026-07-12-agentic-bootstrap",
+      "required": true,
+      "status": "passed"
+    },
+    {
+      "check": "README matches metrics narrative",
+      "command": null,
+      "required": true,
+      "status": "passed"
+    }
+  ]
+}

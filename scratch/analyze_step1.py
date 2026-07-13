@@ -1,10 +1,8 @@
-import json
 import numpy as np
 from pathlib import Path
-from core.database import SessionLocal
-from core.models import DecisionRecordModel, ProfileArtifactModel
+from core.models import DecisionRecordModel
 from batch.eval.runner import run_pipeline
-from sqlalchemy import select, func
+from sqlalchemy import select
 
 def analyze_results(db, threshold=45.0):
     stmt = select(DecisionRecordModel.score, DecisionRecordModel.flags, DecisionRecordModel.entity_id, DecisionRecordModel.timestamp)

@@ -1,194 +1,146 @@
-<p align="center">
-  <img src="docs/banner.png" alt="ALTER_EGO" width="100%"/>
-</p>
+# ALTER_EGO
 
-<h1 align="center">ALTER_EGO</h1>
+**Behavioral identity detection** — profile normal behavior, score anomalies deterministically, explain after the decision.
 
-<p align="center">
-  <strong>Behavioral Identity Detection System</strong><br/>
-  Profile. Score. Explain. Catch compromised accounts before they cause damage.
-</p>
-
-<p align="center">
-  <a href="https://github.com/OmarAK-Git/alter_ego/actions/workflows/ci.yml"><img src="https://github.com/OmarAK-Git/alter_ego/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
-  <img src="https://img.shields.io/badge/python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.11+"/>
-  <img src="https://img.shields.io/badge/postgres-pgvector-336791?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL + pgvector"/>
-  <img src="https://img.shields.io/badge/DuckDB-analytics-FFF000?style=flat-square&logo=duckdb&logoColor=black" alt="DuckDB"/>
-  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License"/>
-  <img src="https://img.shields.io/badge/status-Phase%203%20Complete-brightgreen?style=flat-square" alt="Phase 3 Complete"/>
-</p>
+[![CI](https://github.com/OmarAK-Git/alter_ego/actions/workflows/ci.yml/badge.svg)](https://github.com/OmarAK-Git/alter_ego/actions/workflows/ci.yml)
+![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)
+![Postgres + pgvector](https://img.shields.io/badge/postgres-pgvector-336791?style=flat-square&logo=postgresql&logoColor=white)
+![DuckDB](https://img.shields.io/badge/DuckDB-analytics-FFF000?style=flat-square&logo=duckdb&logoColor=black)
+![License MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
+![Status](https://img.shields.io/badge/status-Phase%200--3%20Partial%20%7C%20v1%20in%20progress-yellow?style=flat-square)
 
 ---
 
-## Overview
+## What it is
 
-ALTER\_EGO is a local-first behavioral identity detection system. It builds statistical profiles of how users and service accounts normally behave, then scores incoming telemetry against those profiles to surface anomalies — credential misuse, lateral movement, insider drift — with full auditability.
+Local-first UEBA-style engine for a portfolio / single-operator deployment. It ingests auth and process telemetry (today: synthetic), builds **immutable versioned profiles**, scores new events with a multi-feature fusion model, and surfaces anomalies in an analyst triage UI.
 
-The system is now formally **calibrated** through extensive simulation sweeps (Phase 2B), achieving 100% recall on sharp misuse and periodicity breaches, with a tuned cumulative drift engine for slow-roll detection.
+> Every decision is deterministic, every score is traceable, every profile is versioned. The LLM never influences the score.
 
-> **Design Philosophy:** Every decision is deterministic, every score is traceable, and every profile is versioned. ALTER\_EGO is built to be interrogated, not trusted blindly.
-
----
-
-## Architecture
+## Pipeline
 
 ```mermaid
-flowchart TD
-    subgraph Pipeline ["Processing Pipeline"]
-        direction LR
-        A["Ingest"] --> B["Resolver"]
-        B --> C["Profiler (DuckDB)"]
-        C --> D["Scorer"]
-        D --> E["Recorder"]
-    end
-
-    subgraph Storage ["Persistent State"]
-        F[("PostgreSQL + pgvector")]
-    end
-
-    G["Synthetic Generator"] -.-> A
-
-    %% Data Flows
-    A --> F
-    B --> F
-    F -- "Fetch Profile" --> D
-    C -- "Save Artifacts" --> F
-    E -- "Append Decision" --> F
+flowchart LR
+  A[Ingest] --> B[Resolver]
+  B --> C[Profiler DuckDB]
+  C --> D[Scorer]
+  D --> E[Recorder]
+  D --> F[(Postgres / SQLite)]
+  C --> F
+  G[Synthetic generator] -.-> A
+  E --> H[Triage UI]
 ```
 
-### Scoring Features
+| Feature | Role |
+|---|---|
+| login / geo / endpoint / process rarity | Laplace-smoothed surprisal |
+| command_line embedding distance | Deterministic char 3-gram SHA-256 hash → **128-d** unit-norm vector (`alter-ego-ngram-v1`; not BERT / nomic) |
+| drift_alert | Cumulative KL drift vs cohort median |
+| service_account periodicity | Interval CV for scheduled accounts |
 
-| Feature | Type | Description |
-|---------|------|-------------|
-| `login_hour_rarity` | Surprisal | Info-content of login hour (Laplace-smoothed bits) |
-| `geolocation_rarity` | Surprisal | Info-content of login location (Laplace-smoothed bits) |
-| `endpoint_set_rarity` | Surprisal | Info-content of endpoint identifier |
-| `process_name_rarity` | Surprisal | Info-content of process name |
-| `command_line_embedding_similarity` | Embedding | Cosine distance of command line embedding (Local BERT) |
-| `drift_alert` | Accumulator | Signal from the **Cumulative Drift Engine** |
-| `service_account_periodicity` | Temporal | Periodicity breach detection for service accounts |
-| `total_volume_delta` | Metric | Deviation from baseline hourly event volume |
+**Deferred (not in calibrated path):** `total_volume_delta` (hourly volume spike) — weight reserved in config; scorer emits contribution `0` with `volume_delta_deferred` until post–S3 calibration (S2.6).
 
----
+Authoritative knobs: [`config/scoring_config.yaml`](config/scoring_config.yaml) (v2.2).
 
-## Cumulative Drift Engine
+## Calibration status (honest)
 
-The heart of Phase 2B is the Cumulative Drift Engine, designed to catch "Slow Roll" attacks that evade event-level thresholds.
+Saved operating point from [`docs/calibration_final_metrics.json`](docs/calibration_final_metrics.json) at **anomaly_threshold = 45**:
 
-### Methodology
-1. **KL-Divergence Calculation**: For every profile build, we compute the divergence between the *recent* window (3 days) and the *historical* baseline (30 days).
-   $$D_{KL}(P || Q) = \sum_{i} P(i) \ln\left(\frac{P(i)}{Q(i)}\right)$$
-2. **Cohort Normalization**: Raw drift is normalized by the cohort median to suppress ambient "noise" from organizational changes (e.g., tooling rollouts).
-   $$Drift_{norm} = Drift_{raw} - Median(Drift_{cohort})$$
-3. **Daily Accumulation**: Normalized drift is added to a persistent accumulator with a configurable half-life decay.
-   $$Accum_{t} = \max(0, Accum_{t-1} + Drift_{norm})$$
+| Scenario | Recall | Notes |
+|---|---|---|
+| S1 Sharp misuse | **1.0** | Geo / hour novelty |
+| S2 Slow roll | **1.0** | Caught after S1/S2 integrity fixes (35/35) |
+| S3 Subtle drift | **0.667** | 15 FN — primary attack-class residual |
+| S4 Service abuse | **1.0** | Periodicity breach |
 
-### Calibration Results
-- **Benign Floor**: Measured at P95 = 2.06.
-- **Drift Threshold**: Calibrated to **4.5** to ensure < 1% false positive rate in production environments.
-- **Scenario 2 Recall**: Achieved significant detection signal (drift=54.97) for gradual behavioral shifts.
+- **Precision:** ~0.019 · **Global recall:** ~0.817 · **FP:** 3448 — **not CALIBRATED**
+- Residual detail: [`docs/phase2-s3-operating-point.md`](docs/phase2-s3-operating-point.md)
+- Do not change weights without a full eval sweep (`batch/eval/` or `scratch/analyze_step*.py`).
 
----
+## Phase map
 
-## Project Structure
+Authoritative detail: [`memory-bank/progress.md`](memory-bank/progress.md).
 
-```
-alter_ego/
-├── batch/
-│   ├── profile_builder/
-│   │   └── builder.py           # Cumulative Drift Engine & DuckDB profiler
-│   └── synthetic/
-│       └── generator.py         # Calibrated adversarial scenarios
-├── config/
-│   └── scoring_config.yaml      # Calibrated weights & thresholds
-├── core/
-│   ├── database.py              # SQLAlchemy engine
-│   ├── math_utils.py            # KL-divergence & drift math
-│   └── models.py                # ORM models (Decision, Profile, Event)
-├── worker/
-│   ├── resolver.py              # Canonical identity resolution
-│   └── scorer.py                # Multi-feature fusion & circuit breakers
-├── docs/
-│   └── phase2b-step4.md         # Phase 2 calibration report
-└── scratch/
-    └── analyze_step4.py         # Full-suite simulation driver
+| Phase | Status | What shipped / open |
+|---|---|---|
+| 0 Contracts + generator | **Partial** | Schemas, synthetic attacks, CI, app-layer audit chain — missing 4-container deploy, DB INSERT-only roles, migration playbook |
+| 1 Detection pipeline | **Partial** | Shadow profiles, six-feature path, drift, novelty gate — geo histograms + drift KL (S1.2), eval partitions fixed (S1.1), auto containment queue (S1.3); open: lifecycle states, volume_delta |
+| 2 Calibration | **Partial (Phase 2A)** | S1/S2/S4 recall 1.0 @ thr=45; S3 recall 0.667; 3448 FP — **not CALIBRATED** (see metrics table + operating-point note) |
+| 3 UI + API + explain | **Partial** | Triage/detail UI, API key, explainer with slot isolation (S4.1) + queue-depth limit & template fallback (S4.2), suppressed-decisions view (S4.3), demo path (S4.4), first-class `replay_run_id` (S4.5) — open: suppressed-decisions aging escalation + jitter (deferred to Phase 4) |
+| 4 Hardening / portfolio | **Open** | Four-container topology, DB roles, staleness escalation, empirical LLM check (SPEC_V3 §9) |
+
+## Quick start
+
+```bash
+pip install -e ".[dev]"
+pytest -v --tb=short
+# optional Postgres
+docker compose up -d
+# API + triage UI
+set API_KEY=dev-key   # required for privileged routes
+uvicorn web.api:app --reload
 ```
 
----
+Privileged routes expect header `X-API-KEY` matching `API_KEY`. See [`.env.example`](.env.example).
 
-## Simulation-Driven Calibration
+## Demo path
 
-We adhere to an **Evaluation-First Discipline**. No weight is adjusted without a simulation sweep.
+Reproducible analyst walkthrough (SPEC §11.5): **seed → triage → explain → simulated contain**. No live LLM required — without API keys the explainer uses deterministic template fallback.
 
-| Scenario | Target | Intensity | Result |
-|----------|--------|-----------|--------|
-| **Scenario 1** | Sharp Misuse | Auth from RU at 3 AM | **1.0 Recall** |
-| **Scenario 2** | Slow Roll | 7-day gradual shift | **Detected (Drift 54.0)** |
-| **Scenario 3** | Subtle Attack | 2-typical-dimension blend | **Tuned to 0.18 Recall** |
-| **Scenario 4** | Service Abuse | Periodicity breach | **1.0 Recall** |
+**Automated test (in-memory DB, no server):**
 
----
+```bash
+pytest tests/web/test_demo_path.py -v
+```
 
-## Key Design Decisions (Pristine Engineering)
+**Manual demo against a running server:**
 
-- **Evaluation-First Discipline**: The system is calibrated against "Pristine" fixtures where attackers blend into typical dimensions. We measure recall at the *point of maximum blending*.
-- **Staleness Circuit Breaker**: Prevents "hallucinated" anomalies by gating scoring if a profile is >14 days old (`staleness_halt`).
-- **Shadow Profiling**: Critical for drift continuity. Even when an entity is blocked by an active policy, we continue building "Shadow Profiles" so the drift accumulator remains accurate upon re-entry.
-- **Cohort Gating**: Anomalies are only surfaced if the behavioral shift is not mirrored by the entity's cohort (Min 10 peers).
+```bash
+# terminal 1 — API + triage UI
+set API_KEY=dev-key
+uvicorn web.api:app --reload
 
----
+# terminal 2 — seed, then walk the API chain
+python scripts/demo_path.py seed-and-run --api-key dev-key
+```
 
-## Roadmap
+Or step-by-step:
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| **Phase 0** | ✅ Complete | Contracts, schemas, synthetic generator |
-| **Phase 1** | ✅ Complete | Core detection pipeline, 3-tier fallback, shadow profiles |
-| **Phase 2** | ✅ Complete | **Calibration**: Drift engine verification, threshold tuning, scenario sweeps |
-| **Phase 3** | ✅ Complete | Active Policy Enforcement & Triage UI, API Key Protection |
-| **Phase 4** | 🔲 Planned | pgvector embedding integration, real-time streaming |
+1. `python scripts/demo_path.py seed` — inserts alert `demo_path_alert` for entity `user_demo_path`
+2. Open `http://localhost:8000` → Triage Queue → **Review** on `user_demo_path`
+3. **Acknowledge** → **Generate** explanation → **Queue Containment** (simulated)
 
-### Changelog (since Phase 1)
-- **Cumulative Drift Engine**: Implemented KL-divergence based drift tracking across all behavioral dimensions.
-- **Cohort Normalization**: Added role-level median subtraction to drift metrics to suppress organizational noise.
-- **Circuit Breakers**: Implemented the Staleness Circuit Breaker to gate scoring on expired profiles.
-- **Scoring Fusion**: Refined the weighted fusion model in `scorer.py` to integrate drift alerts as a primary signal.
-- **Verification Suite**: Created `analyze_step4.py` for automated multi-scenario calibration sweeps.
-- **API Key Security (Phase 3)**: Implemented token-based authentication (`X-API-KEY`) on protected endpoints to enforce strict access control.
-- **Decision Schema Updates (Phase 3)**: Added `embedding_model_version` field to `DecisionRecordModel` and updated active sqlite databases.
+Cleanup: `python scripts/demo_path.py cleanup`
 
----
+Core helpers live in [`scripts/demo_path.py`](scripts/demo_path.py) (`seed_demo_alert`, `run_demo_path`).
 
-## API Security
+## Layout
 
-Privileged endpoints (`/api/alerts/{decision_id}/explain`, `/api/alerts/{decision_id}/workflow`, `/api/alerts/{decision_id}/contain`, `/api/replay`) are protected by an API key verification dependency.
+```
+core/          ORM, schemas, math, settings
+worker/        ingest → resolve → score → record (+ vectorizer, explainer)
+batch/         profile builder, synthetic scenarios, eval harness
+web/           FastAPI + static triage UI
+config/        scoring_config.yaml
+memory-bank/   durable agent task memory
+.workflow/     T3 accountable run slugs
+docs/SPEC.md   architecture spec
+```
 
-- **Authentication Header**: Enforced via the `X-API-KEY` header matching the server's `API_KEY` environment variable.
-- **Fail Fast Configuration**: If the `API_KEY` environment variable is unset, protected endpoints fail fast and return a `500 Internal Server Error` to indicate a server configuration issue.
-- **Unauthorized Requests**: Requests with missing or invalid keys return a `401 Unauthorized` response.
+## Agent workflow
 
-## Evidences & Verification
+This repo uses the local `ultimate-agentic-workflow` skill for accountable AI coding:
 
-- **API Security Verification**: Diff output for the API key protection is stored in [`evidence/api-key-fix.diff`](evidence/api-key-fix.diff). Responses under success, missing-key, and unset-env conditions are documented in the `evidence/` directory.
-- **Unit & Integration Tests**: All 42 tests pass with 0 warnings. Verification output is captured in [`evidence/test-results.txt`](evidence/test-results.txt).
-- **Evaluation Pipeline Output**: The runner executing the full analytics pipeline is documented in [`evidence/eval_run_success.txt`](evidence/eval_run_success.txt).
-- **Triage Queue Screenshot**: A screenshot of the Analyst Triage Queue dashboard is located at [`evidence/ui_screenshot.png`](evidence/ui_screenshot.png).
+- Bootloaders: `AGENTS.md` / `CLAUDE.md` · lessons: `OPS.md`
+- Live memory: `memory-bank/` · T3 runs: `.workflow/<slug>/`
+- Claude Code stop gate: `.claude/stop-gate.json` runs `pytest` + `ruff` before the agent can finish
 
----
+## Evidence
 
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [`docs/SPEC.md`](docs/SPEC.md) | Full architecture specification (v2.2) |
-| [`docs/phase2b-step4.md`](docs/phase2b-step4.md) | **Step 4 Calibration Report** — Findings from the final drift sweep |
-
----
+- Tests: [`evidence/test-results.txt`](evidence/test-results.txt)
+- API key behavior: [`evidence/`](evidence/)
+- Spec: [`docs/SPEC.md`](docs/SPEC.md)
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
-
-<p align="center">
-  <sub>Built with adversarial specification review · DuckDB analytics · pgvector similarity search</sub>
-</p>
+[MIT](LICENSE)

@@ -7,7 +7,7 @@ from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
 from core.database import Base
-from core.models import ResolvedEventModel, ProfileArtifactModel, ScoringConfigModel, DecisionRecordModel, ContainmentQueueModel
+from core.models import ResolvedEventModel, ProfileArtifactModel, DecisionRecordModel
 from worker.config_store import ConfigStore
 from worker.scorer import process_unscored_events
 from core.schemas.config import ScoringConfig

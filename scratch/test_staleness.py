@@ -1,9 +1,5 @@
-import json
-import uuid
-import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime
 from core.database import SessionLocal, Base, engine
-from core.models import ResolvedEventModel, ProfileArtifactModel, DecisionRecordModel
 from worker.scorer import score_event, load_scoring_config
 from core.schemas.events import ResolvedEvent
 from core.schemas.profiles import ProfileArtifact

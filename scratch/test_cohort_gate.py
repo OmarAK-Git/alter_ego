@@ -1,4 +1,3 @@
-import json
 import uuid
 from datetime import datetime, timedelta
 from sqlalchemy import select

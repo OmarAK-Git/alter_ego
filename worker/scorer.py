@@ -5,25 +5,50 @@ import time
 import logging
 import numpy as np
 from datetime import datetime, timedelta
-from functools import lru_cache
 from sqlalchemy.orm import Session
-from sqlalchemy import select, desc, and_, func, extract, cast, Integer, text
+from sqlalchemy import select, and_, func, extract, cast, Integer
 from pathlib import Path
 
 import yaml
 
 from core.database import SessionLocal
 from core.models import ResolvedEventModel, ProfileArtifactModel, DecisionRecordModel
-from core.schemas.events import ResolvedEvent, Event
+from core.schemas.events import ResolvedEvent
 from core.schemas.profiles import ProfileArtifact
 from core.schemas.decisions import DecisionRecord, FeatureContribution
 from worker.recorder import record_decision
 from worker.profile_store import ProfileStore
-from core.math_utils import get_laplace_prob, compute_kl_divergence
+from core.math_utils import get_laplace_prob
 from worker.vectorizer import vectorize_command_line, compute_cosine_distance
+from worker.resolver import LOW_RESOLUTION_THRESHOLD
 
 # Fix #11 — logger defined before first use
 logger = logging.getLogger(__name__)
+
+# Pinned hot-path scorer lineage (SPEC_V3 §6.1 — included in decision_id hash).
+SCORER_ALGORITHM_VERSION = "1.0"
+
+
+def compute_decision_id(
+    *,
+    event_id: str,
+    profile_version: str,
+    scoring_config_version: str,
+    embedding_model_version: str,
+    halt: bool = False,
+) -> str:
+    """Canonical decision_id = SHA-256 of sorted-key JSON lineage payload."""
+    payload: dict[str, str | bool] = {
+        "embedding_model_version": embedding_model_version,
+        "event_id": event_id,
+        "profile_version": profile_version,
+        "scorer_algorithm_version": SCORER_ALGORITHM_VERSION,
+        "scoring_config_version": scoring_config_version,
+    }
+    if halt:
+        payload["halt"] = True
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 # ---------------------------------------------------------------------------
 # Fix #2 — TTL-bounded caches (no more unbounded process-global dicts)
@@ -81,7 +106,7 @@ def _get_cohort_members(db: Session, role: str, entity_type: str) -> list[str]:
             and_(
                 ProfileArtifactModel.entity_type == entity_type,
                 ProfileArtifactModel.features["role"].as_string() == role,
-                ProfileArtifactModel.promoted_at != None,
+                ProfileArtifactModel.promoted_at.isnot(None),
             )
         ).distinct()
     else:
@@ -90,7 +115,7 @@ def _get_cohort_members(db: Session, role: str, entity_type: str) -> list[str]:
             and_(
                 ProfileArtifactModel.entity_type == entity_type,
                 func.json_extract(ProfileArtifactModel.features, "$.role") == role,
-                ProfileArtifactModel.promoted_at != None,
+                ProfileArtifactModel.promoted_at.isnot(None),
             )
         ).distinct()
 
@@ -235,6 +260,8 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
         return default
 
     flags = []
+    if resolved_event.resolution_confidence < LOW_RESOLUTION_THRESHOLD:
+        flags.append("low_resolution_confidence")
     cohort_gate_config = config.get("cohort_gating_constants", {})
     max_changed_fraction = cohort_gate_config.get("max_changed_fraction", 0.2)
     min_cohort_size = cohort_gate_config.get("min_cohort_size", 10)
@@ -245,7 +272,13 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
     time_since_profile = (resolved_event.timestamp - profile.data_window_end).total_seconds() / 86400.0
     if time_since_profile > max_staleness:
         flags.append("staleness_halt")
-        decision_id = hashlib.sha256(f"{resolved_event.event_id}HALT".encode()).hexdigest()
+        decision_id = compute_decision_id(
+            event_id=resolved_event.event_id,
+            profile_version=profile.profile_version,
+            scoring_config_version=str(config.get("version", "2.1")),
+            embedding_model_version=profile.embedding_model_version,
+            halt=True,
+        )
         return DecisionRecord(
             decision_id=decision_id,
             event_id=resolved_event.event_id,
@@ -304,7 +337,7 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
 
     fallback_levels = [lvl_login, lvl_geo, lvl_end, lvl_proc]
     _level_rank = {"local": 0, "role_cohort": 1, "terminus": 2}
-    worst_level = max(fallback_levels, key=lambda l: _level_rank.get(l, 0))
+    worst_level = max(fallback_levels, key=lambda level: _level_rank.get(level, 0))
 
     s1, _, c1 = get_rarity_score(str(resolved_event.timestamp.hour), hist_login, 24, "login_hour_rarity", "login_hours", 10.0)
     s2, _, c2 = get_rarity_score(get_event_field("geolocation"), hist_geo, 100, "geolocation_rarity", "geolocations", 10.0)
@@ -340,11 +373,11 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
         if raw_period > max_contrib:
             flags.append("cap_hit_periodicity")
 
-    # Fix #3 — volume delta suppressed: formula measures profile sparsity, not
-    # volume deviation. Requires current-window event count not yet in schema.
+    # total_volume_delta deferred (S2.6): hourly spike formula needs calibrated
+    # window counts + baseline; reserved weight in YAML until post-S3 sweep.
     score_vol = 0.0
     v_delta = 0.0
-    flags.append("volume_delta_suppressed_no_current_count")
+    flags.append("volume_delta_deferred")
 
     # Fix #5 — proportional drift scoring (replaces binary threshold gate).
     # Intended operating point (threshold=5, weight=100, max_contrib=50):
@@ -396,7 +429,8 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
     decision_confidence = n / (n + confidence_k) if (n + confidence_k) > 0 else 0.0
 
     threshold = config.get("anomaly_threshold", 45.0)
-    if decision_confidence < config.get("confidence_floor", 0.6):
+    confidence_floor = config.get("confidence_floor", 0.6)
+    if decision_confidence < confidence_floor:
         total_score = min(threshold - 5.0, raw_total)
         flags.append("low_confidence_damping_applied")
     else:
@@ -410,11 +444,20 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
         )
         for c in contributions:
             logger.info(f"  - {c.feature_name}: raw={c.raw_value:.2f} score={c.contribution_score:.2f}")
+
+    containment_threshold = config.get("containment_threshold", 85.0)
+    if (
+        total_score >= containment_threshold
+        and decision_confidence >= confidence_floor
+    ):
         flags.append("simulated_containment_queued")
 
-    decision_id = hashlib.sha256(
-        f"{resolved_event.event_id}{profile.profile_version}{config.get('version', '2.1')}".encode()
-    ).hexdigest()
+    decision_id = compute_decision_id(
+        event_id=resolved_event.event_id,
+        profile_version=profile.profile_version,
+        scoring_config_version=str(config.get("version", "2.1")),
+        embedding_model_version=profile.embedding_model_version,
+    )
 
     return DecisionRecord(
         decision_id=decision_id,
@@ -451,7 +494,7 @@ def process_unscored_events(db: Session | None = None) -> int:
                 DecisionRecordModel,
                 ResolvedEventModel.event_id == DecisionRecordModel.event_id,
             )
-            .where(DecisionRecordModel.decision_id == None)
+            .where(DecisionRecordModel.decision_id.is_(None))
             .order_by(ResolvedEventModel.timestamp)
         )
         # Fix #13 — yield_per(500) avoids materialising full result set in memory

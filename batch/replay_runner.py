@@ -4,6 +4,7 @@ Rescores all events in a time window using the currently active scorer and
 emits new DecisionRecords tagged with a replay_run_id so original audit
 records are never mutated.
 """
+import json
 import uuid
 import logging
 from datetime import datetime
@@ -12,10 +13,49 @@ from sqlalchemy import select, and_
 
 from core.database import SessionLocal
 from core.models import ResolvedEventModel, DecisionRecordModel, ProfileArtifactModel
+from core.schemas.events import ResolvedEvent
+from core.schemas.profiles import ProfileArtifact
 from core.schemas.decisions import DecisionRecord
-from worker.scorer import score_event
+from worker.scorer import score_event, load_scoring_config
 
 logger = logging.getLogger(__name__)
+
+
+def _orm_to_resolved_event(event: ResolvedEventModel) -> ResolvedEvent:
+    event_data = event.event_data
+    if isinstance(event_data, str):
+        event_data = json.loads(event_data)
+    return ResolvedEvent(
+        event_id=event.event_id,
+        timestamp=event.timestamp,
+        event_type=event.event_type,
+        raw_entity_id=event.raw_entity_id,
+        entity_id=event.entity_id,
+        entity_type=event.entity_type,
+        resolution_confidence=event.resolution_confidence,
+        simulation_partition=event.simulation_partition,
+        event_data=event_data,
+    )
+
+
+def _orm_to_profile(profile: ProfileArtifactModel) -> ProfileArtifact:
+    return ProfileArtifact(
+        entity_id=profile.entity_id,
+        entity_type=profile.entity_type,
+        profile_version=profile.profile_version,
+        created_at=profile.created_at,
+        data_window_start=profile.data_window_start,
+        data_window_end=profile.data_window_end,
+        promoted_at=profile.promoted_at,
+        superseded_at=profile.superseded_at,
+        is_shadow=profile.is_shadow,
+        features=profile.features,
+        embedding=profile.embedding,
+        embedding_model_id=profile.embedding_model_id,
+        embedding_model_version=profile.embedding_model_version,
+        embedding_dimensionality=profile.embedding_dimensionality,
+        embedding_input_normalizer_version=profile.embedding_input_normalizer_version,
+    )
 
 
 def run_replay(
@@ -43,6 +83,7 @@ def run_replay(
     events_replayed = 0
     decisions_emitted = 0
     errors = []
+    config = load_scoring_config()
 
     try:
         stmt = (
@@ -72,22 +113,25 @@ def run_replay(
                         and_(
                             ProfileArtifactModel.entity_id == event.entity_id,
                             ProfileArtifactModel.promoted_at <= event.timestamp,
-                            ProfileArtifactModel.is_shadow == False,
+                            ProfileArtifactModel.is_shadow.is_(False),
                         )
                     )
                     .order_by(ProfileArtifactModel.promoted_at.desc())
                     .limit(1)
                 )
-                profile = db.execute(profile_stmt).scalars().first()
+                profile_row = db.execute(profile_stmt).scalars().first()
 
-                if profile is None:
+                if profile_row is None:
                     logger.debug(
                         f"[{replay_run_id}] No profile for {event.entity_id} "
                         f"at {event.timestamp} — skipping"
                     )
                     continue
 
-                decision: DecisionRecord = score_event(event, profile)
+                resolved_event = _orm_to_resolved_event(event)
+                profile = _orm_to_profile(profile_row)
+                decision: DecisionRecord = score_event(db, resolved_event, profile, config)
+                decision = decision.model_copy(update={"replay_run_id": replay_run_id})
 
                 # Tag decision with replay metadata so it's distinguishable
                 replay_decision_id = f"{replay_run_id}_{decision.decision_id}"
@@ -105,7 +149,9 @@ def run_replay(
                     is_anomaly=decision.is_anomaly,
                     cohort_used=decision.cohort_used,
                     cohort_unsupported=decision.cohort_unsupported,
+                    embedding_model_version=decision.embedding_model_version,
                     flags=list(decision.flags) + [f"replay:{replay_run_id}"],
+                    replay_run_id=replay_run_id,
                 )
                 db.add(db_decision)
                 decisions_emitted += 1

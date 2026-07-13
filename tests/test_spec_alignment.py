@@ -19,9 +19,7 @@ def db_session():
 
 def test_new_confidence_calculation(db_session):
     # Test confidence calculation formula: n / (n + k)
-    from core.schemas.events import ResolvedEvent, AuthEventData
-    from core.schemas.profiles import ProfileArtifact
-    from worker.scorer import score_event
+    from core.schemas.events import AuthEventData
     
     ts = datetime(2026, 1, 1, 12, 0)
     event_data = AuthEventData(action="login", ip_address="1.1.1.1", endpoint_id="ep1")
@@ -47,7 +45,6 @@ def test_new_confidence_calculation(db_session):
         data_window_start=ts,
         data_window_end=ts,
         features={"role": "Engineer", "total_events": 40, "cohort_data": {}},
-        embedding_model_id="nomic-embed-text",
         embedding_model_version="1.0",
         embedding_dimensionality=128
     )
@@ -66,7 +63,6 @@ def test_new_confidence_calculation(db_session):
         data_window_start=ts,
         data_window_end=ts,
         features={"role": "Engineer", "login_hours": {"12": 20, "13": 10}, "cohort_data": {}},
-        embedding_model_id="nomic-embed-text",
         embedding_model_version="1.0",
         embedding_dimensionality=128
     )

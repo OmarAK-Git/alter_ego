@@ -124,7 +124,7 @@ def test_stage_2_seed_anomaly(decision_id):
     assert decision_id in ids, "Seeded decision not visible in triage queue"
 
     print(f"\n[STAGE 2] Inserted decision: {decision_id}")
-    print(f"          Entity: user_staged_demo | Score: 91.30 | State: new")
+    print("          Entity: user_staged_demo | Score: 91.30 | State: new")
     pause(
         "STAGE 2 COMPLETE — Anomaly seeded into live DB\n"
         "  -> Refresh http://localhost:8000\n"
@@ -143,7 +143,7 @@ def test_stage_3_acknowledge(decision_id):
     assert r.status_code == 200
     assert r.json()["state"] == "acknowledged"
 
-    print(f"\n[STAGE 3] State: new -> acknowledged")
+    print("\n[STAGE 3] State: new -> acknowledged")
     pause(
         "STAGE 3 COMPLETE — Alert acknowledged\n"
         "  -> Refresh http://localhost:8000\n"
@@ -161,8 +161,8 @@ def test_stage_4_investigate(decision_id):
     assert r.status_code == 200
     assert r.json()["state"] == "investigating"
 
-    print(f"\n[STAGE 4] State: acknowledged -> investigating (assignee: analyst_1)")
-    print(f"          Profile builds for user_staged_demo will now be shadow-only")
+    print("\n[STAGE 4] State: acknowledged -> investigating (assignee: analyst_1)")
+    print("          Profile builds for user_staged_demo will now be shadow-only")
     pause(
         "STAGE 4 COMPLETE — Under investigation\n"
         "  -> Refresh http://localhost:8000\n"
@@ -184,7 +184,7 @@ def test_stage_5_explanation(decision_id):
     assert data["explanation"] is not None
     exp = data["explanation"]
 
-    print(f"\n[STAGE 5] Explanation generated")
+    print("\n[STAGE 5] Explanation generated")
     print(f"          Summary : \"{exp['summary_text']}\"")
     print(f"          Claims  : {len(exp['claim_objects'])} item(s)")
     print(f"          CFs     : {len(exp['counterfactuals'])} counterfactual(s)")
@@ -212,7 +212,7 @@ def test_stage_6_clear(decision_id):
     ids = [a["decision_id"] for a in r2.json()]
     assert decision_id not in ids, "Cleared alert still visible in triage queue"
 
-    print(f"\n[STAGE 6] Alert cleared and removed from triage queue")
+    print("\n[STAGE 6] Alert cleared and removed from triage queue")
     pause(
         "STAGE 6 COMPLETE — Alert cleared\n"
         "  -> Refresh http://localhost:8000 (Triage Queue tab)\n"

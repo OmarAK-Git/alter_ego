@@ -6,7 +6,6 @@ from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
 from core.database import Base
-from core.models import ResolvedEventModel
 from core.schemas.events import ResolvedEvent
 from core.schemas.profiles import ProfileArtifact
 from worker.scorer import score_event, load_scoring_config

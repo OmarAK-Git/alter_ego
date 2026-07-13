@@ -1,5 +1,4 @@
 from core.database import SessionLocal
-from core.models import ScoringConfigModel
 from worker.config_store import ConfigStore
 from core.schemas.config import ScoringConfig
 import yaml

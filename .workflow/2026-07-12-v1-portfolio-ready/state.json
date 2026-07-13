@@ -1,0 +1,1089 @@
+{
+  "goal": "Finish ALTER_EGO product v1 to honest portfolio-ready bar (SPEC.md Phase 0-4 + SPEC_V3 \u00a77/\u00a79), with hybrid S2 calibration and human drift-research gate before Phase 4.",
+  "success_criteria": [
+    "All S0-S6 packets done, deferred (with note), or wontfix (with reason) in this state.json",
+    "SPEC/README/metrics language agree; no false CALIBRATED or 100% recall",
+    "Hybrid S2: integrity fixes, re-sweep, residual documented if needed",
+    "HUMAN-DRIFT-RESEARCH acknowledged before any S5 packet starts",
+    "verify_run.py green; pytest+ruff pass on sprint/program closeout"
+  ],
+  "constraints": [
+    "Docs source of truth; metrics beat narrative",
+    "No weight/threshold change without eval sweep + config governance",
+    "Do not commit calibrate/eval DB churn or __pycache__",
+    "UAW T3 packets only \u2014 do not install archived gsd-build",
+    "One sprint at a time; no shared write-scope parallelism",
+    "Non-goals: SIEM, multi-tenant, live ingest, multi-agent detection, real IAM disable"
+  ],
+  "risks": [
+    {
+      "risk": "S2 still fails after integrity fixes",
+      "approval_required": false,
+      "mitigation": "Hybrid C residual note; no fake Phase 2 closed"
+    },
+    {
+      "risk": "Spec forks left silent (cohort, lifecycle, calendar)",
+      "approval_required": false,
+      "mitigation": "Packet must implement or write explicit downgrade"
+    },
+    {
+      "risk": "Starting S5 before human drift research",
+      "approval_required": true,
+      "mitigation": "HUMAN-DRIFT-RESEARCH packet blocks S5"
+    }
+  ],
+  "max_concurrent_agents": 1,
+  "max_total_agents": 4,
+  "active_sprint": "S5",
+  "canonical_projections": {
+    "progress": "memory-bank/progress.md",
+    "tasks": "memory-bank/tasks.md",
+    "active_context": "memory-bank/activeContext.md"
+  },
+  "autopilot": {
+    "style": "uaw-t3-gsd-roles",
+    "agents": {
+      "research": "researcher",
+      "implement": "implementer",
+      "test": "test-runner",
+      "verify": "skeptic-verifier"
+    },
+    "implementation_model": "composer-2.5",
+    "verification_model": "cursor-grok-4.5-high",
+    "gate_run_mode": "chat_gate",
+    "rules": [
+      "Update state.json packet status before memory-bank mirrors",
+      "Only mark current sprint packets ready",
+      "Block all S5.* until HUMAN-DRIFT-RESEARCH is done",
+      "Sprint close / chat_gate reviews: UI-selected Opus; mid-loop verify uses verification_model via Task",
+      "Sprint close requires skeptic-verifier + pytest + ruff",
+      "Treat S1-EXIT-GATE/S2-EXIT-GATE/S3-EXIT-GATE/S4-EXIT-GATE as chat_gate phase_exit items",
+      "With --stop-before-gate, do not start any EXIT-GATE or HUMAN-DRIFT-RESEARCH",
+      "Do not mark next sprint ready until previous EXIT-GATE is done"
+    ],
+    "exit_gates": [
+      "S1-EXIT-GATE",
+      "S2-EXIT-GATE",
+      "S3-EXIT-GATE",
+      "S4-EXIT-GATE",
+      "HUMAN-DRIFT-RESEARCH"
+    ]
+  },
+  "packets": [
+    {
+      "id": "S0.1",
+      "label": "sprint:S0|docs|req:REQ-S0",
+      "objective": "Demote SPEC.md CALIBRATED header to Phase 2A / residual",
+      "files_or_sources": [
+        "docs/SPEC.md",
+        "memory-bank/progress.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S0",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S0.1-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S0.2",
+      "label": "sprint:S0|docs|req:REQ-S0",
+      "objective": "Correct phase1-audit-results 100% recall claim",
+      "files_or_sources": [
+        "docs/phase1-audit-results.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S0",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S0.2-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S0.3",
+      "label": "sprint:S0|docs|embeddings|req:REQ-S0",
+      "objective": "Lock embedding narrative to alter-ego-ngram-v1 / 128-d",
+      "files_or_sources": [
+        "docs/SPEC_V3.md",
+        "README.md",
+        "CLAUDE.md",
+        "OPS.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S0",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S0.3-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S0.4",
+      "label": "sprint:S0|config|req:REQ-S0",
+      "objective": "Inventory YAML knobs into wire / defer / delete list",
+      "files_or_sources": [
+        "config/scoring_config.yaml",
+        "memory-bank/progress.md",
+        "OPS.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S0",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S0.4-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S0.5",
+      "label": "sprint:S0|docs|req:REQ-S0",
+      "objective": "Align README + memory-bank phase labels to Partial where overstated",
+      "files_or_sources": [
+        "README.md",
+        "memory-bank/progress.md",
+        "memory-bank/activeContext.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S0",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S0.5-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S1.1",
+      "label": "sprint:S1|eval|generator|req:REQ-S1",
+      "objective": "Fix S2/S3 simulation_partition so eval events are excluded from training",
+      "files_or_sources": [
+        "batch/synthetic/generator.py",
+        "tests/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S1",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S1.1-verifier-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S1.1-test-runner-result.md"
+      ]
+    },
+    {
+      "id": "S1.2",
+      "label": "sprint:S1|profile|drift|req:REQ-S1",
+      "objective": "Build geolocations into profiles and include in drift KL",
+      "files_or_sources": [
+        "batch/profile_builder/builder.py",
+        "worker/scorer.py",
+        "tests/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S1",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S1.2-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S1.3",
+      "label": "sprint:S1|scorer|containment|req:REQ-S1",
+      "objective": "Auto-write containment queue when threshold+confidence met; wire containment_threshold",
+      "files_or_sources": [
+        "worker/scorer.py",
+        "worker/recorder.py",
+        "config/scoring_config.yaml",
+        "web/api.py",
+        "tests/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S1",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S1.3-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S1.4",
+      "label": "sprint:S1|embeddings|req:REQ-S1",
+      "objective": "Align ProfileArtifact/DB defaults/builder metadata to ngram model id+dim",
+      "files_or_sources": [
+        "core/schemas/profiles.py",
+        "core/models.py",
+        "batch/profile_builder/builder.py",
+        "alembic/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S1",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S1.4-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S1.5",
+      "label": "sprint:S1|eval|smoke|req:REQ-S1",
+      "objective": "Smoke benign-only / correlated-benign paths under fixed partitions",
+      "files_or_sources": [
+        "batch/eval/",
+        "batch/synthetic/",
+        "scratch/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S1",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S1.5-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S1-EXIT-GATE",
+      "label": "gate:S1-exit|chat_gate|phase_exit|req:REQ-S1",
+      "objective": "Sprint S1 exit gate: skeptic-verifier + pytest + ruff; unlock S2 only when green",
+      "files_or_sources": [
+        ".workflow/2026-07-12-v1-portfolio-ready/",
+        "memory-bank/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "GATE",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S1-EXIT-GATE-verifier-result.md"
+      ],
+      "run_mode": "chat_gate",
+      "verification": {
+        "scope": "phase_exit",
+        "commands": [
+          "pytest -v --tb=short --ignore=tests/live",
+          "ruff check ."
+        ]
+      },
+      "depends_on": [
+        "S1.1",
+        "S1.2",
+        "S1.3",
+        "S1.4",
+        "S1.5"
+      ],
+      "blocks": [
+        "S2.1",
+        "S2.2",
+        "S2.3",
+        "S2.4",
+        "S2.5",
+        "S2.6",
+        "S2.7",
+        "S2.8"
+      ]
+    },
+    {
+      "id": "S2.1",
+      "label": "sprint:S2|resolver|req:REQ-S2",
+      "objective": "Resolver collision/split fixtures emit low_resolution_confidence",
+      "files_or_sources": [
+        "worker/resolver.py",
+        "tests/worker/test_resolver.py"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S2",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.1-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.1-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S2.2",
+      "label": "sprint:S2|scorer|test|req:REQ-S2",
+      "objective": "Evidence-binding test reconstructing raw_score from contributions",
+      "files_or_sources": [
+        "worker/scorer.py",
+        "tests/worker/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S2",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.2-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.2-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S2.3",
+      "label": "sprint:S2|scorer|determinism|req:REQ-S2",
+      "objective": "decision_id / canonical serialization includes algorithm and embedding versions",
+      "files_or_sources": [
+        "worker/scorer.py",
+        "core/schemas/decisions.py",
+        "tests/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S2",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.3-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.3-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S2.4",
+      "label": "sprint:S2|confidence|req:REQ-S2",
+      "objective": "Observation-count confidence n/(n+k); add confidence_k to scoring_config",
+      "files_or_sources": [
+        "worker/scorer.py",
+        "config/scoring_config.yaml",
+        "tests/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S2",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.4-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.4-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S2.5",
+      "label": "sprint:S2|cohort|fork|req:REQ-S2",
+      "objective": "Ship frozen cohort-prior artifacts OR document SPEC_V3 downgrade",
+      "files_or_sources": [
+        "docs/SPEC_V3.md",
+        "batch/profile_builder/",
+        "memory-bank/progress.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S2",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.5-researcher-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.5-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.5-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S2.6",
+      "label": "sprint:S2|features|req:REQ-S2",
+      "objective": "total_volume_delta: implement or remove from config/README claims",
+      "files_or_sources": [
+        "worker/scorer.py",
+        "config/scoring_config.yaml",
+        "README.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S2",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.6-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.6-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S2.7",
+      "label": "sprint:S2|lifecycle|fork|req:REQ-S2",
+      "objective": "Lifecycle states minimal ship OR defer note per cut priority",
+      "files_or_sources": [
+        "docs/SPEC.md",
+        "batch/profile_builder/",
+        "memory-bank/progress.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S2",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.7-researcher-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.7-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.7-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S2.8",
+      "label": "sprint:S2|config|req:REQ-S2",
+      "objective": "Apply S0.4 inventory: wire cheap knobs or strip from calibrated claims",
+      "files_or_sources": [
+        "config/scoring_config.yaml",
+        "docs/SPEC.md",
+        "OPS.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S2",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.8-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2.8-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S2-EXIT-GATE",
+      "label": "gate:S2-exit|chat_gate|phase_exit|req:REQ-S2",
+      "objective": "Sprint S2 exit gate: skeptic-verifier + pytest + ruff; unlock S3 only when green",
+      "files_or_sources": [
+        ".workflow/2026-07-12-v1-portfolio-ready/",
+        "memory-bank/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "GATE",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S2-EXIT-GATE-verifier-result.md"
+      ],
+      "run_mode": "chat_gate",
+      "verification": {
+        "scope": "phase_exit",
+        "commands": [
+          "pytest -v --tb=short --ignore=tests/live",
+          "ruff check ."
+        ]
+      },
+      "depends_on": [
+        "S2.1",
+        "S2.2",
+        "S2.3",
+        "S2.4",
+        "S2.5",
+        "S2.6",
+        "S2.7",
+        "S2.8"
+      ],
+      "blocks": [
+        "S3.1",
+        "S3.2",
+        "S3.3",
+        "S3.4",
+        "S3.5",
+        "S3.6"
+      ]
+    },
+    {
+      "id": "S3.1",
+      "label": "sprint:S3|calibration|req:REQ-S3",
+      "objective": "Full eval sweep under current config after S1/S2 fixes",
+      "files_or_sources": [
+        "batch/eval/",
+        "config/scoring_config.yaml",
+        "scratch/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S3",
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.1-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.1-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S3.2",
+      "label": "sprint:S3|artifacts|req:REQ-S3",
+      "objective": "Refresh docs/calibration_final_metrics.json and PR curve artifact",
+      "files_or_sources": [
+        "docs/calibration_final_metrics.json",
+        "docs/calibration_pr_curve.json"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S3",
+      "blocked_by": [],
+      "depends_on": [
+        "S3.1"
+      ],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.2-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.2-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S3.3",
+      "label": "sprint:S3|residual|req:REQ-S3",
+      "objective": "If S2 still FN: write residual-risk note; do not claim CALIBRATED",
+      "files_or_sources": [
+        "memory-bank/progress.md",
+        "docs/"
+      ],
+      "ownership": "main",
+      "status": "wontfix",
+      "sprint": "S3",
+      "blocked_by": [],
+      "depends_on": [
+        "S3.1"
+      ],
+      "notes": "S2 recall 1.0 @ thr=45 \u2014 FN residual path N/A; residuals \u2192 S3.4",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.3-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.3-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S3.4",
+      "label": "sprint:S3|residual|req:REQ-S3",
+      "objective": "If S2 catches: document operating point and remaining error modes",
+      "files_or_sources": [
+        "docs/",
+        "memory-bank/progress.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S3",
+      "blocked_by": [],
+      "depends_on": [
+        "S3.1",
+        "S3.2"
+      ],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.4-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.4-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S3.5",
+      "label": "sprint:S3|docs|req:REQ-S3",
+      "objective": "Update SPEC.md / phase2 docs status to Phase 2A or closed-with-residual",
+      "files_or_sources": [
+        "docs/SPEC.md",
+        "docs/phase2-audit-result.md",
+        "docs/phase2-calibration-progress-report.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S3",
+      "blocked_by": [],
+      "depends_on": [
+        "S3.2",
+        "S3.4"
+      ],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.5-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.5-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S3.6",
+      "label": "sprint:S3|governance|req:REQ-S3",
+      "objective": "Scoring-config governance record for any threshold/weight change",
+      "files_or_sources": [
+        "worker/config_store.py",
+        "config/scoring_config.yaml"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S3",
+      "blocked_by": [],
+      "depends_on": [
+        "S3.2"
+      ],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.6-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3.6-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S3-EXIT-GATE",
+      "label": "gate:S3-exit|chat_gate|phase_exit|req:REQ-S3",
+      "objective": "Sprint S3 exit gate: skeptic-verifier + pytest + ruff + metrics/SPEC honesty; unlock S4 only when green",
+      "files_or_sources": [
+        ".workflow/2026-07-12-v1-portfolio-ready/",
+        "memory-bank/",
+        "docs/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "GATE",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S3-EXIT-GATE-verifier-result.md"
+      ],
+      "run_mode": "chat_gate",
+      "verification": {
+        "scope": "phase_exit",
+        "commands": [
+          "pytest -v --tb=short --ignore=tests/live",
+          "ruff check ."
+        ]
+      },
+      "depends_on": [
+        "S3.1",
+        "S3.2",
+        "S3.3",
+        "S3.4",
+        "S3.5",
+        "S3.6"
+      ],
+      "blocks": [
+        "S4.1",
+        "S4.2",
+        "S4.3",
+        "S4.4",
+        "S4.5",
+        "S4.6",
+        "S4.7"
+      ]
+    },
+    {
+      "id": "S4.1",
+      "label": "sprint:S4|explainer|req:REQ-S4",
+      "objective": "Explainer slot-isolated low-trust fields",
+      "files_or_sources": [
+        "worker/explainer.py",
+        "tests/worker/test_explainer.py"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S4",
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.1-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.1-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S4.2",
+      "label": "sprint:S4|explainer|req:REQ-S4",
+      "objective": "Explainer queue-depth limit + deterministic template fallback under load",
+      "files_or_sources": [
+        "worker/explainer.py",
+        "web/api.py",
+        "tests/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S4",
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.2-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.2-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S4.3",
+      "label": "sprint:S4|ui|fork|req:REQ-S4",
+      "objective": "Suppressed-decisions aging/jitter OR defer note (view itself required)",
+      "files_or_sources": [
+        "web/api.py",
+        "web/static/",
+        "config/scoring_config.yaml"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S4",
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.3-researcher-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.3-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.3-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S4.4",
+      "label": "sprint:S4|demo|req:REQ-S4",
+      "objective": "Demo path: seed \u2192 triage \u2192 explain \u2192 contain (simulated)",
+      "files_or_sources": [
+        "web/",
+        "batch/synthetic/",
+        "README.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S4",
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.4-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.4-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S4.5",
+      "label": "sprint:S4|replay|req:REQ-S4",
+      "objective": "First-class replay_run_id on decisions / audit path",
+      "files_or_sources": [
+        "batch/replay_runner.py",
+        "core/schemas/decisions.py",
+        "web/api.py"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S4",
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.5-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.5-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S4.6",
+      "label": "sprint:S4|defer-or-ship|req:REQ-S4",
+      "objective": "Calendar dual-score / telemetry gap two-tier: ship or mark deferred",
+      "files_or_sources": [
+        "docs/SPEC.md",
+        "config/scoring_config.yaml",
+        "memory-bank/progress.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S4",
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.6-researcher-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.6-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.6-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S4.7",
+      "label": "sprint:S4|defer-or-ship|req:REQ-S4",
+      "objective": "Asset/service-dependency context minimal or defer",
+      "files_or_sources": [
+        "docs/SPEC.md",
+        "web/",
+        "memory-bank/progress.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S4",
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.7-researcher-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.7-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4.7-verifier-result.md"
+      ]
+    },
+    {
+      "id": "S4-EXIT-GATE",
+      "label": "gate:S4-exit|chat_gate|phase_exit|req:REQ-S4",
+      "objective": "Sprint S4 exit gate: skeptic-verifier + pytest + ruff; unlock HUMAN-DRIFT-RESEARCH only when green",
+      "files_or_sources": [
+        ".workflow/2026-07-12-v1-portfolio-ready/",
+        "memory-bank/",
+        "web/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "GATE",
+      "run_mode": "chat_gate",
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S4-EXIT-GATE-verifier-result.md"
+      ],
+      "notes": "2026-07-13: initial verify refuted (S4.3 aging/jitter deferral lacked explicit SPEC banner + false activeContext claim); honesty patch applied (SPEC \u00a711.4 Path B banner, softened \u00a73.2/Phase 3, added \u00a713.1 deferrable, corrected activeContext); re-verify survives. pytest 85 passed, ruff clean.",
+      "verification": {
+        "scope": "phase_exit",
+        "commands": [
+          "pytest -v --tb=short --ignore=tests/live",
+          "ruff check ."
+        ]
+      },
+      "depends_on": [
+        "S4.1",
+        "S4.2",
+        "S4.3",
+        "S4.4",
+        "S4.5",
+        "S4.6",
+        "S4.7"
+      ],
+      "blocks": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "HUMAN-DRIFT-RESEARCH",
+      "label": "gate:pre-S5|human|req:REQ-HUMAN",
+      "objective": "Operator starts personal drift-methodology research; acknowledge before any S5 work",
+      "files_or_sources": [
+        "memory-bank/progress.md",
+        "batch/profile_builder/builder.py",
+        "docs/SPEC.md"
+      ],
+      "ownership": "human",
+      "status": "done",
+      "sprint": "GATE",
+      "notes": "2026-07-13: operator acknowledged human drift-methodology research gate; S5.* unblocked.",
+      "blocks": [
+        "S5.1",
+        "S5.2",
+        "S5.3",
+        "S5.4",
+        "S5.5",
+        "S5.6",
+        "S5.7",
+        "S5.8",
+        "S5.9",
+        "S5.10",
+        "S5.11",
+        "S5.12"
+      ],
+      "blocked_by": [
+        "S4-EXIT-GATE"
+      ]
+    },
+    {
+      "id": "S5.1",
+      "label": "sprint:S5|deploy|req:REQ-S5",
+      "objective": "Dockerfiles + four-container compose (web/worker/batch/postgres)",
+      "files_or_sources": [
+        "docker-compose.yml",
+        "Dockerfile*",
+        "docs/"
+      ],
+      "ownership": "main",
+      "status": "ready",
+      "sprint": "S5",
+      "blocked_by": []
+    },
+    {
+      "id": "S5.2",
+      "label": "sprint:S5|iac|fork|req:REQ-S5",
+      "objective": "IaC (Terraform or equivalent) OR explicit portfolio IaC downgrade",
+      "files_or_sources": [
+        "terraform/",
+        "docs/",
+        "memory-bank/progress.md"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S5.3",
+      "label": "sprint:S5|audit|db|req:REQ-S5",
+      "objective": "Postgres INSERT-only roles + REVOKE for audit/profile commit tables",
+      "files_or_sources": [
+        "alembic/",
+        "docs/",
+        "docker-compose.yml"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S5.4",
+      "label": "sprint:S5|audit|req:REQ-S5",
+      "objective": "Scheduled audit hash-chain integrity job / assertion",
+      "files_or_sources": [
+        "core/models.py",
+        "batch/",
+        "tests/test_audit.py"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S5.5",
+      "label": "sprint:S5|staleness|req:REQ-S5",
+      "objective": "Staleness circuit breaker + active-alert mandatory escalation",
+      "files_or_sources": [
+        "worker/scorer.py",
+        "web/api.py",
+        "tests/"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S5.6",
+      "label": "sprint:S5|profile-block|req:REQ-S5",
+      "objective": "Wire max_profile_build_block_days supervisor escalation",
+      "files_or_sources": [
+        "batch/profile_builder/builder.py",
+        "config/scoring_config.yaml",
+        "tests/"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S5.7",
+      "label": "sprint:S5|llm|req:REQ-S5",
+      "objective": "Empirical LLM determinism check vs pinned non-alias model (not mock)",
+      "files_or_sources": [
+        "scripts/llm_determinism_check.py",
+        "docs/"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S5.8",
+      "label": "sprint:S5|embeddings|docs|req:REQ-S5",
+      "objective": "Full pgvector / embedding dimensionality migration playbook",
+      "files_or_sources": [
+        "docs/"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S5.9",
+      "label": "sprint:S5|scorer|req:REQ-S5",
+      "objective": "Schema-version / embedding-metadata mismatch detection at scorer startup",
+      "files_or_sources": [
+        "worker/scorer.py",
+        "tests/"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S5.10",
+      "label": "sprint:S5|explainer|fork|req:REQ-S5",
+      "objective": "Counterfactual consistency corpus + harness OR claim downgrade",
+      "files_or_sources": [
+        "worker/explainer.py",
+        "tests/",
+        "docs/"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S5.11",
+      "label": "sprint:S5|cohort|fork|req:REQ-S5",
+      "objective": "Advanced cohort prior-update gates OR defer per SPEC \u00a713.1",
+      "files_or_sources": [
+        "docs/SPEC.md",
+        "worker/scorer.py",
+        "memory-bank/progress.md"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S5.12",
+      "label": "sprint:S5|docs|req:REQ-S5",
+      "objective": "Threat-model polish in repo + README aligned to implemented behavior",
+      "files_or_sources": [
+        "README.md",
+        "docs/SPEC.md",
+        "docs/"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S5",
+      "blocked_by": [
+        "HUMAN-DRIFT-RESEARCH"
+      ]
+    },
+    {
+      "id": "S6.1",
+      "label": "sprint:S6|handoff|req:REQ-S6",
+      "objective": "Document hardening sweep checklist (commands, seeds, artifacts)",
+      "files_or_sources": [
+        "OPS.md",
+        "memory-bank/progress.md",
+        "docs/"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S6"
+    },
+    {
+      "id": "S6.2",
+      "label": "sprint:S6|handoff|drift|req:REQ-S6",
+      "objective": "Residual-risk + open drift hypotheses doc for human research",
+      "files_or_sources": [
+        "memory-bank/progress.md",
+        "docs/"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S6"
+    },
+    {
+      "id": "S6.3",
+      "label": "sprint:S6|governance|req:REQ-S6",
+      "objective": "Standing rule in OPS: no weight/threshold change without recorded sweep",
+      "files_or_sources": [
+        "OPS.md"
+      ],
+      "ownership": "main",
+      "status": "pending",
+      "sprint": "S6"
+    }
+  ],
+  "verification": [
+    {
+      "check": "verify_run this slug",
+      "command": "python C:/Users/oalan/ultimate-agentic-workflow/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready",
+      "required": true,
+      "status": "pending"
+    },
+    {
+      "check": "stop-gate pytest",
+      "command": "pytest -v --tb=short",
+      "required": true,
+      "status": "pending"
+    },
+    {
+      "check": "stop-gate ruff",
+      "command": "ruff check .",
+      "required": true,
+      "status": "pending"
+    },
+    {
+      "check": "HUMAN-DRIFT-RESEARCH before S5",
+      "command": null,
+      "required": true,
+      "status": "pass"
+    },
+    {
+      "check": "metrics and SPEC status agree on closeout",
+      "command": null,
+      "required": true,
+      "status": "pending"
+    },
+    {
+      "check": "S1-EXIT-GATE",
+      "command": "pytest -v --tb=short --ignore=tests/live && ruff check .",
+      "required": true,
+      "status": "pass"
+    },
+    {
+      "check": "S2-EXIT-GATE",
+      "command": "pytest -v --tb=short --ignore=tests/live && ruff check .",
+      "required": true,
+      "status": "pass"
+    },
+    {
+      "check": "S3-EXIT-GATE",
+      "command": "pytest -v --tb=short --ignore=tests/live && ruff check .",
+      "required": true,
+      "status": "pass"
+    },
+    {
+      "check": "S4-EXIT-GATE",
+      "command": "pytest -v --tb=short --ignore=tests/live && ruff check .",
+      "required": true,
+      "status": "pass"
+    }
+  ]
+}

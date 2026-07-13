@@ -37,21 +37,50 @@ def test_laplace_prob():
     assert get_laplace_prob(5, 100, 50) == 0.04
 
 def test_idempotent_decision_id():
-    event_id = "test_event_1"
-    profile_version = "v1"
-    scoring_version = "v1"
-    
-    raw = f"{event_id}{profile_version}{scoring_version}".encode('utf-8')
-    expected_hash = hashlib.sha256(raw).hexdigest()
-    
-    raw2 = f"{event_id}{profile_version}{scoring_version}".encode('utf-8')
-    assert hashlib.sha256(raw2).hexdigest() == expected_hash
+    """Canonical decision_id serialization is stable for identical inputs."""
+    import json
+    from worker.scorer import SCORER_ALGORITHM_VERSION, compute_decision_id
+
+    payload = {
+        "embedding_model_version": "1.0",
+        "event_id": "test_event_1",
+        "profile_version": "v1",
+        "scorer_algorithm_version": SCORER_ALGORITHM_VERSION,
+        "scoring_config_version": "v1",
+    }
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    expected_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+    assert compute_decision_id(
+        event_id="test_event_1",
+        profile_version="v1",
+        scoring_config_version="v1",
+        embedding_model_version="1.0",
+    ) == expected_hash
+    assert compute_decision_id(
+        event_id="test_event_1",
+        profile_version="v1",
+        scoring_config_version="v1",
+        embedding_model_version="1.0",
+    ) == expected_hash
 
 def test_decision_determinism(db_session):
     """Same inputs to score_event must produce identical decision_id and raw_score."""
+    from worker.scorer import score_event
+
+    resolved_event, profile, config = _determinism_fixture()
+
+    decision1 = score_event(db_session, resolved_event, profile, config)
+    decision2 = score_event(db_session, resolved_event, profile, config)
+
+    assert decision1.decision_id == decision2.decision_id
+    assert decision1.score == decision2.score
+    assert decision1.confidence == decision2.confidence
+
+
+def _determinism_fixture():
     from core.schemas.events import ResolvedEvent, AuthEventData
     from core.schemas.profiles import ProfileArtifact
-    from worker.scorer import score_event
     from datetime import datetime
 
     ts = datetime(2026, 1, 1, 12, 0)
@@ -65,9 +94,8 @@ def test_decision_determinism(db_session):
         entity_type="human",
         resolution_confidence=1.0,
         simulation_partition="production",
-        event_data=event_data
+        event_data=event_data,
     )
-
     profile = ProfileArtifact(
         entity_id="u1",
         entity_type="human",
@@ -75,20 +103,88 @@ def test_decision_determinism(db_session):
         created_at=ts,
         data_window_start=ts,
         data_window_end=ts,
-        features={"role": "Engineer", "cohort_data": {"terminus": {"login_hours": {"12": 1}, "endpoints": {"ep1": 1}}}},
-        embedding_model_id="nomic-embed-text",
+        features={
+            "role": "Engineer",
+            "cohort_data": {
+                "terminus": {"login_hours": {"12": 1}, "endpoints": {"ep1": 1}}
+            },
+        },
         embedding_model_version="1.0",
-        embedding_dimensionality=128
+        embedding_dimensionality=128,
     )
-
     config = {"features": {}, "anomaly_threshold": 75.0, "version": "1.0"}
+    return resolved_event, profile, config
 
-    decision1 = score_event(db_session, resolved_event, profile, config)
-    decision2 = score_event(db_session, resolved_event, profile, config)
 
-    assert decision1.decision_id == decision2.decision_id
-    assert decision1.score == decision2.score
-    assert decision1.confidence == decision2.confidence
+def test_total_volume_delta_deferred(db_session):
+    """total_volume_delta is deferred (S2.6): always zero with explicit flag."""
+    from worker.scorer import score_event
+
+    resolved_event, profile, config = _determinism_fixture()
+    decision = score_event(db_session, resolved_event, profile, config)
+
+    vol = next(c for c in decision.contributions if c.feature_name == "total_volume_delta")
+    assert vol.contribution_score == 0.0
+    assert vol.raw_value == 0.0
+    assert "volume_delta_deferred" in decision.flags
+
+
+def test_decision_id_matches_canonical_formula(db_session):
+    """decision_id must equal SHA-256 of sorted-key JSON lineage payload."""
+    import json
+    from worker.scorer import SCORER_ALGORITHM_VERSION, compute_decision_id, score_event
+
+    resolved_event, profile, config = _determinism_fixture()
+    decision = score_event(db_session, resolved_event, profile, config)
+
+    expected = compute_decision_id(
+        event_id=resolved_event.event_id,
+        profile_version=profile.profile_version,
+        scoring_config_version=str(config["version"]),
+        embedding_model_version=profile.embedding_model_version,
+    )
+    assert decision.decision_id == expected
+
+    payload = {
+        "embedding_model_version": profile.embedding_model_version,
+        "event_id": resolved_event.event_id,
+        "profile_version": profile.profile_version,
+        "scorer_algorithm_version": SCORER_ALGORITHM_VERSION,
+        "scoring_config_version": str(config["version"]),
+    }
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    assert decision.decision_id == hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def test_decision_id_sensitive_to_algorithm_version(db_session, monkeypatch):
+    """Changing scorer_algorithm_version must change decision_id."""
+    from worker import scorer as scorer_module
+    from worker.scorer import score_event
+
+    resolved_event, profile, config = _determinism_fixture()
+    baseline = score_event(db_session, resolved_event, profile, config).decision_id
+
+    monkeypatch.setattr(scorer_module, "SCORER_ALGORITHM_VERSION", "9.9-test-bump")
+    bumped = score_event(db_session, resolved_event, profile, config).decision_id
+
+    assert bumped != baseline
+
+
+def test_decision_id_sensitive_to_embedding_model_version(db_session):
+    """Changing embedding_model_version must change decision_id."""
+    from core.schemas.profiles import ProfileArtifact
+    from worker.scorer import score_event
+
+    resolved_event, profile, config = _determinism_fixture()
+    baseline = score_event(db_session, resolved_event, profile, config).decision_id
+
+    alt_profile = ProfileArtifact(
+        **{**profile.model_dump(), "embedding_model_version": "2.0"}
+    )
+    bumped = score_event(db_session, resolved_event, alt_profile, config).decision_id
+
+    assert bumped != baseline
+
 
 def test_scorer_ground_truth_isolation():
     """Scorer must not import or reference EvalGroundTruthModel."""
@@ -114,7 +210,7 @@ def test_confidence_not_hardcoded(db_session):
     that produces non-zero contributions, then checking confidence is < 1.0
     (because the mixed confidence_weights of 0.9/0.7/0.6/0.8 produce a value < 1).
     """
-    from core.schemas.events import ResolvedEvent, AuthEventData
+    from core.schemas.events import ResolvedEvent
     from core.schemas.profiles import ProfileArtifact
     from worker.scorer import score_event
     from datetime import datetime
@@ -160,7 +256,6 @@ def test_confidence_not_hardcoded(db_session):
             "process_names": known_procs,
             "cohort_data": {},
         },
-        embedding_model_id="nomic-embed-text",
         embedding_model_version="1.0",
         embedding_dimensionality=128,
     )
@@ -222,7 +317,7 @@ class _MockSession:
 
 def _compile_stmt_str(stmt) -> str:
     """Render the SQLAlchemy clause to a string (dialect-agnostic literal)."""
-    from sqlalchemy.dialects import sqlite as sqlite_dialect, postgresql as pg_dialect
+    from sqlalchemy.dialects import postgresql as pg_dialect
     try:
         return str(stmt.compile(dialect=pg_dialect.dialect()))
     except Exception:
@@ -335,7 +430,6 @@ def test_cohort_members_postgresql_uses_jsonb_operator():
 
 def test_novelty_cache_ttl_expiry(monkeypatch):
     """A cache entry older than _NOVELTY_CACHE_TTL must be recomputed, not reused."""
-    import time as time_module
     import worker.scorer as scorer_module
 
     scorer_module._NOVELTY_FRACTION_CACHE.clear()

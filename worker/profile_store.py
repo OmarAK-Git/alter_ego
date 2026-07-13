@@ -17,12 +17,12 @@ class ProfileStore:
         model = self.db.query(ProfileArtifactModel).filter(
             and_(
                 ProfileArtifactModel.entity_id == entity_id,
-                ProfileArtifactModel.is_shadow == False,
+                ProfileArtifactModel.is_shadow.is_(False),
                 ProfileArtifactModel.promoted_at <= event_time,
                 or_(
                     ProfileArtifactModel.superseded_at > event_time,
-                    ProfileArtifactModel.superseded_at == None
-                )
+                    ProfileArtifactModel.superseded_at.is_(None),
+                ),
             )
         ).first()
 
@@ -55,9 +55,9 @@ class ProfileStore:
         current_active = self.db.query(ProfileArtifactModel).filter(
             and_(
                 ProfileArtifactModel.entity_id == profile.entity_id,
-                ProfileArtifactModel.is_shadow == False,
-                ProfileArtifactModel.promoted_at != None,
-                ProfileArtifactModel.superseded_at == None
+                ProfileArtifactModel.is_shadow.is_(False),
+                ProfileArtifactModel.promoted_at.isnot(None),
+                ProfileArtifactModel.superseded_at.is_(None),
             )
         ).first()
 

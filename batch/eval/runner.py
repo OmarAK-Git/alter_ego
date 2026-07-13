@@ -1,10 +1,9 @@
 import sys
 import json
 import logging
-import sqlite3
 from pathlib import Path
 from datetime import datetime, timedelta
-from sqlalchemy import select, update, delete, func
+from sqlalchemy import select, delete, func
 
 from core.database import SessionLocal, Base, engine
 from core.models import (
@@ -33,7 +32,9 @@ def clear_db(db):
 def calculate_metrics(db, threshold=None):
     """Calculates precision, recall, and F1 at a specific threshold."""
     # 1. Fetch all malicious events from ground truth
-    malicious_stmt = select(EvalGroundTruthModel.event_id, EvalGroundTruthModel.scenario).where(EvalGroundTruthModel.is_malicious == True)
+    malicious_stmt = select(EvalGroundTruthModel.event_id, EvalGroundTruthModel.scenario).where(
+        EvalGroundTruthModel.is_malicious.is_(True)
+    )
     malicious_events = {row[0]: row[1] for row in db.execute(malicious_stmt).all()}
     
     # 2. Fetch all scores from decisions
@@ -42,7 +43,9 @@ def calculate_metrics(db, threshold=None):
     
     if threshold is None:
         # Use whatever is in the DB (the is_anomaly flag)
-        anomaly_stmt = select(DecisionRecordModel.event_id).where(DecisionRecordModel.is_anomaly == True)
+        anomaly_stmt = select(DecisionRecordModel.event_id).where(
+            DecisionRecordModel.is_anomaly.is_(True)
+        )
         detected_anomalies = {row[0] for row in db.execute(anomaly_stmt).all()}
     else:
         # Re-apply threshold
@@ -68,13 +71,20 @@ def calculate_metrics(db, threshold=None):
         "fp": fp,
         "fn": fn,
         "tn": tn,
-        "drift_alerts": len([r for r in db.execute(select(DecisionRecordModel).where(func.json_extract(DecisionRecordModel.flags, '$.drift_alert') == True)).all()]),
+        "drift_alerts": len(
+            db.execute(
+                select(DecisionRecordModel).where(
+                    func.json_extract(DecisionRecordModel.flags, "$.drift_alert").is_(True)
+                )
+            ).all()
+        ),
         "scenarios": {}
     }
     
     for scenario in scenarios:
         scenario_malicious = {eid for eid, s in malicious_events.items() if s == scenario}
-        if not scenario_malicious: continue
+        if not scenario_malicious:
+            continue
         s_tp = len(detected_anomalies.intersection(scenario_malicious))
         s_fn = len(scenario_malicious - detected_anomalies)
         s_recall = s_tp / (s_tp + s_fn) if (s_tp + s_fn) > 0 else 0.0
@@ -95,7 +105,8 @@ def run_pipeline(events_path: Path, labels_path: Path, window_delta_days: int = 
                     events.append(json.loads(line))
         events.sort(key=lambda x: x["timestamp"])
         
-        if not events: return
+        if not events:
+            return
         start_time = datetime.fromisoformat(events[0]["timestamp"])
         end_time = datetime.fromisoformat(events[-1]["timestamp"])
         
@@ -111,10 +122,12 @@ def run_pipeline(events_path: Path, labels_path: Path, window_delta_days: int = 
             if window_events:
                 temp_events = Path(f"temp_window_{current_window_start.strftime('%Y%m%d')}.jsonl")
                 with open(temp_events, "w") as f:
-                    for e in window_events: f.write(json.dumps(e) + "\n")
-                
+                    for e in window_events:
+                        f.write(json.dumps(e) + "\n")
+
                 ingest_events(temp_events, db)
-                if temp_events.exists(): temp_events.unlink()
+                if temp_events.exists():
+                    temp_events.unlink()
                 process_unresolved_events(db)
                 build_profiles(db, as_of=current_window_end)
                 process_unscored_events(db)

@@ -1,6 +1,5 @@
 from datetime import datetime
 from core.schemas.events import Event, AuthEventData, ProcessEventData
-from core.schemas.decisions import DecisionRecord
 
 def test_auth_event_schema_validation():
     data = AuthEventData(

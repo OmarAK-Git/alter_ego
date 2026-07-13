@@ -3,7 +3,6 @@ import time
 import pytest
 import uvicorn
 import requests
-import sys
 from unittest.mock import patch
 
 def run_server():

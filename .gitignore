@@ -24,6 +24,15 @@ build/
 # Environment
 .env
 
+# Local calibration / eval databases (do not commit)
+alter_ego_calibrate_*.db
+alter_ego_eval.db
+*.db-journal
+
+# Workflow raw logs / cloned deps
+logs/
+.workflow/deps/
+
 # Generated data
 *.jsonl
 temp.json
@@ -36,5 +45,17 @@ Thumbs.db
 # Pytest
 .pytest_cache/
 
+# Ruff
+.ruff_cache/
+
 # mypy
 .mypy_cache/
+
+# Scratch test / lint output dumps
+.pytest_*_out.txt
+.pytest_*_verify.txt
+.ruff_*_out.txt
+.ruff_*_verify.txt
+
+# Local (per-machine) Claude settings
+.claude/settings.local.json

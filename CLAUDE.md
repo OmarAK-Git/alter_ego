@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Agent Autopilot
+
+This repo uses the `ultimate-agentic-workflow` skill for non-trivial AI coding work. Classify before acting: T0 answer/tiny edit; T1 goal note + verify; T2 plan first; T3 full `.workflow/<slug>/` traceability. Keep live task state in `memory-bank/` (and `.workflow/<slug>/state.json` for T3), not only chat. Do not claim completion without fresh verification evidence. Operational lessons live in `OPS.md`.
+
 ## Commands
 
 ```bash
@@ -54,9 +58,9 @@ Ingest → Resolver → Profiler (DuckDB) → Scorer → Recorder
 
 **Immutable profiles:** `ProfileArtifact` (in `core/schemas/profiles.py`) is `frozen=True`. Profile changes require promotion via `ProfileStore.promote_profile()`, never in-place mutation. Superseded profiles are retained with `superseded_at` timestamps.
 
-**No LLM in core pipeline:** `worker/vectorizer.py` uses deterministic character-level 3-gram SHA-256 hashing into a 768-dim unit-norm vector. Avoids prompt injection risk and ensures reproducibility.
+**No LLM in core pipeline:** `worker/vectorizer.py` uses deterministic character-level 3-gram SHA-256 hashing into a 128-dim unit-norm vector (model id `alter-ego-ngram-v1`). Avoids prompt injection risk and ensures reproducibility. Alembic/ORM still default `nomic-embed-text` — deferred S1.4 debt, not shipping runtime.
 
-**Drift engine:** `batch/profile_builder/builder.py` computes KL-divergence between a 3-day recent window and a 30-day baseline, normalizes by cohort-median drift, then accumulates with a 7-day exponential half-life. Threshold is 1.0 (very permissive) but weighted at 100.0 in scoring.
+**Drift engine:** `batch/profile_builder/builder.py` computes KL-divergence between a 3-day recent window and a 30-day baseline, normalizes by cohort-median drift, then accumulates with a 7-day exponential half-life. `drift_threshold` is **5.0** in `config/scoring_config.yaml`, weighted at 100.0 in scoring.
 
 **Circuit breakers:** Staleness halt (`max_profile_staleness_days: 14`) gates scoring to zero if a profile is stale. Cohort novelty gate suppresses feature contributions common to >20% of same-role peers (requires ≥10 peers, 7-day window).
 

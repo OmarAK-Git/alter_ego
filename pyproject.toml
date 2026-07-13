@@ -26,6 +26,12 @@ dev = [
 
 [tool.ruff]
 line-length = 100
+exclude = ["scratch"]
+
+[tool.ruff.lint.per-file-ignores]
+"alembic/env.py" = ["E402"]
+"alembic/versions/*.py" = ["E402"]
+"tests/live/**" = ["F541", "E401"]
 
 [tool.mypy]
 strict = true
