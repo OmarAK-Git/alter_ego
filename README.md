@@ -7,7 +7,7 @@
 ![Postgres + pgvector](https://img.shields.io/badge/postgres-pgvector-336791?style=flat-square&logo=postgresql&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-analytics-FFF000?style=flat-square&logo=duckdb&logoColor=black)
 ![License MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
-![Status](https://img.shields.io/badge/status-Phase%200--3%20Partial%20%7C%20v1%20in%20progress-yellow?style=flat-square)
+![Status](https://img.shields.io/badge/status-v1%20portfolio%20shipped%20%7C%20not%20CALIBRATED-yellow?style=flat-square)
 
 ---
 
@@ -16,6 +16,8 @@
 Local-first UEBA-style engine for a portfolio / single-operator deployment. It ingests auth and process telemetry (today: synthetic), builds **immutable versioned profiles**, scores new events with a multi-feature fusion model, and surfaces anomalies in an analyst triage UI.
 
 > Every decision is deterministic, every score is traceable, every profile is versioned. The LLM never influences the score.
+
+**Program status (2026-07-14):** S0–S6 portfolio-ready T3 run is **drained** (all packets + exit gates closed). Phases 0–4 remain **Partial** — **not CALIBRATED.** Operator-owned next step is personal drift-methodology research ([`docs/residual-risk-drift-hypotheses.md`](docs/residual-risk-drift-hypotheses.md)).
 
 ## Pipeline
 
@@ -55,7 +57,18 @@ Saved operating point from [`docs/calibration_final_metrics.json`](docs/calibrat
 
 - **Precision:** ~0.019 · **Global recall:** ~0.817 · **FP:** 3448 — **not CALIBRATED**
 - Residual detail: [`docs/phase2-s3-operating-point.md`](docs/phase2-s3-operating-point.md)
-- Do not change weights without a full eval sweep (`batch/eval/` or `scratch/analyze_step*.py`).
+- Do not change weights without a full eval sweep + governance record (see [`docs/hardening-sweep-checklist.md`](docs/hardening-sweep-checklist.md)).
+
+## What S5–S6 hardening shipped
+
+| Area | What you get |
+|---|---|
+| Deploy | Four-container `docker compose` (web / worker / batch / postgres) — [`docs/deployment.md`](docs/deployment.md) |
+| Audit | INSERT-only `alter_ego_app` DB role + scheduled hash-chain integrity job |
+| Fail-closed | Staleness halt, embedding-metadata mismatch halt, profile build-block supervisor escalation |
+| Explain | Slot-isolated LLM fields, queue-depth template fallback, counterfactual consistency harness |
+| Lineage | Empirical LLM check on Vertex `gemini-3.5-flash`: **not byte-identical** at temp=0 — immutable explanation lineage is authoritative ([`docs/llm-determinism-check.md`](docs/llm-determinism-check.md)) |
+| Handoff | Sweep checklist + residual/drift hypotheses + OPS standing rule (no knob change without recorded sweep) |
 
 ## Phase map
 
@@ -63,63 +76,95 @@ Authoritative detail: [`memory-bank/progress.md`](memory-bank/progress.md).
 
 | Phase | Status | What shipped / open |
 |---|---|---|
-| 0 Contracts + generator | **Partial** | Schemas, synthetic attacks, CI, app-layer audit chain — missing 4-container deploy, DB INSERT-only roles, migration playbook |
-| 1 Detection pipeline | **Partial** | Shadow profiles, six-feature path, drift, novelty gate — geo histograms + drift KL (S1.2), eval partitions fixed (S1.1), auto containment queue (S1.3); open: lifecycle states, volume_delta |
-| 2 Calibration | **Partial (Phase 2A)** | S1/S2/S4 recall 1.0 @ thr=45; S3 recall 0.667; 3448 FP — **not CALIBRATED** (see metrics table + operating-point note) |
-| 3 UI + API + explain | **Partial** | Triage/detail UI, API key, explainer with slot isolation (S4.1) + queue-depth limit & template fallback (S4.2), suppressed-decisions view (S4.3), demo path (S4.4), first-class `replay_run_id` (S4.5) — open: suppressed-decisions aging escalation + jitter (deferred to Phase 4) |
-| 4 Hardening / portfolio | **Open** | Four-container topology, DB roles, staleness escalation, empirical LLM check (SPEC_V3 §9) |
+| 0 Contracts + generator | **Partial** | Schemas, synthetic attacks, CI, app-layer audit chain, compose deploy, DB roles, audit integrity job, pgvector playbook. LLM determinism **executed** (provider non-deterministic → lineage rule confirmed) |
+| 1 Detection pipeline | **Partial** | Shadow profiles, six-feature path, drift, novelty gate, geo/drift KL, auto containment queue, embedding mismatch halt; open: lifecycle states, `volume_delta` |
+| 2 Calibration | **Partial (Phase 2A)** | S1/S2/S4 recall 1.0 @ thr=45; S3 recall 0.667; 3448 FP — **not CALIBRATED** |
+| 3 UI + API + explain | **Partial** | Triage UI, slot isolation, queue-depth fallback, suppressed view, demo path, `replay_run_id`. **Deferred:** suppressed-decisions aging + jitter |
+| 4 Hardening / portfolio | **Partial** | S5 + S6 program closed. **Deferred:** advanced cohort prior-update gates, K8s/Terraform, debate transcripts. **Operator open:** personal drift research → optional re-sweep |
 
 ## Quick start
 
 ```bash
 pip install -e ".[dev]"
 pytest -v --tb=short
-# optional Postgres
-docker compose up -d
-# API + triage UI
-set API_KEY=dev-key   # required for privileged routes
+
+# Four-container stack — see docs/deployment.md
+docker compose up -d --build
+
+# Or local API + triage UI (SQLite or existing Postgres)
+set API_KEY=dev-key
 uvicorn web.api:app --reload
 ```
 
 Privileged routes expect header `X-API-KEY` matching `API_KEY`. See [`.env.example`](.env.example).
 
-## Demo path
+## Demo
 
-Reproducible analyst walkthrough (SPEC §11.5): **seed → triage → explain → simulated contain**. No live LLM required — without API keys the explainer uses deterministic template fallback.
+Reproducible analyst walkthrough: **seed → triage → explain → simulated contain**. No live LLM required — without API keys the explainer uses deterministic template fallback.
 
-**Automated test (in-memory DB, no server):**
+### One-liner automated check
 
 ```bash
 pytest tests/web/test_demo_path.py -v
 ```
 
-**Manual demo against a running server:**
+### Live demo (UI + API)
 
 ```bash
-# terminal 1 — API + triage UI
+# terminal 1
 set API_KEY=dev-key
 uvicorn web.api:app --reload
 
-# terminal 2 — seed, then walk the API chain
+# terminal 2
 python scripts/demo_path.py seed-and-run --api-key dev-key
 ```
 
-Or step-by-step:
+Then open [http://localhost:8000](http://localhost:8000) → Triage Queue → **Review** on `user_demo_path` → Acknowledge → Generate explanation → Queue Containment (simulated).
 
-1. `python scripts/demo_path.py seed` — inserts alert `demo_path_alert` for entity `user_demo_path`
-2. Open `http://localhost:8000` → Triage Queue → **Review** on `user_demo_path`
-3. **Acknowledge** → **Generate** explanation → **Queue Containment** (simulated)
+Step-by-step:
 
-Cleanup: `python scripts/demo_path.py cleanup`
+| Step | Command / action |
+|---|---|
+| 1. Seed | `python scripts/demo_path.py seed` |
+| 2. Triage | UI: Review `user_demo_path` / alert `demo_path_alert` |
+| 3. Explain | **Generate** (template fallback if no LLM keys) |
+| 4. Contain | **Queue Containment** (simulated — no real IAM disable) |
+| 5. Cleanup | `python scripts/demo_path.py cleanup` |
 
-Core helpers live in [`scripts/demo_path.py`](scripts/demo_path.py) (`seed_demo_alert`, `run_demo_path`).
+Helpers: [`scripts/demo_path.py`](scripts/demo_path.py).
+
+### Docker demo
+
+```bash
+cp .env.example .env   # set API_KEY at minimum
+docker compose up -d --build
+# UI on the published web port — see docs/deployment.md
+python scripts/demo_path.py seed-and-run --api-key "$API_KEY" --base-url http://localhost:8000
+```
+
+## Portfolio docs
+
+| Doc | Purpose |
+|---|---|
+| [`docs/deployment.md`](docs/deployment.md) | Four-container topology, DB role matrix, bring-up |
+| [`docs/hardening-sweep-checklist.md`](docs/hardening-sweep-checklist.md) | Re-sweep commands, seeds, artifacts after drift research |
+| [`docs/residual-risk-drift-hypotheses.md`](docs/residual-risk-drift-hypotheses.md) | Open FP/FN + drift research hypotheses (operator) |
+| [`docs/pgvector-embedding-migration.md`](docs/pgvector-embedding-migration.md) | Embedding model / dimensionality change playbook |
+| [`docs/llm-determinism-check.md`](docs/llm-determinism-check.md) | §8.4 empirical check (executed 2026-07-14; not bit-identical) |
+| [`docs/counterfactual-consistency.md`](docs/counterfactual-consistency.md) | Top-K counterfactual harness |
+
+## What's left (operator)
+
+1. **Personal drift research** — work through [`docs/residual-risk-drift-hypotheses.md`](docs/residual-risk-drift-hypotheses.md)
+2. **Optional re-sweep** — only after research conclusions, using [`docs/hardening-sweep-checklist.md`](docs/hardening-sweep-checklist.md) + OPS governance
+3. Deferred product items (not blocking portfolio bar): cohort prior-update gates, K8s/Terraform, calendar dual-score, lifecycle states, `volume_delta`
 
 ## Layout
 
 ```
 core/          ORM, schemas, math, settings
 worker/        ingest → resolve → score → record (+ vectorizer, explainer)
-batch/         profile builder, synthetic scenarios, eval harness
+batch/         profile builder, synthetic scenarios, eval harness, audit_integrity
 web/           FastAPI + static triage UI
 config/        scoring_config.yaml
 memory-bank/   durable agent task memory
@@ -140,6 +185,7 @@ This repo uses the local `ultimate-agentic-workflow` skill for accountable AI co
 - Tests: [`evidence/test-results.txt`](evidence/test-results.txt)
 - API key behavior: [`evidence/`](evidence/)
 - Spec: [`docs/SPEC.md`](docs/SPEC.md)
+- T3 closeout: `.workflow/2026-07-12-v1-portfolio-ready/` (S6-EXIT-GATE passed)
 
 ## License
 

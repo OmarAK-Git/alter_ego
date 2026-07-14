@@ -55,12 +55,12 @@ The architecture supports arbitrary log types and entity types through pluggable
 ### 3.2 In-Scope Adversaries
 
 - **Compromised individual entity:** attacker with credentials of one user or service account, attempting to act undetected. *Primary threat.*
-- **Slow-roll/boil-the-frog adversary:** attacker who shifts an entity's behavior gradually to train the profile to accept attack behavior as normal. *Addressed via cumulative drift detection (§6.4) and active-alert profile-build blocking (§5.5), both required at calibration time.*
-- **Coordinated multi-entity compromise:** attacker controlling several accounts simultaneously, attempting to poison cohort priors. *Addressed via cohort-prior update gating (§7.3); residual risk documented as known limitation.*
-- **Prompt injection via behavioral data:** attacker who plants attacker-controlled strings (process command lines, file paths, URLs) intended to manipulate LLM explanation outputs. *Addressed via structured field binding (§8.2), constrained ExplanationRecord output schema (§8.3), and prohibited-content output validation (§8.3).*
-- **Insider with config access:** detection_engineer-role user who attempts to disable detection by adjusting scoring_config. *Addressed via authenticated writes, INSERT-only audit log (§9.2), and replay scope limits (§9.3).*
-- **Audit manipulator:** operator attempting to selectively recompute past decisions to hide false negatives or downgrade alerts. *Addressed via contiguous-window-only replay and original-record preservation (§9.3).*
-- ▲ **Detection-invisibility attacker:** sustains suspicious behavior to keep an alert active, blocking profile rebuilds, until the staleness circuit breaker fires and the entity disappears from scoring. *Addressed via mandatory analyst escalation when staleness fires under active alert (§5.7).*
+- **Slow-roll/boil-the-frog adversary:** attacker who shifts an entity's behavior gradually to train the profile to accept attack behavior as normal. *Addressed via cumulative drift detection (§6.4), active-alert profile-build blocking (§5.5), and `max_profile_build_block_days` supervisor escalation when block exceeds SLA (§5.5, shipped S5.6).*
+- **Coordinated multi-entity compromise:** attacker controlling several accounts simultaneously, attempting to poison cohort priors. *Partially addressed in v1 via scoring-time novelty suppression (`max_changed_fraction`, §7.3); advanced prior-update rejection gates and `min_clean_observation_count` deferred to Phase 4 (S5.11 / Path B, §7.3). Residual risk documented as known limitation (§7.4).*
+- **Prompt injection via behavioral data:** attacker who plants attacker-controlled strings (process command lines, file paths, URLs) intended to manipulate LLM explanation outputs. *Addressed via structured field binding (§8.2), constrained ExplanationRecord output schema (§8.3), prohibited-content output validation (§8.3), and slot-isolated low-trust fields (S4.1).*
+- **Insider with config access:** detection_engineer-role user who attempts to disable detection by adjusting scoring_config. *Addressed via authenticated writes, Postgres INSERT-only audit/commit tables via runtime role `alter_ego_app` (§9.2, shipped S5.3 — profiles allow lifecycle-column UPDATE only), and replay scope limits (§9.3).*
+- **Audit manipulator:** operator attempting to selectively recompute past decisions to hide false negatives or downgrade alerts. *Addressed via contiguous-window-only replay, original-record preservation (§9.3), and scheduled hash-chain integrity verification (`batch/audit_integrity.py`, shipped S5.4).*
+- ▲ **Detection-invisibility attacker:** sustains suspicious behavior to keep an alert active, blocking profile rebuilds, until the staleness circuit breaker fires and the entity disappears from scoring. *Addressed via mandatory analyst escalation when staleness fires under active alert (§5.7, shipped S5.5).*
 - ▲ **Confidence-floor evader:** crafts behavior that scores high on raw_score while triggering low confidence (sparse-feature exploitation, cohort_unsupported entities) to bypass the containment queue. *Partially addressed in v1 via the suppressed-decisions view (§11.4), which surfaces suppressed high-score decisions with audit rather than silently dropping them; mandatory aging escalation is deferred to Phase 4 (S4.3 / Path B, §11.4).*
 
 ### 3.3 Out-of-Scope Adversaries (v1)
@@ -125,7 +125,7 @@ Hybrid storage with role separation:
 - **DuckDB (analytical store):** profile computation. Per-build, the profile-builder service performs **deterministic batch materialization** from Postgres into a DuckDB instance, computes the profile, and writes the resulting versioned profile artifact back to Postgres. DuckDB is not a long-lived store; it is a per-build compute target.
 - **pgvector (within Postgres):** embeddings of behavioral artifacts (command sequences, URL patterns, process-tree shapes) used for fuzzy similarity scoring against the entity's profile vectors.
 
-▲ **Vector column dimensionality and embedding model migration.** pgvector vector columns are typed with fixed dimensionality at CREATE TABLE time (e.g., `embedding vector(768)`). A change in embedding model dimensionality therefore requires either (a) an explicit ALTER TABLE migration, or (b) versioned vector columns per embedding model generation (e.g., `cmd_embedding_v1 vector(768)`, `cmd_embedding_v2 vector(1536)`). v1 uses approach (a): embedding model changes are treated as breaking schema changes, documented in the schema migration playbook. The embedding_model_id, embedding_model_version, and embedding_dimensionality are recorded in every profile artifact (§5.6) so mismatch is detected before scoring resumes.
+▲ **Vector column dimensionality and embedding model migration.** pgvector vector columns are typed with fixed dimensionality at CREATE TABLE time (e.g., `embedding vector(768)`). A change in embedding model dimensionality therefore requires either (a) an explicit ALTER TABLE migration, or (b) versioned vector columns per embedding model generation (e.g., `cmd_embedding_v1 vector(768)`, `cmd_embedding_v2 vector(1536)`). v1 uses approach (a): embedding model changes are treated as breaking schema changes, documented in the [pgvector embedding migration playbook](pgvector-embedding-migration.md). The embedding_model_id, embedding_model_version, and embedding_dimensionality are recorded in every profile artifact (§5.6) so mismatch is detected before scoring resumes.
 
 This split was selected over alternatives (Postgres-only; DuckDB-as-primary) because behavioral profiling query patterns are columnar and benefit from DuckDB's compute model, while operational state requires Postgres's concurrent-write semantics. Live two-store synchronization was explicitly rejected as over-engineering for v1; the deterministic batch materialization model (rebuild DuckDB slice from Postgres at each profile build) provides sufficient consistency.
 
@@ -142,9 +142,10 @@ This split was selected over alternatives (Postgres-only; DuckDB-as-primary) bec
 
 This compresses operational overhead while preserving every future split point. Independent service deployment is documented as a production upgrade and only justified when a specific scaling or isolation need emerges.
 
-- **Kubernetes** (kind/k3d for v1 single-node; manifests target the four-container topology above)
-- **IaC via Terraform or similar** for reproducible deployment
+▲ **v1 shipped IaC (S5.2 / Path A).** The v1 Infrastructure-as-Code artifact is `docker-compose.yml`, which declares the four-container topology above (`postgres`, `web`, `worker`, `batch`). Reproducible bring-up: `docker compose up -d --build` (see `docs/deployment.md`).
+
 - **Local-only:** no public ingress, no external auth, no TLS in v1 (documented as production upgrade)
+- **Production upgrades (deferred):** Kubernetes (kind/k3d) manifests targeting the same four roles; standalone Terraform for cloud/multi-environment provisioning
 
 ## 5. Identity Model
 
@@ -185,7 +186,7 @@ A profile contains, per entity:
 
 Profile builds run on schedule (cold path). **Builds for entities with active uncleared alerts are blocked or run in shadow mode only** — committing a new profile for an entity currently under suspicion would learn the suspected attack behavior into the new baseline, defeating drift detection. Shadow profiles are computed and stored but not promoted to the active profile until the alert is cleared.
 
-▲ **Maximum profile-build-block duration.** A configurable `max_profile_build_block_days` (scoring_config, default=30) limits how long an entity can remain in build-blocked state. When exceeded without the alert being cleared, an escalation event is emitted to a supervisor review queue with a documented SLA, **independent of the staleness circuit breaker (§5.7)**. This handles the case where an alert is never cleared — analyst turnover, backlog deprioritization, chronic understaffing — preventing indefinite block without observation.
+▲ **Maximum profile-build-block duration (shipped S5.6).** A configurable `max_profile_build_block_days` (scoring_config, default=30) limits how long an entity can remain in build-blocked state. When exceeded without the alert being cleared, an auditable supervisor escalation (`profile_build_block_supervisor_escalation`) is emitted with structured SLA metadata, **independent of the staleness circuit breaker (§5.7)**. This handles the case where an alert is never cleared — analyst turnover, backlog deprioritization, chronic understaffing — preventing indefinite block without observation.
 
 ### 5.6 Profile Schema Versioning
 
@@ -197,7 +198,9 @@ Profile artifacts carry a schema version. Schema-incompatible profiles cannot be
 
 A scheduled profile build that fails (silent batch failure, source data unavailability, schema mismatch, ▲ embedding model mismatch) must not cause the system to score against an arbitrarily old profile. After a configured staleness threshold, the scorer halts for affected entities and emits a sensor-health incident.
 
-▲ **Staleness + active-alert escalation.** When the staleness circuit breaker trips for an entity that **also has an active uncleared alert**, halt scoring AND automatically escalate to a mandatory analyst review queue with a configured time-bounded SLA. The analyst must either clear the alert (allowing fresh profile build) or explicitly extend the scoring halt with documented justification before the halt can continue. This closes the detection-invisibility loop where sustained suspicious behavior keeps an alert active, prevents profile refresh, trips the circuit breaker, and silently removes the entity from detection.
+▲ **Staleness + active-alert escalation (shipped S5.5).** When the staleness circuit breaker trips for an entity that **also has an active uncleared alert**, halt scoring AND automatically escalate to a mandatory analyst review queue with a configured time-bounded SLA. The analyst must either clear the alert (allowing fresh profile build) or explicitly extend the scoring halt with documented justification before the halt can continue. This closes the detection-invisibility loop where sustained suspicious behavior keeps an alert active, prevents profile refresh, trips the circuit breaker, and silently removes the entity from detection.
+
+▲ **Embedding metadata mismatch (shipped S5.9).** Before feature scoring, the scorer compares each profile's `embedding_model_id`, `embedding_model_version`, `embedding_dimensionality`, and normalizer version against the shipping runtime contract. Mismatch emits `embedding_metadata_mismatch_halt` (score 0) rather than silent scoring against incompatible vectors. See [pgvector embedding migration playbook](pgvector-embedding-migration.md).
 
 ## 6. Scoring Model
 
@@ -240,7 +243,7 @@ For entities with sparse observations on a given feature, scoring uses **confide
 - **Cohort priors are frozen per scoring window** — a single scoring decision uses a stable prior rather than chasing concurrent updates
 - Cohort fallback chain: entity-local → primary cohort (e.g., role) → parent cohort (e.g., account_type) → **terminus: entity-local-only with `cohort_unsupported: true`, elevated confidence floor for containment gating, and UI warning surface**
 
-▲ **Basic cohort shrinkage is a Phase 1 requirement, not Phase 4 hardening.** Scenario 4 (service account abuse) explicitly tests hierarchical baselining and confidence-adaptive shrinkage. Running Scenario 4 in Phase 2 calibration without basic shrinkage either tests a different scenario than specified or produces thresholds invalid for the post-shrinkage code path. Therefore basic cohort prior computation and confidence-adaptive shrinkage are required before Phase 2 calibration. Advanced cohort-poisoning gates (§7.3) remain in Phase 4.
+▲ **Basic cohort shrinkage is a Phase 1 requirement, not Phase 4 hardening.** Scenario 4 (service account abuse) explicitly tests hierarchical baselining and confidence-adaptive shrinkage. Running Scenario 4 in Phase 2 calibration without basic shrinkage either tests a different scenario than specified or produces thresholds invalid for the post-shrinkage code path. Therefore basic cohort prior computation and confidence-adaptive shrinkage are required before Phase 2 calibration. Advanced cohort-poisoning gates (§7.3 prior-update rejection, independent versioned cohort artifacts) remain in Phase 4 (S5.11 / Path B).
 
 ### 6.4 Cumulative Drift Detection
 
@@ -289,7 +292,7 @@ Current operating point:
 - **Drift accumulator half-life (`drift_half_life_days`):** 7 — replaces legacy `decay_lambdas.drift` (removed S2.8; never read)
 - **Cohort Gating (`min_cohort_size`):** min_size=10 fallback
 
-Deferred / unwired (present in YAML but not production-calibrated): `min_clean_observation_count`, `total_volume_delta` weight, `max_calendar_adjustment`, `gap_windows.*`, `max_profile_build_block_days`, `age_jitter_hours`. See `memory-bank/progress.md` §Scoring config knob inventory.
+Deferred / unwired (present in YAML but not production-calibrated): `min_clean_observation_count`, `total_volume_delta` weight, `max_calendar_adjustment`, `gap_windows.*`, `age_jitter_hours`. `max_profile_build_block_days` is wired in the profile builder (S5.6 supervisor escalation). See `memory-bank/progress.md` §Scoring config knob inventory.
 
 ## 7. Profile Build and Cohort Mechanics
 
@@ -313,6 +316,8 @@ Deferred / unwired (present in YAML but not production-calibrated): `min_clean_o
 
 ### 7.3 Cohort Maintenance
 
+▲ **v1 deferral (S5.11 / Path B).** Advanced §7.3 cohort-prior **update** gates and independent versioned cohort artifacts are design targets, not shipped in v1. v1 ships: profile-embedded `cohort_data` (§6.3), active-alert profile-build blocking (entities under alert excluded from training), and **scoring-time novelty suppression** (`max_changed_fraction` + `cohort_gate_window_days` in `worker/scorer.py`). v1 does **not** ship: separate cohort recomputation schedule, prior-update rejection on cohort rebuild, `min_clean_observation_count` reader, or analyst-facing cohort-prior update rejection events. Full §7.3 prior-update gating deferred to Phase 4 (§13.1).
+
 Cohorts are recomputed on a separate schedule from individual profile builds. Cohort updates are gated:
 
 - **Minimum cohort size:** below the configured minimum, a cohort cannot be the primary cohort; fall to parent
@@ -325,7 +330,7 @@ These gates are versioned scoring_config parameters, not normative architectural
 
 ### 7.4 Known Limitation: Cohort Prior Poisoning
 
-Coordinated compromise of a substantial fraction of a small cohort, sustained across multiple scoring windows, can eventually corrupt the cohort prior even with the gates in §7.3. This is a load-bearing known limitation of any cohort-based behavioral system and is **explicitly documented in the spec**, not silently accepted. Mitigation: minimum-cohort-size gating, the population-fraction gate, and analyst review of cohort-prior update rejections.
+Coordinated compromise of a substantial fraction of a small cohort, sustained across multiple scoring windows, can eventually corrupt the cohort prior even with the gates in §7.3. This is a load-bearing known limitation of any cohort-based behavioral system and is **explicitly documented in the spec**, not silently accepted. Mitigation in v1: minimum-cohort-size gating and scoring-time population-fraction novelty suppression (§7.3 banner). Prior-update rejection and analyst review of cohort-prior update rejections deferred with §7.3 (S5.11 / Path B).
 
 ## 8. LLM Explanation Service
 
@@ -403,12 +408,14 @@ Validation failure produces a **deterministic template fallback explanation** dr
 - ▲ **The audit lineage record is the single authoritative record for any explanation.** Re-invoking the LLM to verify a prior explanation is **prohibited**. Reproducibility is provided by the immutable lineage (full prompt, full response, model version, timestamp), not by future LLM calls.
 - Explanations are **cached by deviation-object-hash** (`hash(decision_id || scoring_config_version || profile_version || llm_model_id)`). Identical inputs produce the cached output.
 - ▲ **LLM model ID is pinned to a specific non-alias identifier** (e.g., `claude-sonnet-4-6`, not `claude-sonnet-latest`). This is required so model version changes are detectable in lineage records.
-- ▲ **Phase 0 includes an empirical determinism check:** send the same prompt 10 times at temperature=0 to the configured pinned model and record whether outputs are byte-identical. The result documents the actual reproducibility behavior of the chosen provider; the architecture functions correctly regardless.
+- ▲ **v1 shipped empirical determinism check (S5.7):** `scripts/llm_determinism_check.py` sends the same prompt 10 times at temperature=0 to the configured pinned model and records whether outputs are byte-identical. Artifact: [`docs/llm-determinism-check.md`](llm-determinism-check.md). **Honest scoping:** the script ships; an empirical conclusion requires live provider credentials — the committed artifact may read "not executed" until an operator runs it. The architecture functions correctly regardless; lineage (§8.7) is authoritative, not provider reproducibility.
 - **LLM model version changes do not invalidate prior explanations.** Old explanations remain immutable historical artifacts. New decisions or replays generate new explanations under the new model version, with the model version recorded in the lineage.
 
 ### 8.5 Top-K Counterfactuals
 
 The detail view includes **top-K counterfactual** information: the K features that, if behavior had been within the entity's typical range, would most have lowered the score. These are populated as `CounterfactualEntry` objects (§8.3) and grounded in actual feature contributions, not abstract narrative.
+
+▲ **v1 shipped (S5.10).** `build_top_k_counterfactuals` in `worker/explainer.py` is the single source of truth; counterfactuals are deterministic from contribution scores, not LLM-generated. Consistency is verified by a pytest harness and JSON corpus — see [`docs/counterfactual-consistency.md`](counterfactual-consistency.md).
 
 ### 8.6 Queue Depth Limit and Fallback
 
@@ -441,11 +448,11 @@ All tunable numeric parameters listed in §6.8.
 - **No hardcoded credentials in the repository** under any circumstance
 - Every scoring_config write emits an **immutable audit record** with: `previous_config_hash`, `new_config_hash`, `author`, `timestamp`, `change_reason`
 
-▲ **Audit immutability mechanism.** Application-layer immutability enforced via:
+▲ **Audit immutability mechanism (shipped S5.3).** v1 enforces immutability at the database-role layer via the runtime Postgres role `alter_ego_app` (Alembic migration `g6h7i8j9k0l1_add_app_db_roles`):
 
-1. **Postgres role-based access control:** the application connects with a role that has `INSERT` but not `UPDATE` or `DELETE` on audit tables. Enforced via `GRANT INSERT ON audit_*` and `REVOKE UPDATE, DELETE ON audit_*` plus row-level security where applicable.
+1. **Postgres role-based access control:** migrations run as bootstrap owner `user`; `web` / `worker` / `batch` connect as `alter_ego_app`. That role has `INSERT` + `SELECT` and **no** `UPDATE` or `DELETE` on append-only commit tables: `audit_logs`, `decisions`, `explanations`, `scoring_configs`. On `profiles`, payload columns are immutable after INSERT — the role may `UPDATE` only lifecycle columns `promoted_at` and `superseded_at` (promotion/supersede paths). Operational tables (`events`, `resolved_events`, `alert_workflow_state`, `containment_queue`, `eval_ground_truth`) have broader grants documented in `docs/deployment.md`.
 2. **Hash chaining:** each audit record carries `prev_record_hash` referencing the SHA-256 of the previous record. Any deletion or modification breaks the chain and is detectable on integrity check.
-3. **Scheduled integrity check:** counts audit records against expected counts from decision records and verifies hash chain continuity. Discrepancy emits a sensor-health incident.
+3. **Scheduled integrity check (shipped S5.4):** `python -m batch.audit_integrity` counts audit records against expected counts from decision records and verifies hash chain continuity. Discrepancy emits a sensor-health incident (non-zero exit).
 
 ▲ **Honest scoping.** This protects against application-layer mistakes (accidental UPDATE/DELETE in code) and forensic-layer review (interviewer can verify chain). It does **not** protect against a database superuser tampering with audit records, which is out of scope for v1 (§3.3). Production upgrade path: external log shipping, WORM storage, or a managed audit service.
 
@@ -490,7 +497,7 @@ Each scenario produces a labeled event stream with ground truth. Each is evaluat
 
 2. **Slow-roll behavioral drift:** an account's behavior shifts gradually across N days, each step below the per-event threshold, terminating in a clearly malicious action. Tests cumulative drift detection (§6.4) and the anti-normalization protections (§5.5). ▲ Requires active-alert profile-build blocking to be in place during calibration; otherwise calibration silently allows attack normalization.
 
-3. **Coordinated multi-entity compromise:** several accounts in the same cohort exhibit simultaneously novel behavior. Tests the cohort-prior update gates (§7.3) and ensures the system surfaces the population-fraction signal rather than learning the attack into the cohort prior. ▲ Calibration also tunes `cohort_gate_window_days`.
+3. **Coordinated multi-entity compromise:** several accounts in the same cohort exhibit simultaneously novel behavior. ▲ **v1 partial (S5.11 / Path B):** scoring-time novelty suppression ships (`max_changed_fraction`, `cohort_gate_window_days` in `worker/scorer.py`); cohort-prior **update** rejection gates and `min_clean_observation_count` are deferred. Calibration tunes `cohort_gate_window_days` against the shipped scorer path; full §7.3 prior-update defense is Phase 4.
 
 4. **Service account abuse:** a service account with sparse observations is misused. Tests hierarchical baselining (§6.3), the cohort fallback terminus, and behavior under low feature-class confidence. ▲ Requires basic cohort shrinkage to be in place during calibration; otherwise calibration tests entity-local-only scoring with cohort_unsupported=true rather than the scenario as specified.
 
@@ -511,7 +518,7 @@ Beyond detection precision/recall, explanation quality is itself measured:
 
 - **Evidence binding rate:** fraction of explanation claims that map to a feature contribution in the decision record (per ExplanationRecord §8.3, this is structurally enforced and should approach 100%)
 - **Validation pass rate:** fraction of LLM outputs that pass §8.3 validation without falling back to template
-- **Counterfactual consistency:** does the top-K counterfactual list (§8.5) match the largest feature contributions in the decision record
+- **Counterfactual consistency:** does the top-K counterfactual list (§8.5) match the largest feature contributions in the decision record — verified by pytest harness (S5.10; `docs/counterfactual-consistency.md`)
 
 ## 11. Analyst UI
 
@@ -580,7 +587,7 @@ These are not a CMDB. They are the minimum context required to make explanations
 
 ### Phase 0 — Infrastructure Scaffolding and Contracts
 
-Repository, CI, four-container deployment topology (§4.4), Postgres + DuckDB + pgvector, decision schema, audit tables with INSERT-only role and hash chaining, scoring_config governance with .env credential mechanism. ▲ Phase 0 deliverables include:
+Repository, CI, four-container deployment topology (§4.4, **shipped S5.1** — `docs/deployment.md`), Postgres + DuckDB + pgvector, decision schema, audit tables with INSERT-only role and hash chaining (**shipped S5.3/S5.4**), scoring_config governance with .env credential mechanism. ▲ Phase 0 deliverables include:
 
 - Canonical Pydantic event schema (auth + process)
 - Decision schema (Pydantic)
@@ -588,8 +595,8 @@ Repository, CI, four-container deployment topology (§4.4), Postgres + DuckDB + 
 - Profile schema with embedding_model_id/version/dimensionality fields (§5.6)
 - Ground-truth side table (§10.2)
 - **Synthetic event generator** producing production-shaped events with ground-truth labels (§10.2)
-- LLM determinism check (§8.4) — empirical verification of pinned model behavior at temperature=0
-- pgvector schema migration playbook (§4.3)
+- LLM determinism check script (§8.4, **shipped S5.7** — empirical artifact may await API credentials; see `docs/llm-determinism-check.md`)
+- pgvector schema migration playbook (§4.3, **shipped S5.8**)
 
 ### Phase 1 — Core Detection Path with Required Correctness Invariants
 
@@ -624,17 +631,29 @@ Repository, CI, four-container deployment topology (§4.4), Postgres + DuckDB + 
 - **Analyst workflow state transitions (§11.5)**
 - Replay mechanism with contiguous-window enforcement (§9.3)
 
-### Phase 4 — Hardening and Documentation
+### Phase 4 — Hardening and Documentation (partial — S5.1–S5.12)
 
-- Profile freshness circuit breaker (§5.7) including staleness + active-alert mandatory escalation
-- Maximum profile-build-block duration (§5.5)
-- Sensor-health incident path (telemetry gap two-tier, audit chain integrity)
-- Schema-version mismatch detection
-- Embedding model migration playbook validated via dry-run
-- Advanced cohort poisoning gates (§7.3) beyond basic shrinkage
-- Threat-model documented in repo
-- Architecture-debate transcripts committed under `docs/`
-- README aligned to actual implemented behavior, not aspirational spec
+**Shipped (S5.1–S5.10):**
+
+- Four-container `docker-compose.yml` topology + `docs/deployment.md` (S5.1, S5.2)
+- Postgres `alter_ego_app` INSERT-only role for audit/commit tables (S5.3)
+- Scheduled audit hash-chain integrity job (`batch/audit_integrity.py`, S5.4)
+- Profile freshness circuit breaker (§5.7) including staleness + active-alert mandatory escalation (S5.5)
+- `max_profile_build_block_days` supervisor escalation (S5.6)
+- LLM determinism check script + honest artifact (S5.7; empirical run requires API keys)
+- pgvector / embedding dimensionality migration playbook (S5.8)
+- Embedding metadata mismatch detection at scorer (S5.9)
+- Counterfactual consistency corpus + harness (S5.10; `docs/counterfactual-consistency.md`)
+- Threat-model + README aligned to shipped behavior (S5.12)
+
+**Deferred (Path B or production upgrade):**
+
+- Advanced cohort poisoning gates (§7.3) beyond basic shrinkage and scoring-time novelty suppression (S5.11 / Path B: prior-update rejection, independent versioned cohort artifacts, `min_clean_observation_count`)
+- Suppressed-decisions aging escalation + jitter (S4.3 / Path B)
+- Telemetry-gap two-tier policy, calendar dual-score, asset/service-dependency context (S4.6/S4.7)
+- Profile lifecycle state machine (§5.4)
+- Architecture-debate transcripts under `docs/` (optional)
+- Multi-service Kubernetes / standalone Terraform deployment
 
 ### ▲ 13.1 Schedule Cut Priority
 
@@ -660,15 +679,14 @@ If the 8-10 week schedule slips, cuts must protect the core portfolio claim: det
 - Suppressed-decisions aging escalation + jitter (§11.4): aging indicators, `suppressed_decision_age`/`suppressed_decision_aging_days` auto-escalation, `±age_jitter_hours` scheduling (the confidence-floor suppressed view itself ships; escalation/jitter are placeholders only in v1)
 - Profile lifecycle state machine (§5.4): dormant retention, reactivation penalties, onboarding/role_transition build rules (v1 partial coverage via `cohort_unsupported` + staleness halt only)
 - Full replay UI (replay engine ships; UI for invoking it can be CLI in v1)
-- Advanced cohort poisoning gates beyond basic shrinkage (keep the cohort_unsupported terminus)
-- Multi-service Kubernetes deployment (the four-container topology is sufficient)
-- Elaborate sensor-health workflows beyond basic staleness circuit breaker
-- Schema migration tooling beyond version mismatch detection
-- Maximum profile-build-block duration escalation (basic block ships; escalation can be follow-up)
+- Advanced cohort poisoning gates beyond basic shrinkage (§7.3 prior-update rejection, independent versioned cohort artifacts, `min_clean_observation_count`; v1 ships profile-embedded `cohort_data`, blocked-entity exclusion, and scoring-time novelty suppression only — S5.11 / Path B; keep the `cohort_unsupported` terminus)
+- Multi-service Kubernetes deployment (the four-container topology is sufficient; **shipped S5.1** via `docker-compose.yml`)
+- Elaborate sensor-health workflows beyond basic staleness circuit breaker and audit integrity job (telemetry-gap two-tier deferred S4.6)
+- Schema migration tooling beyond embedding metadata mismatch detection (**shipped S5.9**) and documented pgvector playbook (**shipped S5.8**)
 
 ## 14. Provenance
 
-This specification was produced through two adversarial dual-LLM debates (Claude + GPT) with the human author as checkpoint at each consensus boundary. The first debate (14 turns) produced architecture v1. The second debate produced v2 by reviewing v1 against an implementation lens, surfacing six load-bearing flaws not caught in v1, and converging on the changes documented in §0 above. The full debate transcripts are committed as `docs/architecture-debate-v1.md` and `docs/architecture-debate-v2.md`.
+This specification was produced through two adversarial dual-LLM debates (Claude + GPT) with the human author as checkpoint at each consensus boundary. The first debate (14 turns) produced architecture v1. The second debate produced v2 by reviewing v1 against an implementation lens, surfacing six load-bearing flaws not caught in v1, and converging on the changes documented in §0 above. Full debate transcripts (`docs/architecture-debate-v1.md`, `docs/architecture-debate-v2.md`) are optional provenance artifacts and are **not** shipped in the v1 portfolio repository (see §13 Deferred).
 
 Notable v2 decisions and their origin:
 
@@ -681,7 +699,7 @@ Notable v2 decisions and their origin:
 - **Suppressed-decisions aging jitter:** v2 turn 2 (Claude)
 - **cohort_gate_window_days operationalization:** v2 turn 2 (Claude)
 - **Pinned non-alias LLM model IDs and empirical determinism check:** v2 question debate
-- **Postgres INSERT-only role for audit:** v2 question debate
+- **Postgres INSERT-only role for audit (and column-level profile lifecycle grants):** v2 question debate — **shipped S5.3** via `alter_ego_app` migration + compose wiring; see §9.2 and `docs/deployment.md`
 - **Compressed v1 deployment topology (4 containers):** v2 question debate
 - **Synthetic generator as production-shaped Phase 0 deliverable:** v2 question debate (rejected LANL+injection)
 - **Six-feature initial scoring contract:** v2 question debate

@@ -9,8 +9,9 @@ from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
 from core.database import Base
-from core.models import DecisionRecordModel
+from core.models import AuditLogModel, DecisionRecordModel, log_audit_event, verify_audit_log_chain
 from core.schemas.decisions import DecisionRecord
+from batch.audit_integrity import AuditIntegrityError, run_integrity_check
 from worker.recorder import record_decision
 
 sqlite3.register_adapter(list, lambda value: json.dumps(value))
@@ -64,3 +65,50 @@ def test_decision_record_is_insert_only(db_session):
     stmt = select(DecisionRecordModel).where(DecisionRecordModel.decision_id == "test_decision_1")
     existing_dr = db_session.execute(stmt).scalar_one()
     assert existing_dr.score == 50.0
+
+
+def test_audit_chain_integrity_healthy_chain_passes(db_session):
+    log_audit_event(db_session, action="CREATE_USER", entity_id="user_1", details={"name": "Alice"})
+    log_audit_event(db_session, action="UPDATE_USER", entity_id="user_1", details={"name": "Bob"})
+    log_audit_event(db_session, action="DELETE_USER", entity_id="user_1", details={})
+
+    logs = db_session.query(AuditLogModel).order_by(AuditLogModel.log_id).all()
+    result = verify_audit_log_chain(logs)
+
+    assert result.ok is True
+    assert result.log_count == 3
+    assert result.breaks == []
+
+    check = run_integrity_check(db_session)
+    assert check.ok is True
+
+
+def test_audit_chain_integrity_broken_chain_fails(db_session):
+    log_audit_event(db_session, action="CREATE_USER", entity_id="user_1", details={"name": "Alice"})
+    log_audit_event(db_session, action="UPDATE_USER", entity_id="user_1", details={"name": "Bob"})
+
+    broken = db_session.query(AuditLogModel).order_by(AuditLogModel.log_id).offset(1).first()
+    broken.previous_log_hash = "tampered_hash"
+    db_session.commit()
+
+    logs = db_session.query(AuditLogModel).order_by(AuditLogModel.log_id).all()
+    result = verify_audit_log_chain(logs)
+
+    assert result.ok is False
+    assert len(result.breaks) == 1
+    assert result.breaks[0].log_id == broken.log_id
+    assert "previous_log_hash" in result.breaks[0].reason.lower()
+
+    with pytest.raises(AuditIntegrityError) as exc_info:
+        run_integrity_check(db_session, raise_on_failure=True)
+    assert exc_info.value.result.ok is False
+
+
+def test_audit_chain_integrity_decision_count_mismatch_fails(db_session):
+    log_audit_event(db_session, action="RECORD_DECISION", entity_id="dec_1", details={})
+
+    result = run_integrity_check(db_session)
+    assert result.ok is False
+    assert result.count_mismatch is True
+    assert result.decision_audit_count == 1
+    assert result.decision_count == 0

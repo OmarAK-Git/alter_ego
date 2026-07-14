@@ -24,9 +24,13 @@ Explicit **exit gate** packets (chat_gate / `verification.scope: phase_exit`):
 | `S3-EXIT-GATE` | S4.* |
 | `S4-EXIT-GATE` | `HUMAN-DRIFT-RESEARCH` |
 | `HUMAN-DRIFT-RESEARCH` | S5.* |
+| `S5-EXIT-GATE` | S6.* |
+| `S6-EXIT-GATE` | program drain (no further sprint packets) |
 
 - Do not mark next-sprint packets `ready` while the previous EXIT-GATE is not `done`.
 - Do not mark `S5.*` as `ready` while `HUMAN-DRIFT-RESEARCH.status != done`.
+- Do not mark `S6.*` as `ready` while `S5-EXIT-GATE.status != done`.
+- Do not mark `S6-EXIT-GATE` as `ready` while S6.1–S6.3 are not `done`.
 - With `--stop-before-gate`, stop when the next runnable item is any EXIT-GATE or `HUMAN-DRIFT-RESEARCH`.
 - Exit-gate verify: UI-selected Opus inline; commands typically `pytest -v --tb=short --ignore=tests/live` + `ruff check .`.
 - Do not change `config/scoring_config.yaml` weights/thresholds outside packets `S3.*` / explicit governance.

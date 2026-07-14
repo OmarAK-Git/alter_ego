@@ -56,6 +56,7 @@ def test_profile_artifact_schema_defaults_to_ngram_model():
     assert profile.embedding_model_id == SHIPPING_MODEL_ID
     assert profile.embedding_dimensionality == SHIPPING_DIMENSIONALITY
     assert profile.embedding_model_version == "1.0"
+    assert profile.embedding_input_normalizer_version == NORMALIZER_VERSION
 
 
 def test_profile_artifact_model_orm_defaults_to_ngram_model(db_session):
@@ -75,6 +76,7 @@ def test_profile_artifact_model_orm_defaults_to_ngram_model(db_session):
     assert model.embedding_model_id == SHIPPING_MODEL_ID
     assert model.embedding_dimensionality == SHIPPING_DIMENSIONALITY
     assert model.embedding_model_version == "1.0"
+    assert model.embedding_input_normalizer_version == NORMALIZER_VERSION
 
 
 def test_builder_promote_writes_ngram_embedding_metadata(db_session):

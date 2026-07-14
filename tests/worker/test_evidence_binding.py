@@ -26,6 +26,7 @@ from core.database import Base
 from core.schemas.events import ResolvedEvent
 from core.schemas.profiles import ProfileArtifact
 from worker.scorer import score_event
+from tests.worker.conftest import COMPATIBLE_EMBEDDING_PROFILE_FIELDS
 
 TOLERANCE = 1e-6
 
@@ -94,8 +95,7 @@ def _anomalous_profile_and_event(*, total_events: int):
             "cumulative_drift": 3.0,
             "cohort_data": {},
         },
-        embedding_model_version="1.0",
-        embedding_dimensionality=128,
+        **COMPATIBLE_EMBEDDING_PROFILE_FIELDS,
     )
     resolved_event = ResolvedEvent(
         event_id="evt_evidence_binding",

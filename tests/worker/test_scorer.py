@@ -83,6 +83,8 @@ def _determinism_fixture():
     from core.schemas.profiles import ProfileArtifact
     from datetime import datetime
 
+    from tests.worker.conftest import COMPATIBLE_EMBEDDING_PROFILE_FIELDS
+
     ts = datetime(2026, 1, 1, 12, 0)
     event_data = AuthEventData(action="login", ip_address="1.1.1.1", endpoint_id="ep1")
     resolved_event = ResolvedEvent(
@@ -109,8 +111,7 @@ def _determinism_fixture():
                 "terminus": {"login_hours": {"12": 1}, "endpoints": {"ep1": 1}}
             },
         },
-        embedding_model_version="1.0",
-        embedding_dimensionality=128,
+        **COMPATIBLE_EMBEDDING_PROFILE_FIELDS,
     )
     config = {"features": {}, "anomaly_threshold": 75.0, "version": "1.0"}
     return resolved_event, profile, config
@@ -215,6 +216,8 @@ def test_confidence_not_hardcoded(db_session):
     from worker.scorer import score_event
     from datetime import datetime
 
+    from tests.worker.conftest import COMPATIBLE_EMBEDDING_PROFILE_FIELDS
+
     profile_end = datetime(2026, 1, 10, 12, 0)
     ts = datetime(2026, 1, 12, 12, 0)   # familiar hour (noon), within staleness window
     # Use dict event_data to set process_name explicitly
@@ -256,8 +259,7 @@ def test_confidence_not_hardcoded(db_session):
             "process_names": known_procs,
             "cohort_data": {},
         },
-        embedding_model_version="1.0",
-        embedding_dimensionality=128,
+        **COMPATIBLE_EMBEDDING_PROFILE_FIELDS,
     )
 
     config = {"features": {}, "anomaly_threshold": 75.0, "version": "1.0"}
@@ -544,6 +546,10 @@ def test_process_unscored_events_can_create_default_session(monkeypatch):
             class R:
                 def yield_per(self, n):
                     return iter([])
+
+                def scalars(self):
+                    return iter([])
+
             return R()
 
         def close(self):

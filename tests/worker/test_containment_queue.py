@@ -13,6 +13,7 @@ from core.schemas.events import ResolvedEvent
 from core.schemas.profiles import ProfileArtifact
 from worker.recorder import record_decision
 from worker.scorer import score_event, load_scoring_config
+from tests.worker.conftest import COMPATIBLE_EMBEDDING_PROFILE_FIELDS
 
 
 @compiles(JSONB, "sqlite")
@@ -69,9 +70,7 @@ def _drift_profile(entity_id: str, drift_accum: float, total_events: int) -> Pro
             "cumulative_drift": drift_accum,
             "total_events": total_events,
         },
-        embedding_model_id="alter-ego-ngram-v1",
-        embedding_model_version="1.0",
-        embedding_dimensionality=128,
+        **COMPATIBLE_EMBEDDING_PROFILE_FIELDS,
     )
 
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class AlertStateEnum(str, Enum):
     new = "new"
@@ -29,3 +29,7 @@ class ReplayRequest(BaseModel):
     new_scoring_config_version: str
     author: str
     change_reason: str
+
+
+class ExtendHaltRequest(BaseModel):
+    justification: str = Field(min_length=1)

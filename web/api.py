@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, HTTPException, Security
 from fastapi.security import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
@@ -10,12 +11,18 @@ from core.database import SessionLocal
 from core.models import (
     DecisionRecordModel, 
     AlertWorkflowStateModel, 
-    ExplanationRecordModel
+    ExplanationRecordModel,
+    StalenessHaltExtensionModel,
 )
-from core.schemas.workflow import AlertStateUpdate, ReplayRequest
+from core.schemas.workflow import AlertStateUpdate, ExtendHaltRequest, ReplayRequest
 from worker.explainer import generate_explanation
 from worker.recorder import queue_simulated_containment
-from worker.scorer import load_scoring_config
+from worker.scorer import (
+    MANDATORY_ESCALATION_SLA_HOURS,
+    STALENESS_ESCALATION_FLAG,
+    get_active_alert_decision_ids,
+    load_scoring_config,
+)
 from batch.replay_runner import run_replay
 
 app = FastAPI(title="ALTER_EGO Analyst API")
@@ -84,6 +91,75 @@ def get_triage_alerts(db: Session = Depends(get_db)):
             "assignee": state.assignee if state else None
         })
     return alerts
+
+def _entity_has_active_extend_halt(db: Session, entity_id: str) -> bool:
+    now = datetime.utcnow()
+    ext = (
+        db.query(StalenessHaltExtensionModel)
+        .filter(
+            StalenessHaltExtensionModel.entity_id == entity_id,
+            StalenessHaltExtensionModel.expires_at > now,
+        )
+        .order_by(StalenessHaltExtensionModel.expires_at.desc())
+        .first()
+    )
+    return ext is not None
+
+
+def _build_mandatory_escalations(db: Session) -> list[dict]:
+    decisions = db.query(DecisionRecordModel).order_by(DecisionRecordModel.timestamp.desc()).all()
+    latest_by_entity: dict[str, DecisionRecordModel] = {}
+    for dec in decisions:
+        flags = dec.flags or []
+        if STALENESS_ESCALATION_FLAG not in flags:
+            continue
+        if dec.entity_id not in latest_by_entity:
+            latest_by_entity[dec.entity_id] = dec
+
+    items: list[dict] = []
+    for entity_id, halt_dec in latest_by_entity.items():
+        if _entity_has_active_extend_halt(db, entity_id):
+            continue
+        alert_ids = get_active_alert_decision_ids(db, entity_id)
+        if not alert_ids:
+            continue
+        items.append({
+            "entity_id": entity_id,
+            "staleness_decision_id": halt_dec.decision_id,
+            "alert_decision_ids": alert_ids,
+            "sla_hours": MANDATORY_ESCALATION_SLA_HOURS,
+            "halt_timestamp": halt_dec.timestamp.isoformat(),
+            "flags": halt_dec.flags,
+        })
+    return items
+
+
+@app.get("/api/mandatory-escalations")
+def get_mandatory_escalations(db: Session = Depends(get_db)):
+    return _build_mandatory_escalations(db)
+
+
+@app.post("/api/mandatory-escalations/{entity_id}/extend-halt", dependencies=[Depends(verify_api_key)])
+def extend_staleness_halt(entity_id: str, req: ExtendHaltRequest, db: Session = Depends(get_db)):
+    justification = req.justification.strip()
+    if not justification:
+        raise HTTPException(status_code=422, detail="justification is required")
+
+    now = datetime.utcnow()
+    ext = StalenessHaltExtensionModel(
+        entity_id=entity_id,
+        justification=justification,
+        extended_at=now,
+        expires_at=now + timedelta(hours=MANDATORY_ESCALATION_SLA_HOURS),
+    )
+    db.add(ext)
+    db.commit()
+    return {
+        "status": "success",
+        "entity_id": entity_id,
+        "expires_at": ext.expires_at.isoformat(),
+        "sla_hours": MANDATORY_ESCALATION_SLA_HOURS,
+    }
 
 @app.get("/api/alerts/{decision_id}")
 def get_alert_detail(decision_id: str, db: Session = Depends(get_db)):

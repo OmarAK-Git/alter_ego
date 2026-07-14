@@ -29,6 +29,7 @@ laplace_alpha: 1.0
 # Deferred S4.6: calendar dual-score not wired; no production reader.
 max_calendar_adjustment: 0.3
 max_replay_window_days: 30
+# S5.6: read by batch/profile_builder/builder.py for supervisor escalation on prolonged build block.
 max_profile_build_block_days: 30
 recent_drift_window_days: 3
 cohort_gate_window_days: 7
@@ -37,6 +38,7 @@ age_jitter_hours: 4
 
 cohort_gating_constants:
   min_cohort_size: 10
+  # Deferred S5.11: prior-update rejection semantics not wired; no production reader.
   min_clean_observation_count: 5
   max_changed_fraction: 0.2
 

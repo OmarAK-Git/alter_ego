@@ -1,6 +1,7 @@
 version: '3.8'
+
 services:
-  db:
+  postgres:
     image: ankane/pgvector:latest
     environment:
       POSTGRES_USER: user
@@ -10,6 +11,57 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d alter_ego"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    image: alter_ego:latest
+    command: >
+      sh -c "DATABASE_URL=postgresql://user:password@postgres:5432/alter_ego alembic upgrade head &&
+             uvicorn web.api:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    environment:
+      ALTER_EGO_APP_PASSWORD: ${ALTER_EGO_APP_PASSWORD:-alter_ego_app_dev}
+      DATABASE_URL: postgresql://alter_ego_app:${ALTER_EGO_APP_PASSWORD:-alter_ego_app_dev}@postgres:5432/alter_ego
+      API_KEY: ${API_KEY:-dev-key}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker:
+    build: .
+    image: alter_ego:latest
+    command: >
+      sh -c "while true; do
+        python -m worker.resolver;
+        python -c \"from worker.scorer import process_unscored_events; print(f'Scored {process_unscored_events()} events')\";
+        sleep 5;
+      done"
+    environment:
+      ALTER_EGO_APP_PASSWORD: ${ALTER_EGO_APP_PASSWORD:-alter_ego_app_dev}
+      DATABASE_URL: postgresql://alter_ego_app:${ALTER_EGO_APP_PASSWORD:-alter_ego_app_dev}@postgres:5432/alter_ego
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  batch:
+    build: .
+    image: alter_ego:latest
+    command: ["sleep", "infinity"]
+    environment:
+      ALTER_EGO_APP_PASSWORD: ${ALTER_EGO_APP_PASSWORD:-alter_ego_app_dev}
+      DATABASE_URL: postgresql://alter_ego_app:${ALTER_EGO_APP_PASSWORD:-alter_ego_app_dev}@postgres:5432/alter_ego
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   pgdata:

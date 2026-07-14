@@ -34,7 +34,7 @@
   ],
   "max_concurrent_agents": 1,
   "max_total_agents": 4,
-  "active_sprint": "S5",
+  "active_sprint": "S6",
   "canonical_projections": {
     "progress": "memory-bank/progress.md",
     "tasks": "memory-bank/tasks.md",
@@ -57,7 +57,7 @@
       "Block all S5.* until HUMAN-DRIFT-RESEARCH is done",
       "Sprint close / chat_gate reviews: UI-selected Opus; mid-loop verify uses verification_model via Task",
       "Sprint close requires skeptic-verifier + pytest + ruff",
-      "Treat S1-EXIT-GATE/S2-EXIT-GATE/S3-EXIT-GATE/S4-EXIT-GATE as chat_gate phase_exit items",
+      "Treat S1-EXIT-GATE/S2-EXIT-GATE/S3-EXIT-GATE/S4-EXIT-GATE/S5-EXIT-GATE/S6-EXIT-GATE as chat_gate phase_exit items",
       "With --stop-before-gate, do not start any EXIT-GATE or HUMAN-DRIFT-RESEARCH",
       "Do not mark next sprint ready until previous EXIT-GATE is done"
     ],
@@ -66,7 +66,9 @@
       "S2-EXIT-GATE",
       "S3-EXIT-GATE",
       "S4-EXIT-GATE",
-      "HUMAN-DRIFT-RESEARCH"
+      "HUMAN-DRIFT-RESEARCH",
+      "S5-EXIT-GATE",
+      "S6-EXIT-GATE"
     ]
   },
   "packets": [
@@ -817,9 +819,14 @@
         "docs/"
       ],
       "ownership": "main",
-      "status": "ready",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": []
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.1-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.1-verifier-result.md"
+      ],
+      "notes": "2026-07-13: four-container compose + shared Dockerfile + docs/deployment.md; verifier survives (no Docker CLI; YAML validated)."
     },
     {
       "id": "S5.2",
@@ -831,11 +838,15 @@
         "memory-bank/progress.md"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.2-researcher-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.2-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.2-verifier-result.md"
+      ],
+      "notes": "2026-07-13: Path A — compose recognized as v1 IaC equivalent; SPEC/docs aligned; verifier survives."
     },
     {
       "id": "S5.3",
@@ -847,11 +858,15 @@
         "docker-compose.yml"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.3-researcher-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.3-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.3-verifier-result.md"
+      ],
+      "notes": "2026-07-13: alter_ego_app INSERT-only + profiles lifecycle columns; verifier survives."
     },
     {
       "id": "S5.4",
@@ -863,11 +878,14 @@
         "tests/test_audit.py"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.4-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.4-verifier-result.md"
+      ],
+      "notes": "2026-07-13: batch.audit_integrity + verify_audit_log_chain; verifier survives."
     },
     {
       "id": "S5.5",
@@ -879,11 +897,15 @@
         "tests/"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.5-researcher-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.5-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.5-verifier-result.md"
+      ],
+      "notes": "2026-07-13: mandatory escalations API + scorer flags + extend-halt; verifier survives."
     },
     {
       "id": "S5.6",
@@ -895,11 +917,14 @@
         "tests/"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.6-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.6-verifier-result.md"
+      ],
+      "notes": "2026-07-13: max_profile_build_block_days supervisor escalation DecisionRecord; verifier survives."
     },
     {
       "id": "S5.7",
@@ -910,11 +935,14 @@
         "docs/"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.7-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.7-verifier-result.md"
+      ],
+      "notes": "2026-07-13: RealLLMProvider harness; honest not-executed artifact (no API keys); verifier survives."
     },
     {
       "id": "S5.8",
@@ -924,11 +952,14 @@
         "docs/"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.8-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.8-verifier-result.md"
+      ],
+      "notes": "2026-07-13: docs/pgvector-embedding-migration.md; verifier survives (root SPEC link residual)."
     },
     {
       "id": "S5.9",
@@ -939,11 +970,14 @@
         "tests/"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.9-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.9-verifier-result.md"
+      ],
+      "notes": "2026-07-13: embedding_metadata_mismatch_halt; verifier survives."
     },
     {
       "id": "S5.10",
@@ -955,11 +989,15 @@
         "docs/"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.10-researcher-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.10-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.10-verifier-result.md"
+      ],
+      "notes": "2026-07-13: counterfactual corpus + harness; verifier survives."
     },
     {
       "id": "S5.11",
@@ -971,11 +1009,15 @@
         "memory-bank/progress.md"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.11-researcher-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.11-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.11-verifier-result.md"
+      ],
+      "notes": "2026-07-13: Path B defer §7.3 / independent cohorts; verifier survives."
     },
     {
       "id": "S5.12",
@@ -987,11 +1029,66 @@
         "docs/"
       ],
       "ownership": "main",
-      "status": "pending",
+      "status": "done",
       "sprint": "S5",
-      "blocked_by": [
-        "HUMAN-DRIFT-RESEARCH"
-      ]
+      "blocked_by": [],
+      "attempts": 1,
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.12-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5.12-verifier-result.md"
+      ],
+      "notes": "2026-07-13: README/threat-model honesty; retry fixed §14 transcripts claim; verifier survives."
+    },
+    {
+      "id": "S5-EXIT-GATE",
+      "label": "gate:S5-exit|chat_gate|phase_exit|req:REQ-S5",
+      "objective": "Sprint S5 exit gate: skeptic-verifier + pytest + ruff; unlock S6 only when green",
+      "files_or_sources": [
+        ".workflow/2026-07-12-v1-portfolio-ready/",
+        "memory-bank/",
+        "docs/",
+        "docker-compose.yml",
+        "Dockerfile",
+        "alembic/",
+        "worker/",
+        "batch/",
+        "web/",
+        "scripts/"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "GATE",
+      "run_mode": "chat_gate",
+      "verification": {
+        "scope": "phase_exit",
+        "commands": [
+          "pytest -v --tb=short --ignore=tests/live",
+          "ruff check ."
+        ]
+      },
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S5-EXIT-GATE-verifier-result.md"
+      ],
+      "depends_on": [
+        "S5.1",
+        "S5.2",
+        "S5.3",
+        "S5.4",
+        "S5.5",
+        "S5.6",
+        "S5.7",
+        "S5.8",
+        "S5.9",
+        "S5.10",
+        "S5.11",
+        "S5.12"
+      ],
+      "blocks": [
+        "S6.1",
+        "S6.2",
+        "S6.3"
+      ],
+      "notes": "2026-07-13: chat_gate PASS (Opus inline). Fresh pytest 116 passed, ruff clean. Caught + fixed a real cross-packet regression the S5.9 focused verifier missed: S5.9 embedding_metadata_mismatch_halt halted test_new_confidence_calculation because the pre-S5.9 test fixture used the stale schema default normalizer version '1.0' vs runtime '1.0-char-3gram-hash-128'; fix was test-only (declare runtime-matching metadata), no product/schema/config change. Residual: DEFAULT_EMBEDDING_INPUT_NORMALIZER_VERSION default '1.0' in core/ is a latent fail-closed trap \u2014 route to S6 hardening. All S5.1\u2013S5.12 survives; honesty checks pass (not CALIBRATED; Path-B deferrals explicit). S6.* unlocked."
     },
     {
       "id": "S6.1",
@@ -1003,8 +1100,15 @@
         "docs/"
       ],
       "ownership": "main",
-      "status": "pending",
-      "sprint": "S6"
+      "status": "done",
+      "sprint": "S6",
+      "blocked_by": [],
+      "attempts": 1,
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S6.1-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S6.1-verifier-result.md"
+      ],
+      "notes": "2026-07-13: docs/hardening-sweep-checklist.md + OPS pointer; verifier survives."
     },
     {
       "id": "S6.2",
@@ -1015,8 +1119,15 @@
         "docs/"
       ],
       "ownership": "main",
-      "status": "pending",
-      "sprint": "S6"
+      "status": "done",
+      "sprint": "S6",
+      "blocked_by": [],
+      "attempts": 1,
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S6.2-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S6.2-verifier-result.md"
+      ],
+      "notes": "2026-07-13: docs/residual-risk-drift-hypotheses.md; verifier survives."
     },
     {
       "id": "S6.3",
@@ -1026,8 +1137,34 @@
         "OPS.md"
       ],
       "ownership": "main",
-      "status": "pending",
-      "sprint": "S6"
+      "status": "done",
+      "sprint": "S6",
+      "blocked_by": [],
+      "attempts": 1,
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S6.3-implementer-result.md",
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S6.3-verifier-result.md"
+      ],
+      "notes": "2026-07-13: OPS standing rule polish (sweep + governance steps); verifier survives."
+    },
+    {
+      "id": "S6-EXIT-GATE",
+      "label": "sprint:S6|gate|phase_exit|req:REQ-S6",
+      "objective": "Program closeout: chat_gate pytest+ruff after S6.1–S6.3; write S6-EXIT-GATE verifier evidence",
+      "files_or_sources": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/",
+        "memory-bank/progress.md",
+        "memory-bank/tasks.md"
+      ],
+      "ownership": "main",
+      "status": "done",
+      "sprint": "S6",
+      "blocked_by": [],
+      "attempts": 1,
+      "evidence": [
+        ".workflow/2026-07-12-v1-portfolio-ready/results/S6-EXIT-GATE-verifier-result.md"
+      ],
+      "notes": "2026-07-14: chat_gate PASS (UI-selected model inline). Fresh pytest 121 passed, ruff clean, verify_run ok. S6.1-S6.3 survives; S6 docs carry explicit 'not CALIBRATED' banners (no false claims). S5 residual (stale normalizer default) resolved: schema/ORM default aligned to 1.0-char-3gram-hash-128, covered by tests/test_embedding_defaults.py. Program drain complete \u2014 no further sprint packets."
     }
   ],
   "verification": [
@@ -1035,19 +1172,19 @@
       "check": "verify_run this slug",
       "command": "python C:/Users/oalan/ultimate-agentic-workflow/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready",
       "required": true,
-      "status": "pending"
+      "status": "pass"
     },
     {
       "check": "stop-gate pytest",
       "command": "pytest -v --tb=short",
       "required": true,
-      "status": "pending"
+      "status": "pass"
     },
     {
       "check": "stop-gate ruff",
       "command": "ruff check .",
       "required": true,
-      "status": "pending"
+      "status": "pass"
     },
     {
       "check": "HUMAN-DRIFT-RESEARCH before S5",
@@ -1059,7 +1196,7 @@
       "check": "metrics and SPEC status agree on closeout",
       "command": null,
       "required": true,
-      "status": "pending"
+      "status": "pass"
     },
     {
       "check": "S1-EXIT-GATE",
@@ -1081,6 +1218,18 @@
     },
     {
       "check": "S4-EXIT-GATE",
+      "command": "pytest -v --tb=short --ignore=tests/live && ruff check .",
+      "required": true,
+      "status": "pass"
+    },
+    {
+      "check": "S5-EXIT-GATE",
+      "command": "pytest -v --tb=short --ignore=tests/live && ruff check .",
+      "required": true,
+      "status": "pass"
+    },
+    {
+      "check": "S6-EXIT-GATE",
       "command": "pytest -v --tb=short --ignore=tests/live && ruff check .",
       "required": true,
       "status": "pass"

@@ -9,6 +9,7 @@ from core.database import Base
 from core.schemas.events import ResolvedEvent
 from core.schemas.profiles import ProfileArtifact
 from worker.scorer import score_event, load_scoring_config
+from tests.worker.conftest import COMPATIBLE_EMBEDDING_PROFILE_FIELDS
 
 @compiles(JSONB, "sqlite")
 def compile_jsonb_sqlite(type_, compiler, **kw):
@@ -50,7 +51,8 @@ def test_six_feature_scorer_basic(db_session):
             "process_names": {"bash": 50},
             "total_events": 200,
             "cohort_data": {}
-        }
+        },
+        **COMPATIBLE_EMBEDDING_PROFILE_FIELDS,
     )
     
     # 1. Normal event

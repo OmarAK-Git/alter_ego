@@ -1,0 +1,83 @@
+{
+  "version": "1.0",
+  "k": 3,
+  "cases": [
+    {
+      "id": "normal_top_k",
+      "description": "Five contributions; expect top-3 by contribution_score descending",
+      "contributions": [
+        {
+          "contribution_id": "c1",
+          "feature_name": "logon_hour",
+          "contribution_score": 25.0,
+          "confidence_weight": 0.7
+        },
+        {
+          "contribution_id": "c2",
+          "feature_name": "geo_distance",
+          "contribution_score": 40.0,
+          "confidence_weight": 0.9
+        },
+        {
+          "contribution_id": "c3",
+          "feature_name": "process_rarity",
+          "contribution_score": 10.0,
+          "confidence_weight": 0.5
+        },
+        {
+          "contribution_id": "c4",
+          "feature_name": "drift_score",
+          "contribution_score": 30.0,
+          "confidence_weight": 0.8
+        },
+        {
+          "contribution_id": "c5",
+          "feature_name": "embedding_similarity",
+          "contribution_score": 5.0,
+          "confidence_weight": 0.4
+        }
+      ],
+      "expected": {
+        "count": 3,
+        "contribution_ids": ["c2", "c4", "c1"],
+        "score_deltas": [40.0, 30.0, 25.0],
+        "feature_names": ["geo_distance", "drift_score", "logon_hour"]
+      }
+    },
+    {
+      "id": "fewer_than_k",
+      "description": "Two contributions; expect all returned when fewer than K",
+      "contributions": [
+        {
+          "contribution_id": "c1",
+          "feature_name": "feat_a",
+          "contribution_score": 15.0,
+          "confidence_weight": 0.6
+        },
+        {
+          "contribution_id": "c2",
+          "feature_name": "feat_b",
+          "contribution_score": 20.0,
+          "confidence_weight": 0.7
+        }
+      ],
+      "expected": {
+        "count": 2,
+        "contribution_ids": ["c2", "c1"],
+        "score_deltas": [20.0, 15.0],
+        "feature_names": ["feat_b", "feat_a"]
+      }
+    },
+    {
+      "id": "empty_contributions",
+      "description": "No contributions; expect empty counterfactual list",
+      "contributions": [],
+      "expected": {
+        "count": 0,
+        "contribution_ids": [],
+        "score_deltas": [],
+        "feature_names": []
+      }
+    }
+  ]
+}

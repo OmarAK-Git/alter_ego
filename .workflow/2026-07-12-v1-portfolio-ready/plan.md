@@ -104,7 +104,8 @@ Packet IDs match `memory-bank/progress.md`. Status values: `pending` | `ready` |
 | S1-EXIT-GATE | S1 close: skeptic + pytest + ruff; unlocks S2 | main | ready |
 | S2-EXIT-GATE | S2 close: skeptic + pytest + ruff; unlocks S3 | main | pending |
 | S3-EXIT-GATE | S3 close: skeptic + pytest + ruff + honest metrics; unlocks S4 | main | pending |
-| S4-EXIT-GATE | S4 close: skeptic + pytest + ruff; unlocks HUMAN-DRIFT-RESEARCH | main | pending |
+| S4-EXIT-GATE | S4 close: skeptic + pytest + ruff; unlocks HUMAN-DRIFT-RESEARCH | main | done |
+| S5-EXIT-GATE | S5 close: skeptic + pytest + ruff; unlocks S6 | main | ready |
 
 ### Gate — human research (blocks S5; after S4-EXIT-GATE)
 
@@ -133,9 +134,9 @@ Packet IDs match `memory-bank/progress.md`. Status values: `pending` | `ready` |
 
 | ID | Objective | Owner | Status |
 |---|---|---|---|
-| S6.1 | Hardening sweep checklist (commands, seeds, artifacts) | main | pending |
-| S6.2 | Residual-risk + open drift hypotheses for human research | main | pending |
-| S6.3 | Standing rule: no silent weight changes (document in OPS) | main | pending |
+| S6.1 | Hardening sweep checklist (commands, seeds, artifacts) | main | done |
+| S6.2 | Residual-risk + open drift hypotheses for human research | main | done |
+| S6.3 | Standing rule: no silent weight changes (document in OPS) | main | done |
 
 ## Autopilot loop (UAW / GSD-style)
 
@@ -166,8 +167,8 @@ Use the installed `.claude` agent roster (not archived gsd-build):
 | REQ-S3 | Hybrid calibration close with honest status | S3.1–S3.6 + S3-EXIT-GATE | Fresh metrics JSON + governance record + exit gate | planned |
 | REQ-S4 | Phase 3 non-negotiable UI/explain/demo | S4.1–S4.7 + S4-EXIT-GATE | API/UI smoke + explainer tests + exit gate | planned |
 | REQ-HUMAN | Drift research started before portfolio hardening | HUMAN-DRIFT-RESEARCH | Operator ack in state.json | planned |
-| REQ-S5 | SPEC_V3 §9 / Phase 4 portfolio gate | S5.1–S5.12 | Deploy/docs/tests per packet | planned |
-| REQ-S6 | Empirical handoff ready for human sweeps | S6.1–S6.3 | Checklist + residual doc exist | planned |
+| REQ-S5 | SPEC_V3 §9 / Phase 4 portfolio gate | S5.1–S5.12 + S5-EXIT-GATE | Deploy/docs/tests per packet + exit gate | planned |
+| REQ-S6 | Empirical handoff ready for human sweeps | S6.1–S6.3 | Checklist + residual doc exist | done |
 
 ## Verification
 

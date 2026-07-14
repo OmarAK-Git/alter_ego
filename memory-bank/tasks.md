@@ -4,28 +4,31 @@
 
 ## Autopilot
 
-**Stopped:** `--stop-before-gate` — next item is `S4-EXIT-GATE`  
-**Active sprint:** S4 (S4.1–S4.7 done)  
-**Next gate:** `S4-EXIT-GATE` (chat_gate / phase_exit)
+**Next runnable:** none — program drained (all S0–S6 packets + gates `done`/`wontfix`)  
+**Active sprint:** S6 (closed)
 
 ## Done
 
-### S0–S3
-- [x] S0–S3 packets + S1/S2/S3 EXIT-GATEs
+### S0–S4 + gates
+- [x] S0–S4 + EXIT-GATEs + HUMAN-DRIFT-RESEARCH
 
-### S4
-- [x] S4.1 — Explainer slot-isolated low-trust fields
-- [x] S4.2 — Explainer queue-depth + template fallback
-- [x] S4.3 — Suppressed view + confidence_floor; aging/jitter deferred
-- [x] S4.4 — Demo path seed → triage → explain → contain
-- [x] S4.5 — First-class `replay_run_id`
-- [x] S4.6 — Calendar/gap Path B defer
-- [x] S4.7 — Asset/dependency Path B defer
+### S5
+- [x] S5.1–S5.12
+- [x] **S5-EXIT-GATE** — chat_gate PASS; `results/S5-EXIT-GATE-verifier-result.md`
 
-## Now (blocked by stop-before-gate)
+### S6
+- [x] S6.1 — `docs/hardening-sweep-checklist.md`
+- [x] S6.2 — `docs/residual-risk-drift-hypotheses.md`
+- [x] S6.3 — OPS standing rule (sweep + governance)
+- [x] Align `DEFAULT_EMBEDDING_INPUT_NORMALIZER_VERSION` with runtime (`1.0-char-3gram-hash-128`)
+- [x] Google / Vertex provider path on `RealLLMProvider` (`GOOGLE_API_KEY`)
+- [x] **S6-EXIT-GATE** — chat_gate PASS; pytest 121 + ruff clean + verify_run ok; `results/S6-EXIT-GATE-verifier-result.md`
 
-- [ ] **S4-EXIT-GATE** — skeptic-verifier + `pytest -v --tb=short --ignore=tests/live` + `ruff check .`; unlocks HUMAN-DRIFT-RESEARCH
+## In queue
 
-## Later gates
+- none — program drain complete
 
-- [ ] HUMAN-DRIFT-RESEARCH
+## Later (operator)
+
+- [ ] Human drift research → optional new sweep per checklist (`docs/residual-risk-drift-hypotheses.md`)
+- [x] Empirical S5.7 LLM determinism — executed 2026-07-14 (Vertex `gemini-3.5-flash`); **not** byte-identical → lineage rule confirmed

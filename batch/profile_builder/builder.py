@@ -24,6 +24,11 @@ from worker.vectorizer import NORMALIZER_VERSION, compute_cosine_distance, vecto
 
 logger = logging.getLogger(__name__)
 
+# S5.6 — max_profile_build_block_days supervisor escalation (SPEC §5.5).
+ACTIVE_ALERT_STATES = frozenset({"new", "acknowledged", "investigating"})
+BUILD_BLOCK_SUPERVISOR_ESCALATION_FLAG = "profile_build_block_supervisor_escalation"
+SUPERVISOR_ESCALATION_SLA_HOURS = 24
+
 def extract_role(entity_id: str, entity_type: str) -> str:
     if entity_type == "service_account":
         return "service_account"
@@ -48,6 +53,84 @@ def parse_duckdb_histogram(hist_data) -> dict:
         return res
     return {}
 
+
+def _block_days_for_entity(
+    db_session: Session, alerts: list, as_of: datetime
+) -> float:
+    """Days since earliest active alert started build-blocking this entity."""
+    earliest_start: datetime | None = None
+    for alert in alerts:
+        dec = db_session.get(DecisionRecordModel, alert.decision_id)
+        start = dec.timestamp if dec is not None else alert.updated_at
+        if earliest_start is None or start < earliest_start:
+            earliest_start = start
+    if earliest_start is None:
+        return 0.0
+    return (as_of - earliest_start).total_seconds() / 86400.0
+
+
+def _emit_build_block_supervisor_escalations(
+    db_session: Session,
+    blocked_alert_rows: list,
+    as_of: datetime,
+    max_block_days: int,
+    config: dict,
+    build_timestamp: datetime,
+) -> list[str]:
+    """Emit auditable supervisor-escalation decisions for prolonged build blocks."""
+    entity_alerts: dict[str, list] = {}
+    for row in blocked_alert_rows:
+        entity_alerts.setdefault(row.entity_id, []).append(row)
+
+    escalated: list[str] = []
+    for entity_id, alerts in entity_alerts.items():
+        block_days = _block_days_for_entity(db_session, alerts, as_of)
+        if block_days <= max_block_days:
+            continue
+
+        logger.warning(
+            "Supervisor escalation: entity %s build-blocked %.1f days (threshold %d)",
+            entity_id,
+            block_days,
+            max_block_days,
+        )
+        latest_profile = (
+            db_session.query(ProfileArtifactModel)
+            .filter(ProfileArtifactModel.entity_id == entity_id)
+            .order_by(desc(ProfileArtifactModel.data_window_end))
+            .first()
+        )
+        profile_version = latest_profile.profile_version if latest_profile else "NONE"
+        decision_id = (
+            f"build_block_esc_{entity_id}_{build_timestamp.strftime('%Y%m%d%H%M%S')}"
+            f"_{uuid.uuid4().hex[:8]}"
+        )
+        db_session.add(
+            DecisionRecordModel(
+                decision_id=decision_id,
+                event_id="PROFILE_BUILD",
+                entity_id=entity_id,
+                timestamp=build_timestamp,
+                score=0.0,
+                confidence=1.0,
+                profile_version=profile_version,
+                scoring_config_version=config.get("version", "unknown"),
+                contributions={"build_block_days": block_days},
+                is_anomaly=False,
+                cohort_used="unknown",
+                cohort_unsupported=False,
+                flags={
+                    BUILD_BLOCK_SUPERVISOR_ESCALATION_FLAG: True,
+                    "block_days": block_days,
+                    "max_profile_build_block_days": max_block_days,
+                    "sla_hours": SUPERVISOR_ESCALATION_SLA_HOURS,
+                },
+            )
+        )
+        escalated.append(entity_id)
+    return escalated
+
+
 def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: datetime | None = None) -> int:
     if db is None:
         db_session = SessionLocal()
@@ -69,6 +152,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
     history_count = config.get("drift_comparison_history_count", 5)
     half_life = config.get("drift_half_life_days", 7.0)
     laplace_alpha = config.get("laplace_alpha", 1.0)
+    max_profile_build_block_days = config.get("max_profile_build_block_days", 30)
 
     # Fix #7 — initialize temp file paths before try block to prevent NameError in finally
     temp_file_hist: Path | None = None
@@ -76,10 +160,11 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
     try:
         # Check for active alerts in the new workflow state model
         from core.models import AlertWorkflowStateModel
-        blocked_entities_stmt = select(AlertWorkflowStateModel.entity_id).where(
-            AlertWorkflowStateModel.state.in_(["new", "acknowledged", "investigating"])
+        blocked_alerts_stmt = select(AlertWorkflowStateModel).where(
+            AlertWorkflowStateModel.state.in_(list(ACTIVE_ALERT_STATES))
         )
-        blocked_entities = set(db_session.execute(blocked_entities_stmt).scalars().all())
+        blocked_alert_rows = list(db_session.execute(blocked_alerts_stmt).scalars().all())
+        blocked_entities = {row.entity_id for row in blocked_alert_rows}
 
         window_days = config.get("max_replay_window_days", 30)
         recent_days = config.get("recent_drift_window_days", 3)
@@ -111,6 +196,16 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         logger.info(f"Fetched {len(events_hist)} hist and {len(events_recent)} recent events in {time.time()-t0:.2f}s")
         
         if not events_hist:
+            build_timestamp = datetime.utcnow()
+            _emit_build_block_supervisor_escalations(
+                db_session,
+                blocked_alert_rows,
+                as_of,
+                max_profile_build_block_days,
+                config,
+                build_timestamp,
+            )
+            db_session.commit()
             return 0
             
         temp_file_hist = Path(f"temp_events_hist_{uuid.uuid4().hex}.jsonl")
@@ -379,7 +474,15 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
                 db_session.add(db_decision)
 
             count += 1
-            
+
+        _emit_build_block_supervisor_escalations(
+            db_session,
+            blocked_alert_rows,
+            as_of,
+            max_profile_build_block_days,
+            config,
+            build_timestamp,
+        )
         db_session.commit()
         return count
         

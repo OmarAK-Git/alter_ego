@@ -19,11 +19,11 @@
 
 | Phase | Status | Notes |
 |---|---|---|
-| 0 Contracts + generator | **Partial** | Schemas, synth, CI, app-layer audit chain exist. Missing: 4-container deploy, DB INSERT-only roles, real LLM determinism artifact, migration playbook |
-| 1 Detection pipeline | **Partial** | Shadow profiles, six-feature path, drift, novelty gate — geo histograms + drift KL (S1.2), eval partitions fixed (S1.1), auto containment queue (S1.3); open: lifecycle states, volume_delta |
+| 0 Contracts + generator | **Partial** | Schemas, synth, CI, app-layer audit chain. **Shipped S5/S6:** four-container compose (S5.1), INSERT-only `alter_ego_app` role (S5.3), audit integrity job (S5.4), pgvector playbook (S5.8). LLM determinism **executed** 2026-07-14 (Vertex; not bit-identical → lineage rule confirmed) |
+| 1 Detection pipeline | **Partial** | Shadow profiles, six-feature path, drift, novelty gate — geo histograms + drift KL (S1.2), eval partitions fixed (S1.1), auto containment queue (S1.3), embedding metadata mismatch halt (S5.9); open: lifecycle states, volume_delta |
 | 2 Calibration | **Partial (Phase 2A)** | S1/S2/S4 recall 1.0 @ thr=45; S3 subtle recall 0.667 (15 FN); 3448 FP; **not CALIBRATED** — see `docs/phase2-s3-operating-point.md` |
-| 3 Triage UI + API + explain | **Partial** | Slot isolation (S4.1), queue depth (S4.2), suppressed view (S4.3), demo path (S4.4), replay_run_id (S4.5) shipped. Open (deferred to Phase 4): suppressed-decisions aging escalation + jitter (S4.3 / Path B) |
-| 4 Hardening / portfolio (§9) | **Open** | 4-container topology, DB roles, staleness+alert escalation, empirical LLM check, etc. |
+| 3 Triage UI + API + explain | **Partial** | Slot isolation (S4.1), queue depth (S4.2), suppressed view (S4.3), demo path (S4.4), replay_run_id (S4.5) shipped. **Deferred (Path B):** suppressed-decisions aging escalation + jitter (S4.3) |
+| 4 Hardening / portfolio (§9) | **Partial** | S5.1–S5.10 shipped (compose, DB roles, audit integrity, staleness+alert escalation, build-block escalation, LLM determinism script, pgvector playbook, embedding mismatch, counterfactual harness). **Deferred:** S5.11 cohort prior-update gates (Path B), K8s/Terraform, debate transcripts |
 
 ## Saved eval point
 
@@ -48,12 +48,13 @@ Source: `docs/calibration_final_metrics.json` (S3.1 re-sweep, seed 42; do not tr
 | `phase1-audit-results.md` “100% Precision and Recall” | False vs saved metrics | S0 |
 | Phase 2 audits: embeddings “mocked” | Runtime is char 3-gram 128-d (`alter-ego-ngram-v1`) | S0 |
 | Schema / alembic default `nomic-embed-text` | Runtime ngram; SPEC_V3 still mentions nomic | S0, S1 |
-| Four-container K8s / kind | `docker-compose.yml` is Postgres-only; no Dockerfiles | S5 |
-| DB-role INSERT-only immutability | App-layer insert + hash chain only; profile promotion UPDATEs rows | S5 (or claim downgrade in S0) |
+| Four-container K8s / kind | `docker-compose.yml` four-container topology shipped S5.1; K8s/Terraform deferred | done (S5.1/S5.2) |
+| DB-role INSERT-only immutability | S5.3 ships `alter_ego_app` role: true INSERT-only on audit/commit tables; profiles allow lifecycle-column UPDATE only (`promoted_at`, `superseded_at`) — not full table INSERT-only | done (S5.3) |
 | `simulated_containment_queued` | Auto queue write when score ≥ threshold + confidence floor (S1.3) | done (S1.3) |
 | `geolocation_rarity` as calibrated feature | Geo histograms + drift KL wired (S1.2) | done (S1.2) |
 | `total_volume_delta` in feature table | Explicitly suppressed stub (always 0) | done (S2.6) |
-| Empirical LLM determinism script | Mock LLM with injected variance | S5 |
+| Empirical LLM determinism script | Script shipped S5.7; **executed** 2026-07-14 on Vertex `gemini-3.5-flash` — 4 unique hashes / 10 runs @ temp=0 → lineage authoritative | done (S5.7 empirical) |
+| pgvector migration playbook | Shipped S5.8 — `docs/pgvector-embedding-migration.md` | done (S5.8) |
 | Frozen cohort-prior artifacts (SPEC_V3) | Cohort data embedded in profiles only; SPEC_V3 downgraded (S2.5) | done (S2.5) |
 | SPEC §10.2 partition discipline | S2/S3 inject with `simulation_partition="production"` → can train into profiles | S1 |
 
@@ -140,6 +141,7 @@ Status legend: `todo` · `doing` · `done` · `deferred` · `wontfix` (with note
 | S2-EXIT-GATE | S2.1–S2.8 | S3.* | done | Passed 2026-07-13: skeptic-verifier `survives`, pytest 69/69, ruff clean; `results/S2-EXIT-GATE-verifier-result.md` |
 | S3-EXIT-GATE | S3.1–S3.6 | S4.* | done | Passed 2026-07-13: skeptic-verifier `survives`; `results/S3-EXIT-GATE-verifier-result.md` |
 | S4-EXIT-GATE | S4.1–S4.7 | HUMAN-DRIFT-RESEARCH | done | Passed 2026-07-13: initial verify refuted (S4.3 aging/jitter SPEC banner missing); honesty patch applied; re-verify `survives`, pytest 85, ruff clean; `results/S4-EXIT-GATE-verifier-result.md` |
+| S5-EXIT-GATE | S5.1–S5.12 | S6.* | done | 2026-07-13: chat_gate PASS (Opus inline). Fresh pytest **116 passed**, ruff clean. Caught + fixed a real cross-packet regression S5.9's focused verifier missed (`test_new_confidence_calculation` halted by S5.9 embedding metadata mismatch: stale fixture normalizer `1.0` vs runtime `1.0-char-3gram-hash-128`; test-only fix). `results/S5-EXIT-GATE-verifier-result.md` |
 
 ### ⚑ HUMAN POINTER — before S5 / Phase 4 (after S4-EXIT-GATE)
 
@@ -162,18 +164,18 @@ Do not start S5 claiming “research complete.” Parallel tracks are intentiona
 
 | ID | Task | Spec ref | Status | Notes |
 |---|---|---|---|---|
-| S5.1 | Dockerfiles + four-container compose (web/worker/batch/postgres) | SPEC §4.4, V3 §9 | ready | Next runnable; kind/k3d manifests if time |
-| S5.2 | IaC (Terraform or equivalent) **or** explicit downgrade of portfolio IaC claim | V3 §5/§9 | todo | |
-| S5.3 | Postgres INSERT-only roles + REVOKE for audit/profile commit tables | SPEC §9.2, V3 §6.3/§6.10 | todo | |
-| S5.4 | Scheduled audit hash-chain integrity job / assertion | V3 §6.10/§9 | todo | |
-| S5.5 | Staleness circuit breaker + active-alert mandatory escalation | SPEC §5.7, V3 §9 | todo | Halt exists; escalation missing |
-| S5.6 | `max_profile_build_block_days` supervisor escalation | SPEC §5.5, V3 §9 | todo | Config key unused |
-| S5.7 | Empirical LLM determinism check vs pinned non-alias model (real, not mock) | SPEC §8.4, V3 §9 | todo | |
-| S5.8 | Full pgvector / embedding dimensionality migration playbook | SPEC §4.3, V3 §6.8/§9 | todo | |
-| S5.9 | Schema-version / embedding-metadata mismatch detection at scorer startup | V3 §9 | todo | |
-| S5.10 | Counterfactual consistency corpus + harness | SPEC §8.5/§10.5, V3 §9 | todo | Or downgrade claim |
-| S5.11 | Independent versioned cohort-prior artifacts + advanced prior-update gates beyond novelty **or** defer per §13.1 | SPEC §7.3, V3 §9 | todo | Novelty gate ships; S2.5 deferred independent cohort artifacts here |
-| S5.12 | Threat-model polish in repo + README aligned to implemented behavior | SPEC Phase 4 | todo | Debate transcripts optional/missing |
+| S5.1 | Dockerfiles + four-container compose (web/worker/batch/postgres) | SPEC §4.4, V3 §9 | done | 2026-07-13: shared Dockerfile + compose `web`/`worker`/`batch`/`postgres`; `docs/deployment.md`; verifier survives |
+| S5.2 | IaC (Terraform or equivalent) **or** explicit downgrade of portfolio IaC claim | V3 §5/§9 | done | 2026-07-13 Path A: compose-as-equivalent IaC; §9 gate closed via `docker-compose.yml`; standalone Terraform/k8s deferred |
+| S5.3 | Postgres INSERT-only roles + REVOKE for audit/profile commit tables | SPEC §9.2, V3 §6.3/§6.10 | done | 2026-07-13: migration `g6h7i8j9k0l1_add_app_db_roles`, compose DSN split; profiles = column-level lifecycle UPDATE only |
+| S5.4 | Scheduled audit hash-chain integrity job / assertion | V3 §6.10/§9 | done | 2026-07-13: `batch/audit_integrity.py` + `verify_audit_log_chain` in `core/models.py` |
+| S5.5 | Staleness circuit breaker + active-alert mandatory escalation | SPEC §5.7, V3 §9 | done | 2026-07-13: staleness halt escalation flags, mandatory escalation queue API, extend-halt persistence |
+| S5.6 | `max_profile_build_block_days` supervisor escalation | SPEC §5.5, V3 §9 | done | 2026-07-13: profile builder emits `profile_build_block_supervisor_escalation` DecisionRecord |
+| S5.7 | Empirical LLM determinism check vs pinned non-alias model (real, not mock) | SPEC §8.4, V3 §9 | done | 2026-07-13: `scripts/llm_determinism_check.py`; artifact honest not-executed until API keys |
+| S5.8 | Full pgvector / embedding dimensionality migration playbook | SPEC §4.3, V3 §6.8/§9 | done | 2026-07-13: `docs/pgvector-embedding-migration.md` |
+| S5.9 | Schema-version / embedding-metadata mismatch detection at scorer startup | V3 §9 | done | 2026-07-13: `check_profile_embedding_metadata` + `embedding_metadata_mismatch_halt` in scorer |
+| S5.10 | Counterfactual consistency corpus + harness | SPEC §8.5/§10.5, V3 §9 | done | 2026-07-13: `build_top_k_counterfactuals` + corpus/harness; `docs/counterfactual-consistency.md` |
+| S5.11 | Independent versioned cohort-prior artifacts + advanced prior-update gates beyond novelty **or** defer per §13.1 | SPEC §7.3, V3 §9 | done | 2026-07-13: **Path B defer** — novelty suppression ships; prior-update gates deferred |
+| S5.12 | Threat-model polish in repo + README aligned to implemented behavior | SPEC Phase 4 | done | 2026-07-13: README phase map + portfolio docs; SPEC §3.2/§13 threat-model honesty; root SPEC synced |
 
 ### S6 — Hardening empirical handoff
 
@@ -181,9 +183,9 @@ Do not start S5 claiming “research complete.” Parallel tracks are intentiona
 
 | ID | Task | Spec ref | Status | Notes |
 |---|---|---|---|---|
-| S6.1 | Document hardening sweep checklist (commands, seeds, artifacts to refresh) | Eval discipline | todo | |
-| S6.2 | Residual-risk + open drift hypotheses doc (feeds personal research) | SPEC §6.4 | todo | After S3 |
-| S6.3 | No weight/threshold change without recorded sweep + config governance | SPEC §10.1 | todo | Standing rule |
+| S6.1 | Document hardening sweep checklist (commands, seeds, artifacts to refresh) | Eval discipline | done | 2026-07-13: `docs/hardening-sweep-checklist.md`; OPS pointer; seed 42 / v2.2 / thr=45 canonical |
+| S6.2 | Residual-risk + open drift hypotheses doc (feeds personal research) | SPEC §6.4 | done | 2026-07-13: `docs/residual-risk-drift-hypotheses.md` — FP=3448, S3 FN=15, thr=55 not applied, normalizer default trap, Path B deferrals, 10 open hypotheses |
+| S6.3 | No weight/threshold change without recorded sweep + config governance | SPEC §10.1 | done | 2026-07-13: OPS standing rule = checklist + governance/`ConfigStore.save_config`; verifier survives |
 
 ## Scoring config knob inventory (2026-07-13)
 
@@ -206,7 +208,7 @@ Source: `config/scoring_config.yaml` v2.2 (S2.8 refresh). Grep scope: `worker/`,
 | `laplace_alpha` | 1.0 | wired | `worker/scorer.py` (rarity); `batch/profile_builder/builder.py` (KL) | — |
 | `max_calendar_adjustment` | 0.3 | defer | **Not read.** Calendar dual-score deferred S4.6 Path B | **Phase 4** |
 | `max_replay_window_days` | 30 | wired | `batch/profile_builder/builder.py` — profile build history window | — |
-| `max_profile_build_block_days` | 30 | defer | **Not read.** No supervisor escalation on prolonged build block | **S5.6** |
+| `max_profile_build_block_days` | 30 | wired | `batch/profile_builder/builder.py` — supervisor escalation when block exceeds threshold (S5.6) | — |
 | `recent_drift_window_days` | 3 | wired | `batch/profile_builder/builder.py` — recent window for drift KL | — |
 | `cohort_gate_window_days` | 7 | wired | `worker/scorer.py` — novelty fraction lookback | — |
 | `age_jitter_hours` | 4 | defer | **Not read.** SPEC §11.4 jitter deferred S4.3 (view ships without escalation) | future escalation packet |
@@ -224,7 +226,7 @@ Source: `config/scoring_config.yaml` v2.2 (S2.8 refresh). Grep scope: `worker/`,
 | Knob | Value | Status | Reader / notes | Later packet |
 |---|---|---|---|---|
 | `min_cohort_size` | 10 | wired | `worker/scorer.py` — novelty gate cohort floor | — |
-| `min_clean_observation_count` | 5 | defer | **Not read** in scorer/builder (only `scratch/test_cohort_gate.py`) | **S5.11** cohort gate hardening |
+| `min_clean_observation_count` | 5 | defer | **Not read** in scorer/builder (only `scratch/test_cohort_gate.py`). Prior-update rejection semantics deferred S5.11 Path B | **Phase 4** |
 | `max_changed_fraction` | 0.2 | wired | `worker/scorer.py` — novelty suppression threshold | — |
 
 ### `gap_windows`
@@ -268,7 +270,7 @@ Source: `config/scoring_config.yaml` v2.2 (S2.8 refresh). Grep scope: `worker/`,
 
 **YAML tunables:** 35 keys (was 37 before S2.8 strip). No code-only gaps remain for inventoried knobs.
 
-**Apply inventory:** S2.8 complete. S4.6 closed Path B (calendar/gap knobs → Phase 4). Remaining defer keys are explicit non-calibrated placeholders until S5.6/S5.11 or post-S3 volume work.
+**Apply inventory:** S2.8 complete. S4.6 closed Path B (calendar/gap knobs → Phase 4). S5.11 closed Path B (`min_clean_observation_count` + prior-update gates → Phase 4). Remaining defer keys are explicit non-calibrated placeholders until S5.6 or post-S3 volume work.
 
 ## Explicitly out of scope (v1 non-goals)
 

@@ -12,6 +12,7 @@ try:
     from core.database import SQLiteVector
 except ImportError:
     SQLiteVector = None
+from dataclasses import dataclass, field
 from datetime import datetime
 
 class EventModel(Base):
@@ -116,6 +117,87 @@ class AuditLogModel(Base):
         serialized = json.dumps(payload, sort_keys=True)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
+
+DECISION_AUDIT_ACTIONS = frozenset({"RECORD_DECISION", "DECISION_RECORDED"})
+
+
+@dataclass
+class AuditChainBreak:
+    log_id: int
+    reason: str
+    expected: str | None = None
+    actual: str | None = None
+
+
+@dataclass
+class AuditIntegrityResult:
+    ok: bool
+    log_count: int
+    decision_count: int | None = None
+    decision_audit_count: int | None = None
+    count_mismatch: bool = False
+    count_check_skipped: bool = False
+    breaks: list[AuditChainBreak] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {
+            "ok": self.ok,
+            "log_count": self.log_count,
+            "decision_count": self.decision_count,
+            "decision_audit_count": self.decision_audit_count,
+            "count_mismatch": self.count_mismatch,
+            "count_check_skipped": self.count_check_skipped,
+            "breaks": [
+                {
+                    "log_id": b.log_id,
+                    "reason": b.reason,
+                    "expected": b.expected,
+                    "actual": b.actual,
+                }
+                for b in self.breaks
+            ],
+        }
+
+
+def verify_audit_log_chain(
+    logs: list[AuditLogModel],
+    *,
+    decision_count: int | None = None,
+) -> AuditIntegrityResult:
+    """Walk audit logs in order and verify hash-chain continuity."""
+    breaks: list[AuditChainBreak] = []
+    expected_prev_hash: str | None = None
+
+    for log in logs:
+        if log.previous_log_hash != expected_prev_hash:
+            breaks.append(
+                AuditChainBreak(
+                    log_id=log.log_id,
+                    reason="previous_log_hash mismatch",
+                    expected=expected_prev_hash,
+                    actual=log.previous_log_hash,
+                )
+            )
+        expected_prev_hash = log.compute_hash()
+
+    decision_audit_count = sum(1 for log in logs if log.action in DECISION_AUDIT_ACTIONS)
+    count_mismatch = False
+    count_check_skipped = decision_count is None or decision_audit_count == 0
+    if not count_check_skipped and decision_count is not None:
+        count_mismatch = decision_audit_count != decision_count
+
+    ok = not breaks and not count_mismatch
+    return AuditIntegrityResult(
+        ok=ok,
+        log_count=len(logs),
+        decision_count=decision_count,
+        decision_audit_count=decision_audit_count if decision_audit_count else None,
+        count_mismatch=count_mismatch,
+        count_check_skipped=count_check_skipped,
+        breaks=breaks,
+    )
+
+
 def log_audit_event(db, action: str, entity_id: str | None = None, details: dict | None = None) -> AuditLogModel:
     from sqlalchemy import desc
     
@@ -169,3 +251,12 @@ class AlertWorkflowStateModel(Base):
     assignee = Column(String, nullable=True)
     clear_reason = Column(String, nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class StalenessHaltExtensionModel(Base):
+    __tablename__ = "staleness_halt_extensions"
+    extension_id = Column(Integer, primary_key=True, autoincrement=True)
+    entity_id = Column(String, nullable=False, index=True)
+    justification = Column(String, nullable=False)
+    extended_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    expires_at = Column(DateTime, nullable=False)

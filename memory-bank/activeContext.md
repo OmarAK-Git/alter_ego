@@ -1,27 +1,38 @@
 # Active Context
 
-**Updated:** 2026-07-13
+**Updated:** 2026-07-14
 
 ## Current focus
 
-**T3 run:** `.workflow/2026-07-12-v1-portfolio-ready/`  
-**Active sprint:** S5 (S4 closed; **S4-EXIT-GATE done** + **HUMAN-DRIFT-RESEARCH acknowledged** 2026-07-13)  
-**Next runnable:** **`S5.1`** (Dockerfiles + four-container compose) — S5.* unblocked  
-**Roadmap:** `memory-bank/progress.md` · **Tasks:** `memory-bank/tasks.md`
+**T3 run:** `.workflow/2026-07-12-v1-portfolio-ready/` — **program drain complete**  
+**Active sprint:** S6 (closed)  
+**Next runnable:** none — all S0–S6 packets + gates `done`/`wontfix`  
+**Phase honesty:** Phases 0–4 = Partial. **Not CALIBRATED.**
 
-**Phase honesty:** Phases 0–3 = Partial; Phase 2 = Partial (Phase 2A, closed-with-residual); Phase 4 = Open. **Not CALIBRATED.**
+## S6 handoff artifacts
+
+| Packet | Artifact | Verifier |
+|---|---|---|
+| S6.1 | `docs/hardening-sweep-checklist.md` | survives |
+| S6.2 | `docs/residual-risk-drift-hypotheses.md` | survives |
+| S6.3 | `OPS.md` standing rule (sweep + governance) | survives |
+| S6-EXIT-GATE | `results/S6-EXIT-GATE-verifier-result.md` (pytest 121 + ruff + verify_run) | survives |
+
+## Recent fixes (2026-07-14)
+
+- Schema/ORM normalizer default aligned to `1.0-char-3gram-hash-128`
+- `RealLLMProvider` Google path: **Vertex AI + ADC only** → default model `gemini-3.5-flash` (Agent Builder / AI Studio API-key path dropped)
 
 ## Decisions locked
 
-- Hybrid C for Scenario 2 / Phase 2 — S2 now catches (R=1.0); residual is high FP + S3 FN
-- Cut line: portfolio-ready through S5
-- Before S5: operator personal drift-methodology research
-- Autopilot: `--stop-before-gate` stops before any `*-EXIT-GATE` or `HUMAN-DRIFT-RESEARCH`
-- S3 knobs unchanged (v2.2 @ thr=45); thr=55 diagnostic only — `docs/scoring-config-governance-s3.md`
-- S4.3/S4.6/S4.7 Path B deferrals recorded in SPEC with explicit banners: §11.4 aging escalation/jitter (view ships), §6.5/§6.6 calendar/gap, §12 assets; all three cross-referenced in §13.1 deferrable list
+- Hybrid C S2 residual; S3 knobs v2.2 @ thr=45 unchanged
+- S5 Path A: compose-as-IaC; Path B: S5.11 cohort advanced gates deferred
+- Autopilot models: implement `composer-2.5`, verify `cursor-grok-4.5-high`
+- No weight/threshold change without checklist sweep + governance record
 
-## Resume
+## Resume / operator next
 
-1. `HUMAN-DRIFT-RESEARCH` acknowledged (done 2026-07-13) — S5.* unblocked; `S5.1` is `ready`.
-2. Run `/gsd-autopilot-loop` to start S5 (deploy: Dockerfiles + compose, IaC, audit DB roles, staleness/circuit breakers, LLM determinism, embedding migration docs).
-3. Gate commands for future gates: `pytest -v --tb=short --ignore=tests/live` + `ruff check .`
+Program queue is drained — no autopilot-runnable packets remain. Remaining items are operator-owned, outside the queue:
+
+1. Human drift research: `docs/residual-risk-drift-hypotheses.md` + optional re-sweep via `docs/hardening-sweep-checklist.md`
+2. ~~Empirical S5.7~~ — **done** 2026-07-14 (`docs/llm-determinism-check.md`: 4 unique hashes / 10 runs @ temp=0)

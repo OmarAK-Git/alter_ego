@@ -5,6 +5,7 @@ from datetime import datetime
 from core.database import Base
 from core.models import AuditLogModel, log_audit_event
 from worker.scorer import score_event
+from worker.vectorizer import NORMALIZER_VERSION
 from core.schemas.events import ResolvedEvent
 from core.schemas.profiles import ProfileArtifact
 
@@ -46,7 +47,8 @@ def test_new_confidence_calculation(db_session):
         data_window_end=ts,
         features={"role": "Engineer", "total_events": 40, "cohort_data": {}},
         embedding_model_version="1.0",
-        embedding_dimensionality=128
+        embedding_dimensionality=128,
+        embedding_input_normalizer_version=NORMALIZER_VERSION,
     )
     
     config = {"features": {}, "anomaly_threshold": 75.0, "version": "1.0", "confidence_k": 10.0}
@@ -64,7 +66,8 @@ def test_new_confidence_calculation(db_session):
         data_window_end=ts,
         features={"role": "Engineer", "login_hours": {"12": 20, "13": 10}, "cohort_data": {}},
         embedding_model_version="1.0",
-        embedding_dimensionality=128
+        embedding_dimensionality=128,
+        embedding_input_normalizer_version=NORMALIZER_VERSION,
     )
     
     config_default_k = {"features": {}, "anomaly_threshold": 75.0, "version": "1.0"}

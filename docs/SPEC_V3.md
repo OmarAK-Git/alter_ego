@@ -96,9 +96,9 @@ DuckDB: cold-path profile computation over materialized event windows.
 
 Shipping command-line vectors: deterministic char 3-gram SHA-256 hashing into unit-norm **128-d** vectors (`alter-ego-ngram-v1`, `worker/vectorizer.py`). Structural cosine distance, not semantic BERT similarity; no external per-event model dependency. Model ID, version, dimensionality, and input normalizer version are locked before calibration. **Deferred debt:** Alembic / ORM schema defaults still say `nomic-embed-text` (768-d neural embedder explored early, abandoned); S1.4 aligns code defaults — do not describe nomic as current runtime.
 
-Kubernetes kind/k3d: local four-container deployment target.
+Kubernetes kind/k3d: local four-container deployment target (deferred production upgrade; v1 uses Docker Compose).
 
-Terraform or equivalent IaC: required before portfolio-readiness claims, not required to unblock Phase 2 calibration.
+▲ **v1 shipped IaC (S5.2):** `docker-compose.yml` satisfies the "Terraform or equivalent IaC" requirement for portfolio-readiness claims. Standalone Terraform and kind/k3d manifests remain deferred production hardening — not required to unblock Phase 2 calibration.
 
 LLM provider with pinned non-alias model ID: warm-path explanation only, with lineage and fallback.
 
@@ -136,7 +136,7 @@ Profile lifecycle states (§5.4 in SPEC.md: dormant, reactivated\_dormant, onboa
 
 6.3 Profile Immutability
 
-Committed profiles are immutable. Pydantic profile models are frozen. Database roles for application writes have INSERT only on committed profile artifact tables and no UPDATE or DELETE. Rebuilds create new versions.
+Committed profile **payloads** are immutable. Pydantic profile models are frozen. The runtime Postgres role `alter_ego_app` has `INSERT` on `profiles` and column-level `UPDATE` only on lifecycle fields (`promoted_at`, `superseded_at`) for promotion and supersede paths — **not** full table-level INSERT-only. Payload columns (`features`, `embedding`, data windows, embedding metadata) cannot be updated after commit. Rebuilds create new versions.
 
 
 
@@ -192,13 +192,13 @@ The unsupported terminus sets cohort\_unsupported = true, applies a higher conta
 
 v1 embeds cohort priors at profile-build time in `features["cohort_data"]`. The scorer consumes cohort histograms from the active profile only; there is no separate cohort artifact table and no `cohort_version` in decision lineage today.
 
-Independent cohort-prior artifacts (versioned, frozen per scoring window, recomputed on a cadence separate from profile builds) are **deferred post-v1** to Phase 4 hardening (§9 / S5.11). The three-step fallback, unsupported terminus (`cohort_unsupported`), `cohort_used` metadata, and cohort novelty gate are implemented.
+Independent cohort-prior artifacts (versioned, frozen per scoring window, recomputed on a cadence separate from profile builds) are **deferred post-v1** to Phase 4 hardening (§9 / S5.11). Advanced prior-update gates (`min_clean_observation_count`, cohort prior update rejection on rebuild) are also deferred (S5.11 / Path B). The three-step fallback, unsupported terminus (`cohort_unsupported`), `cohort_used` metadata, and scoring-time cohort novelty gate are implemented.
 
 
 
 6.7 Scenario 3 Gate
 
-Scenario 3 performance claims require an implemented cohort novelty gate with provisional defaults: max\_changed\_fraction, min\_cohort\_size, min\_clean\_observation\_count, and cohort\_gate\_window\_days. If this mechanism is not implemented, Scenario 3 may be demonstrated qualitatively but no calibrated performance claim may be reported.
+Scenario 3 performance claims require the shipped scoring-time cohort novelty gate: `max_changed_fraction`, `min_cohort_size`, and `cohort_gate_window_days` (implemented in `worker/scorer.py`). `min_clean_observation_count` and prior-update rejection gates are deferred to §9 / S5.11 — without those, Scenario 3 calibrated claims apply to novelty suppression only, not full §7.3 cohort-prior poisoning defense.
 
 
 
@@ -256,7 +256,7 @@ Legacy profiles are rebuilt with embedding metadata.
 
 Profile effective intervals and point-in-time selection are tested.
 
-Committed profile immutability is enforced at model and DB-role level.
+Committed profile payload immutability is enforced at Pydantic model layer and via Postgres column-level `UPDATE` grants on `profiles` (lifecycle columns `promoted_at` / `superseded_at` only).
 
 Profile-builder snapshot/high-watermark reproducibility is tested.
 
@@ -324,7 +324,7 @@ Before claiming production-grade infrastructure, the project must ship:
 
 
 
-IaC for the four-container topology.
+▲ **IaC for the four-container topology — satisfied in v1 (S5.2).** Committed `docker-compose.yml` is the version-controlled IaC artifact; `docker compose config` validates the four services per SPEC §4.4.
 
 CI checks documented and running.
 
@@ -338,7 +338,7 @@ Staleness circuit breaker and active-alert mandatory escalation.
 
 max\_profile\_build\_block\_days supervisor escalation.
 
-Counterfactual consistency corpus and harness.
+▲ **Counterfactual consistency corpus and harness — satisfied in v1 (S5.10).** `tests/fixtures/counterfactual_corpus.json` plus `tests/worker/test_counterfactual_consistency.py`; see `docs/counterfactual-consistency.md`.
 
 Schema-version mismatch detection at scorer startup.
 

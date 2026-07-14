@@ -5,7 +5,8 @@ from datetime import datetime
 DEFAULT_EMBEDDING_MODEL_ID = "alter-ego-ngram-v1"
 DEFAULT_EMBEDDING_MODEL_VERSION = "1.0"
 DEFAULT_EMBEDDING_DIMENSIONALITY = 128
-DEFAULT_EMBEDDING_INPUT_NORMALIZER_VERSION = "1.0"
+# Must match worker.vectorizer.NORMALIZER_VERSION (S5.9 fail-closed contract).
+DEFAULT_EMBEDDING_INPUT_NORMALIZER_VERSION = "1.0-char-3gram-hash-128"
 
 
 class ProfileArtifact(BaseModel):

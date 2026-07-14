@@ -3,6 +3,7 @@ import math
 import json
 import time
 import logging
+from dataclasses import dataclass
 import numpy as np
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
@@ -12,14 +13,28 @@ from pathlib import Path
 import yaml
 
 from core.database import SessionLocal
-from core.models import ResolvedEventModel, ProfileArtifactModel, DecisionRecordModel
+from core.models import (
+    AlertWorkflowStateModel,
+    DecisionRecordModel,
+    ProfileArtifactModel,
+    ResolvedEventModel,
+)
 from core.schemas.events import ResolvedEvent
-from core.schemas.profiles import ProfileArtifact
+from core.schemas.profiles import (
+    DEFAULT_EMBEDDING_DIMENSIONALITY,
+    DEFAULT_EMBEDDING_MODEL_ID,
+    DEFAULT_EMBEDDING_MODEL_VERSION,
+    ProfileArtifact,
+)
 from core.schemas.decisions import DecisionRecord, FeatureContribution
 from worker.recorder import record_decision
 from worker.profile_store import ProfileStore
 from core.math_utils import get_laplace_prob
-from worker.vectorizer import vectorize_command_line, compute_cosine_distance
+from worker.vectorizer import (
+    NORMALIZER_VERSION,
+    vectorize_command_line,
+    compute_cosine_distance,
+)
 from worker.resolver import LOW_RESOLUTION_THRESHOLD
 
 # Fix #11 — logger defined before first use
@@ -27,6 +42,105 @@ logger = logging.getLogger(__name__)
 
 # Pinned hot-path scorer lineage (SPEC_V3 §6.1 — included in decision_id hash).
 SCORER_ALGORITHM_VERSION = "1.0"
+
+# S5.5 — staleness + active-alert mandatory escalation (SPEC §5.7).
+ACTIVE_ALERT_STATES = frozenset({"new", "acknowledged", "investigating"})
+STALENESS_ESCALATION_FLAG = "staleness_active_alert_escalation"
+SENSOR_HEALTH_STALENESS_FLAG = "sensor_health_staleness"
+MANDATORY_ESCALATION_SLA_HOURS = 24
+
+# S5.9 — runtime embedding contract (SPEC §5.6 / V3 §9 portfolio gate).
+RUNTIME_EMBEDDING_MODEL_ID = DEFAULT_EMBEDDING_MODEL_ID
+RUNTIME_EMBEDDING_MODEL_VERSION = DEFAULT_EMBEDDING_MODEL_VERSION
+RUNTIME_EMBEDDING_DIMENSIONALITY = DEFAULT_EMBEDDING_DIMENSIONALITY
+RUNTIME_EMBEDDING_INPUT_NORMALIZER_VERSION = NORMALIZER_VERSION
+EMBEDDING_METADATA_MISMATCH_FLAG = "embedding_metadata_mismatch_halt"
+
+
+@dataclass(frozen=True)
+class EmbeddingMetadataMismatch:
+    """Single field mismatch between profile artifact and runtime embedding contract."""
+
+    field: str
+    profile_value: str | int
+    runtime_value: str | int
+
+
+def check_profile_embedding_metadata(
+    profile: ProfileArtifact,
+) -> list[EmbeddingMetadataMismatch]:
+    """Compare profile embedding metadata to the shipping runtime vectorizer contract."""
+    mismatches: list[EmbeddingMetadataMismatch] = []
+    for field, profile_value, runtime_value in (
+        ("embedding_model_id", profile.embedding_model_id, RUNTIME_EMBEDDING_MODEL_ID),
+        (
+            "embedding_model_version",
+            profile.embedding_model_version,
+            RUNTIME_EMBEDDING_MODEL_VERSION,
+        ),
+        (
+            "embedding_dimensionality",
+            profile.embedding_dimensionality,
+            RUNTIME_EMBEDDING_DIMENSIONALITY,
+        ),
+        (
+            "embedding_input_normalizer_version",
+            profile.embedding_input_normalizer_version,
+            RUNTIME_EMBEDDING_INPUT_NORMALIZER_VERSION,
+        ),
+    ):
+        if profile_value != runtime_value:
+            mismatches.append(
+                EmbeddingMetadataMismatch(field, profile_value, runtime_value)
+            )
+    if profile.embedding is not None and len(profile.embedding) != RUNTIME_EMBEDDING_DIMENSIONALITY:
+        mismatches.append(
+            EmbeddingMetadataMismatch(
+                "embedding_vector_length",
+                len(profile.embedding),
+                RUNTIME_EMBEDDING_DIMENSIONALITY,
+            )
+        )
+    return mismatches
+
+
+def find_active_profiles_with_embedding_mismatch(
+    db: Session,
+) -> list[tuple[str, list[EmbeddingMetadataMismatch]]]:
+    """Return promoted profiles whose embedding metadata disagrees with runtime.
+
+    Callable at scorer startup or from ``process_unscored_events`` for audit logging.
+    Per-entity halts are enforced in ``score_event`` via ``check_profile_embedding_metadata``.
+    """
+    stmt = select(ProfileArtifactModel).where(
+        and_(
+            ProfileArtifactModel.promoted_at.isnot(None),
+            ProfileArtifactModel.superseded_at.is_(None),
+        )
+    )
+    affected: list[tuple[str, list[EmbeddingMetadataMismatch]]] = []
+    for model in db.execute(stmt).scalars():
+        profile = ProfileArtifact(
+            entity_id=model.entity_id,
+            entity_type=model.entity_type,
+            profile_version=model.profile_version,
+            created_at=model.created_at,
+            data_window_start=model.data_window_start,
+            data_window_end=model.data_window_end,
+            promoted_at=model.promoted_at,
+            superseded_at=model.superseded_at,
+            is_shadow=model.is_shadow,
+            features=model.features,
+            embedding=model.embedding,
+            embedding_model_id=model.embedding_model_id,
+            embedding_model_version=model.embedding_model_version,
+            embedding_dimensionality=model.embedding_dimensionality,
+            embedding_input_normalizer_version=model.embedding_input_normalizer_version,
+        )
+        mismatches = check_profile_embedding_metadata(profile)
+        if mismatches:
+            affected.append((model.entity_id, mismatches))
+    return affected
 
 
 def compute_decision_id(
@@ -198,6 +312,33 @@ def _get_novelty_fraction(
     return fraction
 
 
+def entity_has_active_uncleared_alert(db: Session, entity_id: str) -> bool:
+    """Return True when the entity has an uncleared triage alert."""
+    return bool(get_active_alert_decision_ids(db, entity_id))
+
+
+def get_active_alert_decision_ids(db: Session, entity_id: str) -> list[str]:
+    """Uncleared alert decision_ids for an entity (new/acknowledged/investigating)."""
+    rows = (
+        db.query(DecisionRecordModel, AlertWorkflowStateModel)
+        .outerjoin(
+            AlertWorkflowStateModel,
+            DecisionRecordModel.decision_id == AlertWorkflowStateModel.decision_id,
+        )
+        .filter(
+            DecisionRecordModel.entity_id == entity_id,
+            DecisionRecordModel.is_anomaly.is_(True),
+        )
+        .all()
+    )
+    active_ids: list[str] = []
+    for dec, state in rows:
+        workflow_state = state.state if state else "new"
+        if workflow_state in ACTIVE_ALERT_STATES:
+            active_ids.append(dec.decision_id)
+    return active_ids
+
+
 def load_scoring_config() -> dict:
     config_path = Path(__file__).parent.parent / "config" / "scoring_config.yaml"
     if not config_path.exists():
@@ -262,6 +403,40 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
     flags = []
     if resolved_event.resolution_confidence < LOW_RESOLUTION_THRESHOLD:
         flags.append("low_resolution_confidence")
+
+    # S5.9 — embedding/schema metadata gate (SPEC §5.6): halt before feature scoring.
+    embedding_mismatches = check_profile_embedding_metadata(profile)
+    if embedding_mismatches:
+        flags.append(EMBEDDING_METADATA_MISMATCH_FLAG)
+        for mismatch in embedding_mismatches:
+            flags.append(
+                f"embedding_mismatch_{mismatch.field}:"
+                f"{mismatch.profile_value}!={mismatch.runtime_value}"
+            )
+        decision_id = compute_decision_id(
+            event_id=resolved_event.event_id,
+            profile_version=profile.profile_version,
+            scoring_config_version=str(config.get("version", "2.1")),
+            embedding_model_version=profile.embedding_model_version,
+            halt=True,
+        )
+        return DecisionRecord(
+            decision_id=decision_id,
+            event_id=resolved_event.event_id,
+            entity_id=resolved_event.entity_id,
+            timestamp=resolved_event.timestamp,
+            score=0.0,
+            confidence=1.0,
+            profile_version=profile.profile_version,
+            scoring_config_version=str(config.get("version", "2.1")),
+            contributions=[],
+            is_anomaly=False,
+            cohort_used="none",
+            cohort_unsupported=True,
+            flags=flags,
+            embedding_model_version=profile.embedding_model_version,
+        )
+
     cohort_gate_config = config.get("cohort_gating_constants", {})
     max_changed_fraction = cohort_gate_config.get("max_changed_fraction", 0.2)
     min_cohort_size = cohort_gate_config.get("min_cohort_size", 10)
@@ -272,6 +447,9 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
     time_since_profile = (resolved_event.timestamp - profile.data_window_end).total_seconds() / 86400.0
     if time_since_profile > max_staleness:
         flags.append("staleness_halt")
+        flags.append(SENSOR_HEALTH_STALENESS_FLAG)
+        if entity_has_active_uncleared_alert(db, resolved_event.entity_id):
+            flags.append(STALENESS_ESCALATION_FLAG)
         decision_id = compute_decision_id(
             event_id=resolved_event.event_id,
             profile_version=profile.profile_version,
@@ -487,6 +665,16 @@ def process_unscored_events(db: Session | None = None) -> int:
     config = load_scoring_config()
     profile_store = ProfileStore(db_session)
     count = 0
+    mismatched_profiles = find_active_profiles_with_embedding_mismatch(db_session)
+    if mismatched_profiles:
+        for entity_id, mismatches in mismatched_profiles:
+            fields = ", ".join(m.field for m in mismatches)
+            logger.warning(
+                "Embedding metadata mismatch for entity %s (%s); "
+                "score_event will halt until profile rebuild",
+                entity_id,
+                fields,
+            )
     try:
         stmt = (
             select(ResolvedEventModel)

@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from core.database import Base
 from core.schemas.events import AuthEventData, ResolvedEvent
 from core.schemas.profiles import ProfileArtifact
+from tests.worker.conftest import COMPATIBLE_EMBEDDING_PROFILE_FIELDS
 from worker.scorer import score_event, load_scoring_config
 
 
@@ -62,8 +63,7 @@ def _profile(total_events: int | None = None, login_hours: dict | None = None) -
         data_window_start=ts,
         data_window_end=ts,
         features=features,
-        embedding_model_version="1.0",
-        embedding_dimensionality=128,
+        **COMPATIBLE_EMBEDDING_PROFILE_FIELDS,
     )
 
 

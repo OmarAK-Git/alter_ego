@@ -3,6 +3,7 @@ import json
 import hashlib
 import threading
 from datetime import datetime
+from pathlib import Path
 from typing import List, Dict, Any
 from sqlalchemy.orm import Session
 
@@ -23,6 +24,30 @@ logger = logging.getLogger(__name__)
 EXPLAINER_QUEUE_DEPTH_DEFAULT = 8
 _inflight_llm_lock = threading.Lock()
 _inflight_llm_count = 0
+_DOTENV_LOADED = False
+
+
+def _ensure_repo_dotenv_loaded() -> None:
+    """Load gitignored `.env` into os.environ for keys that are not already set."""
+    global _DOTENV_LOADED
+    if _DOTENV_LOADED:
+        return
+    _DOTENV_LOADED = True
+    env_path = Path(__file__).resolve().parent.parent / ".env"
+    if not env_path.is_file():
+        return
+    try:
+        for raw in env_path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
+    except OSError:
+        logger.warning("Could not read .env for LLM credentials")
 
 
 def reset_explainer_queue_state() -> None:
@@ -98,22 +123,71 @@ class LLMProvider:
         raise NotImplementedError("Use a concrete provider")
 
 class RealLLMProvider(LLMProvider):
+    """Live LLM client. Precedence: Anthropic → OpenAI → Vertex Gemini (ADC)."""
+
+    # Default Vertex Gemini model (override with GOOGLE_MODEL_ID).
+    GOOGLE_MODEL_ID = "gemini-3.5-flash"
+
     def __init__(self):
         super().__init__()
+        _ensure_repo_dotenv_loaded()
+        self.api_key = None
+        self.google_project = None
+        self.google_location = None
+
         self.api_key = os.getenv("ANTHROPIC_API_KEY")
         if self.api_key:
             self.provider_type = "anthropic"
             self.model_id = "claude-3-haiku-20240307"
-        else:
-            self.api_key = os.getenv("OPENAI_API_KEY")
-            if self.api_key:
-                self.provider_type = "openai"
-                self.model_id = "gpt-4o-mini"
-            else:
-                self.provider_type = None
-                self.model_id = "none"
+            return
+
+        self.api_key = os.getenv("OPENAI_API_KEY")
+        if self.api_key:
+            self.provider_type = "openai"
+            self.model_id = "gpt-4o-mini"
+            return
+
+        # Vertex AI via Application Default Credentials (no Agent Builder / AI Studio).
+        self.google_project = os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("GCP_PROJECT")
+        self.google_location = (
+            os.getenv("GOOGLE_CLOUD_LOCATION")
+            or os.getenv("VERTEX_LOCATION")
+            or "global"
+        )
+        self.model_id = os.getenv("GOOGLE_MODEL_ID") or self.GOOGLE_MODEL_ID
+        # Activate Google when a project is configured, or ADC can supply one later.
+        if self.google_project or os.getenv("GOOGLE_GENAI_USE_VERTEX", "").lower() in {
+            "1",
+            "true",
+            "yes",
+        }:
+            self.provider_type = "google"
+            self.api_key = "adc"  # sentinel so generate() does not reject
+            return
+
+        # Last resort: attempt ADC default project without an explicit env flag.
+        try:
+            import google.auth
+
+            _, adc_project = google.auth.default(
+                scopes=["https://www.googleapis.com/auth/cloud-platform"]
+            )
+            if adc_project:
+                self.google_project = adc_project
+                self.provider_type = "google"
+                self.api_key = "adc"
+                return
+        except Exception:
+            pass
+
+        self.provider_type = None
+        self.model_id = "none"
+        self.api_key = None
 
     def generate(self, prompt: str, temperature: float = 0.0) -> str:
+        if self.provider_type == "google":
+            return self._generate_google(prompt, temperature)
+
         if not self.api_key:
             raise ValueError("No LLM API key configured in environment.")
 
@@ -161,6 +235,70 @@ class RealLLMProvider(LLMProvider):
 
         else:
             raise ValueError("Unknown LLM provider configuration.")
+
+    def _vertex_adc_headers(self) -> dict:
+        try:
+            import google.auth
+            import google.auth.transport.requests
+        except ImportError as exc:
+            raise ValueError(
+                "Vertex AI needs google-auth. Install with `pip install google-auth`, "
+                "then run `gcloud auth application-default login` and set "
+                "GOOGLE_CLOUD_PROJECT."
+            ) from exc
+        credentials, adc_project = google.auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"]
+        )
+        if not self.google_project and adc_project:
+            self.google_project = adc_project
+        if not self.google_project:
+            raise ValueError(
+                "Vertex AI requires GOOGLE_CLOUD_PROJECT (or a project on the ADC)."
+            )
+        request = google.auth.transport.requests.Request()
+        credentials.refresh(request)
+        return {
+            "Authorization": f"Bearer {credentials.token}",
+            "Content-Type": "application/json",
+        }
+
+    def _generate_google(self, prompt: str, temperature: float) -> str:
+        """Gemini on Vertex AI using Application Default Credentials."""
+        import requests
+
+        headers = self._vertex_adc_headers()
+        location = self.google_location or "global"
+        host = (
+            "aiplatform.googleapis.com"
+            if location == "global"
+            else f"{location}-aiplatform.googleapis.com"
+        )
+        url = (
+            f"https://{host}/v1/projects/{self.google_project}/locations/{location}"
+            f"/publishers/google/models/{self.model_id}:generateContent"
+        )
+        data = {
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": temperature,
+                "maxOutputTokens": 1000,
+            },
+        }
+        response = requests.post(url, headers=headers, json=data, timeout=60)
+        if not response.ok:
+            detail = (response.text or "")[:500]
+            raise ValueError(
+                f"Vertex Gemini HTTP {response.status_code} for {url}: {detail}"
+            )
+        res_json = response.json()
+        candidates = res_json.get("candidates", [])
+        if not candidates:
+            raise ValueError("Invalid Vertex Gemini response (no candidates).")
+        parts = candidates[0].get("content", {}).get("parts", [])
+        texts = [p.get("text", "") for p in parts if isinstance(p, dict) and "text" in p]
+        if not texts:
+            raise ValueError("Invalid Vertex Gemini response (no text parts).")
+        return "".join(texts)
 
 class StubLLMProvider(LLMProvider):
     def generate(self, prompt: str, temperature: float = 0.0) -> str:
@@ -369,6 +507,33 @@ def check_prohibited_content(text: str) -> bool:
             return True
     return False
 
+
+def build_top_k_counterfactuals(contributions: Any, k: int = 3) -> List[CounterfactualEntry]:
+    """Build deterministic top-K counterfactuals from feature contributions."""
+    if not isinstance(contributions, list):
+        contributions = []
+    sorted_conts = sorted(
+        contributions, key=lambda x: x.get("contribution_score", 0.0), reverse=True
+    )
+    top_k_cf: List[CounterfactualEntry] = []
+    for c in sorted_conts[:k]:
+        cid = c.get("contribution_id", "")
+        cname = c.get("feature_name", "")
+        cscore = c.get("contribution_score", 0.0)
+        cf_text = (
+            f"If {cname} had been within typical range, "
+            f"the score would have been {cscore:.2f} lower."
+        )
+        top_k_cf.append(
+            CounterfactualEntry(
+                contribution_id=cid,
+                counterfactual_text=cf_text,
+                score_delta=cscore,
+            )
+        )
+    return top_k_cf
+
+
 def generate_explanation(decision_id: str, db: Session = None, provider: LLMProvider = None) -> ExplanationRecord:
     if db is None:
         db = SessionLocal()
@@ -389,24 +554,11 @@ def generate_explanation(decision_id: str, db: Session = None, provider: LLMProv
     if provider is None:
         provider = RealLLMProvider()
         
-    # Build deterministic top-K counterfactuals
     conts = decision.contributions
     if not isinstance(conts, list):
         conts = []
-    
-    sorted_conts = sorted(conts, key=lambda x: x.get("contribution_score", 0.0), reverse=True)
-    top_k_cf = []
-    for c in sorted_conts[:3]:
-        cid = c.get("contribution_id", "")
-        cname = c.get("feature_name", "")
-        cscore = c.get("contribution_score", 0.0)
-        cf_text = f"If {cname} had been within typical range, the score would have been {cscore:.2f} lower."
-        top_k_cf.append(CounterfactualEntry(
-            contribution_id=cid,
-            counterfactual_text=cf_text,
-            score_delta=cscore
-        ))
-        
+    top_k_cf = build_top_k_counterfactuals(conts, k=3)
+
     prompt = build_prompt(decision, profile, config, event_data=event_data)  # profile may be None → template handles it
     prompt_hash = hashlib.sha256(prompt.encode('utf-8')).hexdigest()
 
