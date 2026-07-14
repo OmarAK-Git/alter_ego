@@ -26,7 +26,7 @@ ruff check .
 Optional (if UAW scripts available):
 
 ```bash
-python C:/Users/oalan/ultimate-agentic-workflow/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready
+python <ultimate-agentic-workflow>/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready
 ```
 
 ## Acceptance (program close)

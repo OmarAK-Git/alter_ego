@@ -17,7 +17,7 @@
 ## Prerequisites
 
 ```powershell
-cd C:\Users\oalan\alter_ego
+# from repo root
 pip install -e ".[dev]"
 $env:PYTHONPATH="."
 ```
@@ -29,7 +29,7 @@ Use a dedicated sqlite eval DB (not production). Local DB files (`alter_ego_cali
 Runs baseline + tooling rollout + S1–S4 attack injects, then day-window ingest → profile build → score.
 
 ```powershell
-cd C:\Users\oalan\alter_ego
+# from repo root
 $env:PYTHONPATH="."
 python scratch/run_s31_sweep.py
 ```
@@ -63,7 +63,7 @@ Uses `calculate_metrics(db)` with DB `is_anomaly` flag. For governance compariso
 Requires Step 1 DB on disk.
 
 ```powershell
-cd C:\Users\oalan\alter_ego
+# from repo root
 $env:PYTHONPATH="."
 $env:DATABASE_URL="sqlite:///alter_ego_calibrate_s31.db"
 python scratch/s32_refresh_calibration_docs.py

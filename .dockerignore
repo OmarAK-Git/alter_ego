@@ -22,3 +22,6 @@ node_modules
 *.egg-info
 dist/
 build/
+eval_output*.txt
+.pytest_*_out.txt
+.pytest_*_verify.txt

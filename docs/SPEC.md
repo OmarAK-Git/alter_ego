@@ -24,7 +24,7 @@ The project demonstrates production-grade LLM engineering applied to a real oper
 - **Two log types:** authentication events and process execution events
 - **Two entity types:** human user accounts and service accounts
 - ▲ **Synthetic event generator producing production-shaped events** with controlled anomaly injection and ground truth in a side table
-- **Local Kubernetes deployment** (single-node kind/k3d acceptable; designed for cluster scale-out)
+- **Local Docker Compose deployment** (four-container `postgres` / `web` / `worker` / `batch`; Kubernetes kind/k3d deferred as production upgrade — see §4.4)
 - **Simulated containment actions:** containment writes to a queue rather than disabling accounts
 - **Analyst UI** with triage view, detail view, and ▲ suppressed-decisions view (§11.4)
 - **Four named evaluation scenarios** (see §10) with documented precision/recall outcomes after Phase 2 calibration

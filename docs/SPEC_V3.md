@@ -1,12 +1,12 @@
 ALTER\_EGO — Architecture Specification (v3)
 
-Status: implementation\_plan\_ready; Phase 1 reopened and in progress
+Status: Phase 0–4 Partial — S0–S6 portfolio T3 drained; **not CALIBRATED** (see `docs/SPEC.md` + `docs/calibration_final_metrics.json`)
 
 Scope: Portfolio project, single-operator deployment, 8–10 week target with explicit cut lines
 
-Last updated: May 2026
+Last updated: July 2026
 
-Version: 3.0 — revised after Phase 1 self-audit and implementation review
+Version: 3.0 — companion to `docs/SPEC.md` (reopen gates / portfolio cut lines); product scope remains v1
 
 
 
@@ -94,7 +94,7 @@ Postgres + pgvector: operational state, versioned artifacts, audit records, cont
 
 DuckDB: cold-path profile computation over materialized event windows.
 
-Shipping command-line vectors: deterministic char 3-gram SHA-256 hashing into unit-norm **128-d** vectors (`alter-ego-ngram-v1`, `worker/vectorizer.py`). Structural cosine distance, not semantic BERT similarity; no external per-event model dependency. Model ID, version, dimensionality, and input normalizer version are locked before calibration. **Deferred debt:** Alembic / ORM schema defaults still say `nomic-embed-text` (768-d neural embedder explored early, abandoned); S1.4 aligns code defaults — do not describe nomic as current runtime.
+Shipping command-line vectors: deterministic char 3-gram SHA-256 hashing into unit-norm **128-d** vectors (`alter-ego-ngram-v1`, `worker/vectorizer.py`). Structural cosine distance, not semantic BERT similarity; no external per-event model dependency. Model ID, version, dimensionality, and input normalizer version are locked before calibration. Schema/ORM defaults follow `alter-ego-ngram-v1` (aligned in S1.4 / Alembic `e4f5a6b7c8d9`). Historical `nomic-embed-text` mentions remain only in older revision history — do not describe nomic as current runtime.
 
 Kubernetes kind/k3d: local four-container deployment target (deferred production upgrade; v1 uses Docker Compose).
 
@@ -214,7 +214,7 @@ Before Phase 2, the embedding model ID, model version, dimensionality, and embed
 - Input normalizer version: `1.0-char-3gram-hash-128` (lowercase, hex-address masking, whitespace collapse; preserves arguments)
 - Vectorizer: deterministic char 3-gram SHA-256 hash into a unit-norm vector (`worker/vectorizer.py`)
 
-**Deferred / abandoned:** `nomic-embed-text` (768-d neural embedder) remains a historical schema default in Alembic and ORM until S1.4; it is not what scores events today.
+**Historical / abandoned:** `nomic-embed-text` (768-d neural embedder) was an early schema exploration and is not what scores events. Current defaults are `alter-ego-ngram-v1` / 128-d (S1.4).
 
 A full future pgvector dimensionality migration playbook is required before portfolio-readiness claims, but Phase 2 only requires the current model/dimensionality lock and current schema correctness.
 

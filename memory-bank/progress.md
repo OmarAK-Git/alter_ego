@@ -3,7 +3,7 @@
 **Updated:** 2026-07-12  
 **Plan authority:** Honest merge of `docs/SPEC.md` (Phase 0–4, UI, threat model) + `docs/SPEC_V3.md` (§7 reopen gates, §9 portfolio). Doc revisions v2/v3 ≠ product versions; product scope remains **v1**.
 
-**T3 autopilot (canonical):** `.workflow/2026-07-12-v1-portfolio-ready/` — packet IDs `S0.1`…`S6.3` + `HUMAN-DRIFT-RESEARCH` live in `state.json`. This file is the human roadmap; **update `state.json` first** when executing. Validate: `python C:/Users/oalan/ultimate-agentic-workflow/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready`
+**T3 autopilot (canonical):** `.workflow/2026-07-12-v1-portfolio-ready/` — packet IDs `S0.1`…`S6.3` + `HUMAN-DRIFT-RESEARCH` live in `state.json`. This file is the human roadmap; **update `state.json` first** when executing. Validate: `python <ultimate-agentic-workflow>/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready`
 
 ## Decisions locked (2026-07-12)
 

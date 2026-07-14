@@ -1170,7 +1170,7 @@
   "verification": [
     {
       "check": "verify_run this slug",
-      "command": "python C:/Users/oalan/ultimate-agentic-workflow/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready",
+      "command": "python <ultimate-agentic-workflow>/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready",
       "required": true,
       "status": "pass"
     },

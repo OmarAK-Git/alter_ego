@@ -155,7 +155,7 @@ Use the installed `.claude` agent roster (not archived gsd-build):
 2. Only mark the current sprint’s packets `ready`; keep later sprints `pending` until the prior EXIT-GATE is `done`.
 3. Do not start any `S5.*` until `HUMAN-DRIFT-RESEARCH` is `done` (operator ack). Do not start HUMAN until `S4-EXIT-GATE` is `done`.
 4. Stop conditions: EXIT-GATE or HUMAN next with `--stop-before-gate`; 3× same failure → `blocked`; budget/checkpoint before Docker/DB-role / weight changes.
-5. Validate: `python C:/Users/oalan/ultimate-agentic-workflow/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready`
+5. Validate: `python <ultimate-agentic-workflow>/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready`
 
 ## Requirement Traceability Matrix
 
@@ -172,7 +172,7 @@ Use the installed `.claude` agent roster (not archived gsd-build):
 
 ## Verification
 
-- `python C:/Users/oalan/ultimate-agentic-workflow/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready` → ok
+- `python <ultimate-agentic-workflow>/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready` → ok
 - Per-packet: focused pytest / doc audit named in packet result
 - Sprint close: `pytest -v --tb=short` + `ruff check .` (stop-gate)
 - Program close: RTM all `done`/`deferred`; final-report.md written

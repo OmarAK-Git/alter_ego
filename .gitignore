@@ -21,29 +21,46 @@ build/
 *.swp
 *.swo
 
-# Environment
+# Environment / secrets
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+**/secrets/
 
 # Local calibration / eval databases (do not commit)
-alter_ego_calibrate_*.db
-alter_ego_eval.db
+*.db
 *.db-journal
 
-# Workflow raw logs / cloned deps
+# Workflow raw logs / cloned deps / tool dumps
 logs/
 .workflow/deps/
+.workflow/**/results/_*.txt
+.workflow/**/results/*_pytest_out.txt
+.workflow/**/results/*_ruff_out.txt
+.workflow/**/results/*_mypy_out.txt
 
-# Generated data
+# Generated data + local scratch metrics (keep scratch/*.py helpers)
 *.jsonl
 temp.json
 temp_window.jsonl
+scratch/**/*.json
+scratch/**/*.jsonl
 
-# OS
+# OS / IDE local
 .DS_Store
 Thumbs.db
+.cursor/
 
-# Pytest
+# Pytest / coverage
 .pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
 
 # Ruff
 .ruff_cache/
@@ -56,6 +73,8 @@ Thumbs.db
 .pytest_*_verify.txt
 .ruff_*_out.txt
 .ruff_*_verify.txt
+eval_output*.txt
 
-# Local (per-machine) Claude settings
+# Local (per-machine) Claude / Codex settings
 .claude/settings.local.json
+.codex/

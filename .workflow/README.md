@@ -17,7 +17,8 @@ T3 accountable runs live here as `.workflow/<slug>/`.
 Validate before execution:
 
 ```bash
-python C:/Users/oalan/ultimate-agentic-workflow/scripts/verify_run.py --run-dir .workflow/<slug>
+# Install/clone ultimate-agentic-workflow separately, then:
+python <ultimate-agentic-workflow>/scripts/verify_run.py --run-dir .workflow/<slug>
 ```
 
 ## State ownership
@@ -31,7 +32,7 @@ Update `state.json` first; sync memory-bank after.
 
 | Slug | Status | Purpose |
 |---|---|---|
-| `2026-07-12-v1-portfolio-ready` | **active** | V1 portfolio-ready: S0–S6 packets + human drift gate before S5 |
+| `2026-07-12-v1-portfolio-ready` | **drained** (S6-EXIT-GATE passed) | V1 portfolio-ready: S0–S6 packets + human drift gate; operator drift research remains open |
 | `2026-07-12-agentic-bootstrap` | complete | Workflow + memory-bank + honest README bootstrap |
 
 ### Autopilot note
