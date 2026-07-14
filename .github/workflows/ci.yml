@@ -29,4 +29,5 @@ jobs:
       - name: Run tests
         env:
           PYTHONPATH: .
+        # Live HTTP smoke is opt-in (`pytest --live`); default suite skips tests/live.
         run: pytest -v --tb=short

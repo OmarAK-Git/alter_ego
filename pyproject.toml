@@ -41,3 +41,6 @@ include = ["core*", "batch*", "worker*", "web*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "live: optional HTTP smoke against localhost:8000 (enable with --live)",
+]

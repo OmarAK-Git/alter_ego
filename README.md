@@ -86,7 +86,8 @@ Authoritative detail: [`memory-bank/progress.md`](memory-bank/progress.md).
 
 ```bash
 pip install -e ".[dev]"
-pytest -v --tb=short
+pytest -v --tb=short          # unit/integration suite (live smoke skipped by default)
+# pytest --live tests/live -v  # optional HTTP smoke — needs free :8000
 
 # Four-container stack — see docs/deployment.md
 docker compose up -d --build
