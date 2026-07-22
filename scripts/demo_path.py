@@ -24,10 +24,10 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session  # noqa: E402
 
-from core.database import Base, SessionLocal, engine
-from core.models import (
+from core.database import Base, SessionLocal, engine  # noqa: E402
+from core.models import (  # noqa: E402
     AlertWorkflowStateModel,
     ContainmentQueueModel,
     DecisionRecordModel,

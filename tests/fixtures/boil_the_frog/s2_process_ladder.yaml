@@ -1,0 +1,35 @@
+# Authoritative gradual ladder — tests + generator read this file; comments are not the contract.
+# Spec: docs/superpowers/specs/2026-07-18-boil-the-frog-invariants-design.md
+seed: 42
+victim_role: Engineer
+baseline_family:
+  - explorer.exe
+  - chrome.exe
+  - teams.exe
+  - git.exe
+  - python.exe
+  - docker.exe
+  - kubectl.exe
+# day_index → allowed process_name (may include ladder_only names outside baseline_family)
+ladder_by_day:
+  0: [git.exe]
+  1: [python.exe]
+  2: [kubectl.exe]
+  3: [kubectl.exe]
+  4: [kubectl.exe]
+  5: [custodian-agent.exe]
+  6: [custodian-agent.exe]
+# Placeholders: {process}, {burst}, {day}
+command_line_by_day:
+  0: "{process} --silent"
+  1: "{process} -v --workdir=/home/eng"
+  2: "{process} get pods -n default"
+  3: "{process} exec -it debug-pod-{burst} -- /bin/sh -c id"
+  4: "{process} apply -f review-manifest-{burst}.yaml --server-side"
+  5: "{process} --collect-logs --dest=/var/tmp/bundle-{burst}.tgz --verbose"
+  6: "{process} --exfil-channel socks5 --retry {burst} --packet-pad=9"
+ramp:
+  early_late_split: thirds
+  spearman_min: 0.60
+  early_late_gap_min: 0.05
+  sharp_distance_floor: 0.50

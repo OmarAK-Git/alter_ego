@@ -134,15 +134,33 @@ async function loadDetail(decisionId) {
     try {
         const res = await fetch(`/api/alerts/${decisionId}`);
         const data = await res.json();
+        currentAttestation = data.attestation || null;
         
         // Populate left pane
         document.getElementById('detail-score').textContent = data.decision.score.toFixed(2);
         document.getElementById('detail-confidence').textContent = (data.decision.confidence * 100).toFixed(0) + '%';
         document.getElementById('detail-state').textContent = data.state.state;
-        
+
+        const attBox = document.getElementById('detail-attestation');
+        if (data.attestation) {
+            const a = data.attestation;
+            const status = a.would_auto_resolve ? 'PASS (would auto-resolve)' : 'FAIL / pending';
+            attBox.textContent =
+                `${status} · quiet=${a.quiet} · attest_ok=${a.attest_ok}` +
+                ` · M_novel=${Number(a.novel_mass_prod).toFixed(3)}` +
+                ` · peak_drift=${Number(a.peak_drift).toFixed(2)}`;
+            attBox.className = a.would_auto_resolve ? '' : 'text-muted';
+        } else {
+            attBox.textContent = 'Unavailable';
+            attBox.className = 'text-muted';
+        }
+
         const contList = document.getElementById('detail-contributions');
         contList.innerHTML = '';
-        data.decision.contributions.sort((a,b) => b.contribution_score - a.contribution_score).forEach(c => {
+        const contribs = Array.isArray(data.decision.contributions)
+            ? data.decision.contributions
+            : [];
+        contribs.sort((a,b) => b.contribution_score - a.contribution_score).forEach(c => {
             contList.innerHTML += `<li>
                 <strong>${c.feature_name}</strong>: +${c.contribution_score.toFixed(2)}
                 <span class="text-muted" style="font-size: 0.8rem; margin-left:8px;">(weight: ${c.confidence_weight})</span>
@@ -201,8 +219,20 @@ async function updateWorkflowState(state) {
     }
 }
 
+let currentAttestation = null;
+
 function showClearModal() {
     clearReasonInput.value = '';
+    const statusEl = document.getElementById('clear-attestation-status');
+    if (currentAttestation) {
+        const a = currentAttestation;
+        const override = !(a.quiet && a.attest_ok);
+        statusEl.textContent = override
+            ? `Attestation FAIL — clearing is allowed but logged as override (quiet=${a.quiet}, attest_ok=${a.attest_ok}).`
+            : `Attestation PASS (quiet ∧ attest).`;
+    } else {
+        statusEl.textContent = '';
+    }
     modal.classList.remove('hidden');
 }
 
@@ -215,11 +245,15 @@ async function submitClearAlert() {
     
     if (!currentDetailDecisionId) return;
     try {
-        await fetch(`/api/alerts/${currentDetailDecisionId}/workflow`, {
+        const res = await fetch(`/api/alerts/${currentDetailDecisionId}/workflow`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ state: 'cleared', clear_reason: reason })
         });
+        const body = await res.json();
+        if (body.attestation_override) {
+            console.warn('Cleared with attestation_override', body.attestation);
+        }
         modal.classList.add('hidden');
         switchView('triage');
     } catch (e) {

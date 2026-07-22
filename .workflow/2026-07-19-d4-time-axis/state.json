@@ -1,0 +1,223 @@
+{
+  "goal": "Fix D4 shadow-read time axis (sim data_window_end, not wall created_at), make blocked shadow miss observable, rewrite C2 + regression, dual promotion_coverage (N=5), then Series D re-sweep after hard gate.",
+  "success_criteria": [
+    "get_latest_shadow_profile as-of on data_window_end; created_at DESC as tie-break only (not as-of filter)",
+    "profile_store audit: promoted_at=builder as_of (sim in eval); Series C shadow_ever=19 evidence for builder deferral",
+    "Blocked miss: WARN via count_shadow_profiles + flag drift_shadow_fallback:no_shadow (no direct ORM in scorer)",
+    "C2 rewritten with distinct versions: red before fix, green after",
+    "Regression: wall-future created_at found; equal data_window_end prefers later created_at",
+    "promotion_coverage_ever + in_window (N=5); serving_profile_missing_days tracked; Series C citation",
+    "Items 1-5 reviewed before Series D; SD6 blocked until explicit approval",
+    "Series D (post-approval): seed 42, v2.2 @ thr=45; drift_source_profile_version engagement 0\u2192nonzero; governance + Not CALIBRATED unless earned"
+  ],
+  "constraints": [
+    "No detection knob changes; no attestation param changes; no YAML writes this packet",
+    "Hard gate: SD0\u2013SD5 reviewed before SD6 Series D sweep",
+    "Attestation YAML hygiene is a separate S6.3 (zero behavioral diff)",
+    "Series D is a new baseline; only allowed C\u2192D claim is D4 engagement count",
+    "Generator seed 42; config v2.2; anomaly_threshold 45.0",
+    "promotion_coverage in-window N=5 (anchor_history_count as days)"
+  ],
+  "risks": [
+    {
+      "risk": "Builder _shadow_builds_during_block still filters shadows by created_at",
+      "approval_required": false,
+      "mitigation": "Deferred with evidence: series_c_d4_engagement_run.log S2 shadow_ever=19 (inventory existed; lookup-only miss). Builder tends over-inclusive (wall created_at vs sim block_start). Reopen if Series D fallback storm with active_shadow_count=0."
+    },
+    {
+      "risk": "promotion_coverage_in_window collapses if promoted_at stamped wall-clock",
+      "approval_required": false,
+      "mitigation": "Builder stamps promoted_at=as_of (sim in eval runner); SD1 audit + SD4 serving_profile_missing_days + axis unit test"
+    },
+    {
+      "risk": "Nondeterministic shadow pick on equal data_window_end rebuilds",
+      "approval_required": false,
+      "mitigation": "Secondary order created_at DESC tie-break (not as-of filter); SD3 unit"
+    },
+    {
+      "risk": "Running Series D before items 1\u20135 review masks incomplete observability",
+      "approval_required": true,
+      "mitigation": "SD6 status=blocked; SD5 chat_gate STOP"
+    },
+    {
+      "risk": "False CALIBRATED claim from engagement-only success",
+      "approval_required": false,
+      "mitigation": "Always write Not CALIBRATED unless skeptic+evidence agree; no illegal C\u2192D P/R deltas"
+    }
+  ],
+  "max_concurrent_agents": 3,
+  "max_total_agents": 16,
+  "active_sprint": "SD",
+  "design_status": "closed",
+  "hard_gate": "items_1_5_before_series_d_sweep",
+  "canonical_projections": {
+    "progress": "memory-bank/progress.md",
+    "tasks": "memory-bank/tasks.md",
+    "active_context": "memory-bank/activeContext.md"
+  },
+  "autopilot": {
+    "style": "uaw-t3-gsd-roles",
+    "agents": {
+      "research": "researcher",
+      "implement": "implementer",
+      "test": "test-runner",
+      "verify": "skeptic-verifier"
+    },
+    "implementation_model": "composer-2.5",
+    "verification_model": "cursor-grok-4.5-high",
+    "gate_run_mode": "chat_gate",
+    "rules": [
+      "Update state.json packet status before memory-bank mirrors",
+      "No config/scoring_config.yaml writes",
+      "C2 must go red (evidence in results/) before SD1 fix lands",
+      "Do not start SD6 without explicit operator approval after SD5",
+      "Series D is a new baseline \u2014 only D4 engagement C\u2192D claim allowed"
+    ],
+    "exit_gates": [
+      "SD5-REVIEW-GATE",
+      "SD-EXIT-GATE"
+    ],
+    "stop_before": "SD-EXIT-GATE"
+  },
+  "design": "docs/superpowers/specs/2026-07-19-d4-time-axis-design.md",
+  "plan_canonical": "docs/superpowers/plans/2026-07-19-d4-time-axis.md",
+  "packets": [
+    {
+      "id": "SD0",
+      "label": "sprint:SD|test|c2-red-first",
+      "objective": "Rewrite C2 to wall-clock/sim-time seam; capture FAIL evidence before any fix",
+      "files_or_sources": [
+        "tests/worker/test_shadow_drift_under_block.py",
+        ".workflow/2026-07-19-d4-time-axis/results/SD0-C2-red.txt"
+      ],
+      "status": "done",
+      "notes": "2026-07-19: C2 seam rewrite + SD0-C2-red.txt FAIL evidence (promoted 0.0 vs shadow 3.0); profile_store untouched"
+    },
+    {
+      "id": "SD1",
+      "label": "sprint:SD|fix|shadow-time-axis",
+      "objective": "get_latest_shadow_profile: filter/order data_window_end; audit all profile_store queries",
+      "files_or_sources": [
+        "worker/profile_store.py",
+        ".workflow/2026-07-19-d4-time-axis/results/SD1-profile-store-audit.md",
+        ".workflow/2026-07-19-d4-time-axis/results/SD1-C2-green.txt"
+      ],
+      "status": "done",
+      "depends_on": [
+        "SD0"
+      ],
+      "notes": "2026-07-19: data_window_end as-of + created_at DESC tie-break; count_shadow_profiles; C2 green; audit written"
+    },
+    {
+      "id": "SD2",
+      "label": "sprint:SD|obs|no-silent-fallback",
+      "objective": "Blocked shadow miss: WARN + drift_shadow_fallback:no_shadow via count_shadow_profiles",
+      "files_or_sources": [
+        "worker/scorer.py",
+        "worker/profile_store.py",
+        "tests/worker/test_shadow_drift_under_block.py"
+      ],
+      "status": "done",
+      "depends_on": [
+        "SD1"
+      ],
+      "notes": "2026-07-19: WARN + drift_shadow_fallback:no_shadow via count_shadow_profiles; 2/2 tests pass"
+    },
+    {
+      "id": "SD3",
+      "label": "sprint:SD|test|regression-future-created-at",
+      "objective": "Regression: wall-future created_at found; equal data_window_end tie-break",
+      "files_or_sources": [
+        "tests/worker/test_shadow_drift_under_block.py"
+      ],
+      "status": "done",
+      "depends_on": [
+        "SD1"
+      ],
+      "notes": "2026-07-19: wall-future + tie-break regressions; verified green at SD5"
+    },
+    {
+      "id": "SD4",
+      "label": "sprint:SD|metric|promotion-coverage",
+      "objective": "Dual promotion_coverage: ever + in-window N=5; verify promoted_at axis; Series D harness skeleton",
+      "files_or_sources": [
+        "scratch/run_series_d_sweep.py",
+        "tests/batch/test_promotion_coverage_metrics.py"
+      ],
+      "status": "done",
+      "depends_on": [
+        "SD1"
+      ],
+      "notes": "2026-07-19: dual coverage + serving_profile_missing_days; 4 unit tests; harness skeleton; no full sweep"
+    },
+    {
+      "id": "SD5-REVIEW-GATE",
+      "label": "sprint:SD|gate|items-1-5-stop",
+      "objective": "Fresh focused verify + summary; STOP for operator approval before Series D",
+      "files_or_sources": [
+        ".workflow/2026-07-19-d4-time-axis/results/SD5-items-1-5-summary.md"
+      ],
+      "status": "done",
+      "depends_on": [
+        "SD0",
+        "SD1",
+        "SD2",
+        "SD3",
+        "SD4"
+      ],
+      "verification": {
+        "scope": "items_1_5_review",
+        "gate_run_mode": "chat_gate",
+        "stop_before_next": "SD6"
+      },
+      "notes": "2026-07-19: ACCEPT-WITH-GAPS; operator OK continue SD6-SD7; stop before EXIT"
+    },
+    {
+      "id": "SD6",
+      "label": "sprint:SD|eval|series-d-sweep",
+      "objective": "Series D seed-42 sweep + metrics JSON + S2 trajectory / both coverages / engagement signal",
+      "files_or_sources": [
+        "scratch/run_series_d_sweep.py",
+        "docs/calibration_series_d_metrics.json"
+      ],
+      "status": "done",
+      "depends_on": [
+        "SD5-REVIEW-GATE"
+      ],
+      "notes": "2026-07-19: engagement 12840 (C=0); P=0.011 R=0.504; fallback 1084 (concern); Not CALIBRATED"
+    },
+    {
+      "id": "SD7",
+      "label": "sprint:SD|docs|governance",
+      "objective": "S6.3 Series D governance + residual/OPS/memory-bank; no detection YAML",
+      "files_or_sources": [
+        "docs/scoring-config-governance-series-d.md",
+        "docs/residual-risk-drift-hypotheses.md"
+      ],
+      "status": "done",
+      "depends_on": [
+        "SD6"
+      ],
+      "notes": "2026-07-19: governance record + residual/OPS/memory-bank; Not CALIBRATED; C→D engagement only"
+    },
+    {
+      "id": "SD-EXIT-GATE",
+      "label": "sprint:SD|gate",
+      "objective": "pytest --ignore=tests/live + ruff + skeptic; close run",
+      "files_or_sources": [
+        ".workflow/2026-07-19-d4-time-axis/results/"
+      ],
+      "status": "done",
+      "depends_on": [
+        "SD7"
+      ],
+      "verification": {
+        "scope": "run_exit",
+        "gate_run_mode": "chat_gate",
+        "verdict": "ACCEPT-WITH-GAPS",
+        "verifier_model": "cursor-grok-4.5-high"
+      },
+      "notes": "2026-07-19 CLOSED: pytest 163 passed + ruff clean (results/exit-gate-fresh-verify.txt, SD-EXIT-ruff.txt). Skeptic ACCEPT-WITH-GAPS -> in-gate scrub of prohibited C->D recall/P/R framing in governance + residual docs -> re-verified CLEARED. Accepted residual: SD5->SD6 ACK only a state.json note; fallback 1084; Not CALIBRATED. final-report.md + SD-EXIT-GATE-skeptic-result.md written."
+    }
+  ]
+}

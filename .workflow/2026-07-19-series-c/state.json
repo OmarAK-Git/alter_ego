@@ -1,0 +1,112 @@
+{
+  "goal": "Series C baseline under R-INTERLOCK: scenario_5 inject + seed-42 sweep + governance; no B→C FP/P/R claim deltas.",
+  "success_criteria": [
+    "inject_scenario_5_patient_cycle + eval_scenario_5 feeds builder",
+    "docs/calibration_series_c_metrics.json written with attribution/§4.7 fields",
+    "governance + residual-risk updated; detection YAML untouched unless evidenced revision",
+    "pytest --ignore=tests/live + ruff green"
+  ],
+  "constraints": [
+    "seed 42; config v2.2 @ thr=45",
+    "B→C cross-series FP/P/R comparisons prohibited",
+    "No silent knob edits",
+    "Headline recall requires attribution"
+  ],
+  "risks": [
+    {
+      "risk": "S5 timing does not exercise QUIET∧ATTEST cycles",
+      "approval_required": false,
+      "mitigation": "Fixture declares quiet≥4d; tests assert gap structure"
+    },
+    {
+      "risk": "False CALIBRATED claim from partial metrics",
+      "approval_required": false,
+      "mitigation": "Always write Not CALIBRATED unless skeptic+evidence agree"
+    }
+  ],
+  "max_concurrent_agents": 1,
+  "max_total_agents": 6,
+  "active_sprint": "SC",
+  "canonical_projections": {
+    "progress": "memory-bank/progress.md",
+    "tasks": "memory-bank/tasks.md",
+    "active_context": "memory-bank/activeContext.md"
+  },
+  "autopilot": {
+    "style": "uaw-t3-gsd-roles",
+    "agents": {
+      "research": "researcher",
+      "implement": "implementer",
+      "test": "test-runner",
+      "verify": "skeptic-verifier"
+    },
+    "implementation_model": "composer-2.5",
+    "verification_model": "cursor-grok-4.5-high",
+    "gate_run_mode": "chat_gate",
+    "rules": [
+      "Update state.json before memory-bank",
+      "No detection YAML edits without evidenced revision packet",
+      "Series C is a new baseline — no B→C delta claims"
+    ],
+    "exit_gates": [
+      "SC-EXIT-GATE"
+    ]
+  },
+  "packets": [
+    {
+      "id": "SC0",
+      "label": "sprint:SC|gen|scenario-5",
+      "objective": "inject_scenario_5_patient_cycle + eval_scenario_5 in builder + tests",
+      "files_or_sources": [
+        "tests/fixtures/boil_the_frog/s5_patient_cycle.yaml",
+        "batch/synthetic/generator.py",
+        "batch/profile_builder/builder.py",
+        "tests/test_generator.py"
+      ],
+      "status": "done",
+      "notes": "Operator approved Approach A 2026-07-19; inject+builder+tests green 2026-07-19"
+    },
+    {
+      "id": "SC1",
+      "label": "sprint:SC|harness|sweep-script",
+      "objective": "Series C sweep harness + report fields (S1–S5)",
+      "files_or_sources": [
+        "scratch/run_series_c_sweep.py"
+      ],
+      "status": "done",
+      "notes": "Harness runnable; full pipeline execution deferred to SC2"
+    },
+    {
+      "id": "SC2",
+      "label": "sprint:SC|eval|execute-sweep",
+      "objective": "Run seed-42 sweep; write docs/calibration_series_c_metrics.json",
+      "files_or_sources": [
+        "docs/calibration_series_c_metrics.json",
+        "scratch/series_c_metrics.json"
+      ],
+      "status": "done",
+      "notes": "PASS 2026-07-19: sweep exit 0; docs/calibration_series_c_metrics.json written. Headline @45: P=0.000301 R=0.008547 F1=0.000582 TP=1 FP=3320 FN=116 TN=16037. Recalls: S1=1.0 S2=0 S3=0 S4=0 S5=0. Extras: active_alerts=1523 auto_resolved=1817 blocked_entities=51 blocked_entity_days~646. NOT CALIBRATED; no B->C FP/P/R delta claims. SC3 deferred to parent."
+    },
+    {
+      "id": "SC3",
+      "label": "sprint:SC|docs|governance",
+      "objective": "Governance record + residual-risk §2.7/§2.1/H11; OPS/memory-bank",
+      "files_or_sources": [
+        "docs/scoring-config-governance-series-c.md",
+        "docs/residual-risk-drift-hypotheses.md"
+      ],
+      "status": "done",
+      "notes": "2026-07-19: governance-series-c.md; residual §2.7/H11 Series C topology update; OPS + progress + activeContext; detection YAML untouched"
+    },
+    {
+      "id": "SC-EXIT-GATE",
+      "label": "sprint:SC|gate",
+      "objective": "pytest + ruff + skeptic; close run",
+      "files_or_sources": [
+        ".workflow/2026-07-19-series-c/results/"
+      ],
+      "status": "done",
+      "notes": "2026-07-19: pytest 154 + ruff clean (test-runner); skeptic ACCEPT-WITH-GAPS; stale H5/1F docs scrubbed; Series C baseline closed Not CALIBRATED"
+    }
+  ]
+}

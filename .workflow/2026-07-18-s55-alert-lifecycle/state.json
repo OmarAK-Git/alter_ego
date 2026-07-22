@@ -1,0 +1,153 @@
+{
+  "goal": "Ship §5.5 R-INTERLOCK: QUIET∧ATTEST auto-resolution + shadow-signal drift under block (D1–D5); C1–C3/Design-1F fixtures; Series C deferred.",
+  "success_criteria": [
+    "Design APPROVED; S6.3 governance for declared §6 params + D5 (no detection YAML)",
+    "SPEC §5.5/§11.5 amended; root SPEC byte-identical",
+    "auto_resolved + builder QUIET∧ATTEST auto-res; analyst-touched exempt; no time-only expiry",
+    "D4: score_event drift_alert reads shadow accumulator under block; baselines promoted",
+    "D5: SLA breach enqueues mandatory analyst review",
+    "C1–C3 + Design 1F + scenario_5 table row; B3b green",
+    "pytest --ignore=tests/live + ruff check . green"
+  ],
+  "constraints": [
+    "No detection weight/threshold YAML edits",
+    "New §6 keys are code defaults this cycle",
+    "R-INTERLOCK: D3 and D4 must both ship",
+    "Series C sweep deferred to follow-on",
+    "Reject R1 time-expiry, R3 full shadow scoring, R5 disable §5.5"
+  ],
+  "risks": [
+    {
+      "risk": "Auto-resolution launders attack mass (P1/P2)",
+      "approval_required": false,
+      "mitigation": "Peak-drift + novel-mass + anchor gates; C3 invariant"
+    },
+    {
+      "risk": "Shipping D4 without D3 recreates Series B deadlock",
+      "approval_required": false,
+      "mitigation": "Exit gate requires both; R-INTERLOCK"
+    },
+    {
+      "risk": "Series C deferred — fleet FP rates unproven",
+      "approval_required": true,
+      "mitigation": "Operator accepted; C1–C3 fixtures; Series C follow-on tracked"
+    }
+  ],
+  "max_concurrent_agents": 1,
+  "max_total_agents": 8,
+  "active_sprint": "S55",
+  "canonical_projections": {
+    "progress": "memory-bank/progress.md",
+    "tasks": "memory-bank/tasks.md",
+    "active_context": "memory-bank/activeContext.md"
+  },
+  "autopilot": {
+    "style": "uaw-t3-gsd-roles",
+    "agents": {
+      "research": "researcher",
+      "implement": "implementer",
+      "test": "test-runner",
+      "verify": "skeptic-verifier"
+    },
+    "implementation_model": "composer-2.5",
+    "verification_model": "cursor-grok-4.5-high",
+    "gate_run_mode": "chat_gate",
+    "rules": [
+      "Update state.json packet status before memory-bank mirrors",
+      "No config/scoring_config.yaml detection knob edits",
+      "D3 and D4 ship together (R-INTERLOCK)",
+      "Series C not in this run"
+    ],
+    "exit_gates": ["S55-EXIT-GATE"]
+  },
+  "packets": [
+    {
+      "id": "S55.0",
+      "label": "sprint:S55|gov|approve-design",
+      "objective": "Mark design APPROVED; write S6.3 governance for declared §6 params + D5 semantics (no YAML)",
+      "files_or_sources": [
+        "docs/superpowers/specs/2026-07-18-s55-blocking-scope-and-alert-lifecycle-design.md",
+        "docs/scoring-config-governance-s55-lifecycle.md",
+        "OPS.md",
+        "memory-bank/activeContext.md"
+      ],
+      "status": "done",
+      "notes": "Operator approved 2026-07-18; governance doc + design status APPROVED"
+    },
+    {
+      "id": "S55.1",
+      "label": "sprint:S55|docs|spec-amend",
+      "objective": "Amend SPEC §5.5/§11.5 for lifecycle×shadow interlock; sync root SPEC.md",
+      "files_or_sources": ["docs/SPEC.md", "SPEC.md"],
+      "status": "done",
+      "notes": "§5.5 R-INTERLOCK + §11.5 attestation/auto_resolved; root SPEC copied"
+    },
+    {
+      "id": "S55.2",
+      "label": "sprint:S55|core|attestation",
+      "objective": "Add auto_resolved enum + novel-mass/attestation helpers + unit tests",
+      "files_or_sources": [
+        "core/schemas/workflow.py",
+        "core/attestation.py",
+        "tests/test_attestation.py"
+      ],
+      "status": "done",
+      "notes": "Code defaults QUIET/ATTEST params; novel_mass + attest helpers"
+    },
+    {
+      "id": "S55.3",
+      "label": "sprint:S55|builder|lifecycle",
+      "objective": "Builder QUIET∧ATTEST auto-res, D5 enqueue, drift-row refresh, audit",
+      "files_or_sources": [
+        "batch/profile_builder/builder.py",
+        "tests/batch/test_alert_lifecycle_auto_resolve.py"
+      ],
+      "status": "done",
+      "notes": "auto_resolve + D1 refresh + D5 audit on escalation"
+    },
+    {
+      "id": "S55.4",
+      "label": "sprint:S55|scorer|shadow-drift",
+      "objective": "D4: drift_alert reads shadow accumulator under block; drift_source_profile_version",
+      "files_or_sources": [
+        "worker/scorer.py",
+        "worker/profile_store.py",
+        "tests/worker/test_shadow_drift_under_block.py"
+      ],
+      "status": "done",
+      "notes": "get_latest_shadow_profile; flag when source differs"
+    },
+    {
+      "id": "S55.5",
+      "label": "sprint:S55|web|attestation-ui",
+      "objective": "Attestation status at clear; S5.6 build-block SLA on mandatory-escalations queue",
+      "files_or_sources": ["web/api.py", "web/static/*", "tests/web"],
+      "status": "done",
+      "notes": "mandatory queue includes build_block; clear logs attestation_override"
+    },
+    {
+      "id": "S55.6",
+      "label": "sprint:S55|test|invariants",
+      "objective": "C1–C3 invariants, Design 1F, scenario_5_patient_cycle table row; preserve B3b",
+      "files_or_sources": [
+        "docs/superpowers/specs/2026-07-18-boil-the-frog-invariants-design.md",
+        "tests/test_boil_the_frog_invariants.py",
+        "tests/test_s55_invariants_c1_c3.py",
+        "tests/fixtures/boil_the_frog/"
+      ],
+      "status": "done",
+      "notes": "C1 pipeline; C3 promote-path with 0<m<alpha_anchor + negative novel-mass lock; Design-1F = Design-1-shaped baseline+FP inject (not C1 alias); scenario_5 table row only; B3b green via BTF suite"
+    },
+    {
+      "id": "S55-EXIT-GATE",
+      "label": "sprint:S55|gate",
+      "objective": "Full pytest + ruff + skeptic; sync memory-bank; Series C logged as follow-on",
+      "files_or_sources": [
+        ".workflow/2026-07-18-s55-alert-lifecycle/results/",
+        "memory-bank/progress.md"
+      ],
+      "status": "done",
+      "notes": "2026-07-19: pytest 148 passed, ruff clean; skeptic ACCEPT-WITH-GAPS (Series-C deferrals only after C3/1F remediations); see results/S55-EXIT-GATE-skeptic-result.md"
+    }
+  ]
+}

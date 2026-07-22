@@ -1,0 +1,71 @@
+{
+  "series": "B",
+  "source": "alter_ego_calibrate_s31.db",
+  "sweep": "BTF-Series-B-2026-07-18-post-s55",
+  "config_version": "2.2",
+  "generator_seed": 42,
+  "anomaly_threshold": 45.0,
+  "semantics": "S2/S3 feed builder; ladder inject; anomaly DecisionRecords auto-open AlertWorkflowState (SPEC §5.5 arming).",
+  "knobs_changed": false,
+  "note": "NOT CALIBRATED. Cross-series FP/P/R vs Series A INVALID. S2 R=0.0 under full four-scenario mix with tooling rollout + §5.5 arming — do NOT reclaim boil-the-frog from this headline. Design 1 fixture B4 remains the only scoped license (see residual-risk §2.6).",
+  "calibrated": {
+    "precision": 0.0004470272686633885,
+    "recall": 0.012195121951219513,
+    "f1": 0.0008624407072013799,
+    "tp": 1,
+    "fp": 2236,
+    "fn": 81,
+    "tn": 10181,
+    "drift_alerts": 87,
+    "active_alert_workflow_rows": 2324,
+    "scenarios": {
+      "scenario_1_sharp_misuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0,
+        "drift_necessary_tp_fraction": 0.0,
+        "pre_absorption_tp_fraction": 1.0
+      },
+      "scenario_2_slow_roll": {
+        "recall": 0.0,
+        "tp": 0,
+        "fn": 35,
+        "drift_necessary_tp_fraction": null,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 1.0,
+        "attack_raised_cumulative_drift_max": 81.72452633958639,
+        "caught_before_absorption_proxy": false
+      },
+      "scenario_3_subtle": {
+        "recall": 0.0,
+        "tp": 0,
+        "fn": 45,
+        "drift_necessary_tp_fraction": null,
+        "pre_absorption_tp_fraction": null
+      },
+      "scenario_4_service_abuse": {
+        "recall": 0.0,
+        "tp": 0,
+        "fn": 1,
+        "drift_necessary_tp_fraction": null,
+        "pre_absorption_tp_fraction": null
+      }
+    }
+  },
+  "design1_fixture_invariants": {
+    "scope": "Design 1 fixture only (7x5, clean baseline, no tooling rollout, seed 42, 1 attack + 1 control + 3 padders)",
+    "A1": "pass",
+    "A2": "pass",
+    "B1": "pass",
+    "B2": "pass",
+    "B3a": "pass",
+    "B3b": "pass_after_s55_alert_arming",
+    "B4": "pass",
+    "claim_licensed_by_B4": "The drift path fires a pre-absorption, drift-necessary alert on an honest slow roll under Design 1 fixture conditions (7×5, clean baseline, seed 42). Full-sweep generalization waits on attribution showing the same property across entities and schedules — Series B calibrated block above shows that property does NOT hold in the four-scenario+tooling mix after §5.5 arming."
+  },
+  "s55_finding": {
+    "cause": "record_decision previously wrote is_anomaly without opening AlertWorkflowState; builder blocks only on AlertWorkflowState in {new,acknowledged,investigating}",
+    "fix": "open_active_alert_if_needed on anomaly + builder drift DecisionRecords",
+    "full_sweep_interaction": "High FP opens 2324 active workflows; S2/S3 scores stay <<45 (max≈16) → recall 0 — build-blocking+FP storm interaction residual"
+  }
+}

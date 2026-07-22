@@ -1,0 +1,96 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.12, pytest-9.0.3, pluggy-1.5.0 -- C:\Users\oalan\scoop\apps\miniconda3\current\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\oalan\alter_ego
+configfile: pyproject.toml
+plugins: anyio-4.10.0, cov-7.1.0
+collecting ... collected 22 items
+
+tests/test_attestation.py::test_declared_defaults_match_design PASSED    [  4%]
+tests/test_attestation.py::test_novel_mass_zero_when_support_covered PASSED [  9%]
+tests/test_attestation.py::test_novel_mass_max_over_dimensions PASSED    [ 13%]
+tests/test_attestation.py::test_novel_mass_process_fraction_only PASSED  [ 18%]
+tests/test_attestation.py::test_peak_drift_ok_strictly_below_threshold PASSED [ 22%]
+tests/test_attestation.py::test_attest_requires_all_three_gates PASSED   [ 27%]
+tests/batch/test_alert_lifecycle_auto_resolve.py::test_auto_resolve_new_when_quiet_attest_and_dwell PASSED [ 31%]
+tests/batch/test_alert_lifecycle_auto_resolve.py::test_acknowledged_exempt_from_auto_resolve PASSED [ 36%]
+tests/batch/test_alert_lifecycle_auto_resolve.py::test_drift_refresh_does_not_stack_workflow_rows PASSED [ 40%]
+tests/worker/test_shadow_drift_under_block.py::test_shadow_drift_under_block_equals_unblocked_accumulator PASSED [ 45%]
+tests/test_s55_invariants_c1_c3.py::test_c1_benign_fp_block_auto_resolves_without_analyst PASSED [ 50%]
+tests/test_s55_invariants_c1_c3.py::test_c3_bounded_laundering_after_auto_resolve PASSED [ 54%]
+tests/test_s55_invariants_c1_c3.py::test_design_1f_fp_injection_deadlock_resolves PASSED [ 59%]
+tests/batch/test_profile_build_block_escalation.py::test_build_block_under_threshold_no_supervisor_escalation PASSED [ 63%]
+tests/batch/test_profile_build_block_escalation.py::test_build_block_over_threshold_emits_supervisor_escalation PASSED [ 68%]
+tests/batch/test_profile_build_block_escalation.py::test_build_block_escalation_without_events_when_over_threshold PASSED [ 72%]
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_staleness_with_active_alert PASSED [ 77%]
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_no_anomaly_required_for_halt_decision PASSED [ 81%]
+tests/web/test_mandatory_escalations.py::test_cleared_alert_removes_from_mandatory_queue PASSED [ 86%]
+tests/web/test_mandatory_escalations.py::test_extend_halt_requires_justification PASSED [ 90%]
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue PASSED [ 95%]
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_build_block_sla PASSED [100%]
+
+============================== warnings summary ===============================
+..\scoop\apps\miniconda3\current\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\oalan\scoop\apps\miniconda3\current\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/batch/test_alert_lifecycle_auto_resolve.py::test_auto_resolve_new_when_quiet_attest_and_dwell
+tests/batch/test_alert_lifecycle_auto_resolve.py::test_acknowledged_exempt_from_auto_resolve
+tests/batch/test_alert_lifecycle_auto_resolve.py::test_drift_refresh_does_not_stack_workflow_rows
+tests/test_s55_invariants_c1_c3.py::test_c1_benign_fp_block_auto_resolves_without_analyst
+tests/test_s55_invariants_c1_c3.py::test_c1_benign_fp_block_auto_resolves_without_analyst
+tests/test_s55_invariants_c1_c3.py::test_design_1f_fp_injection_deadlock_resolves
+tests/test_s55_invariants_c1_c3.py::test_design_1f_fp_injection_deadlock_resolves
+tests/batch/test_profile_build_block_escalation.py::test_build_block_under_threshold_no_supervisor_escalation
+tests/batch/test_profile_build_block_escalation.py::test_build_block_over_threshold_emits_supervisor_escalation
+  C:\Users\oalan\alter_ego\batch\profile_builder\builder.py:570: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    build_timestamp = datetime.utcnow()
+
+tests/batch/test_alert_lifecycle_auto_resolve.py::test_auto_resolve_new_when_quiet_attest_and_dwell
+tests/test_s55_invariants_c1_c3.py::test_c1_benign_fp_block_auto_resolves_without_analyst
+tests/test_s55_invariants_c1_c3.py::test_design_1f_fp_injection_deadlock_resolves
+tests/batch/test_profile_build_block_escalation.py::test_build_block_over_threshold_emits_supervisor_escalation
+tests/batch/test_profile_build_block_escalation.py::test_build_block_escalation_without_events_when_over_threshold
+tests/web/test_mandatory_escalations.py::test_cleared_alert_removes_from_mandatory_queue
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_build_block_sla
+  C:\Users\oalan\scoop\apps\miniconda3\current\Lib\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+tests/batch/test_profile_build_block_escalation.py::test_build_block_escalation_without_events_when_over_threshold
+  C:\Users\oalan\alter_ego\batch\profile_builder\builder.py:477: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    build_timestamp = datetime.utcnow()
+
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_staleness_with_active_alert
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_staleness_with_active_alert
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_no_anomaly_required_for_halt_decision
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_no_anomaly_required_for_halt_decision
+tests/web/test_mandatory_escalations.py::test_cleared_alert_removes_from_mandatory_queue
+tests/web/test_mandatory_escalations.py::test_cleared_alert_removes_from_mandatory_queue
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_build_block_sla
+  C:\Users\oalan\alter_ego\tests\web\test_mandatory_escalations.py:61: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_staleness_with_active_alert
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_no_anomaly_required_for_halt_decision
+tests/web/test_mandatory_escalations.py::test_cleared_alert_removes_from_mandatory_queue
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue
+  C:\Users\oalan\alter_ego\web\api.py:211: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue
+  C:\Users\oalan\alter_ego\web\api.py:288: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue
+  C:\Users\oalan\alter_ego\tests\web\test_mandatory_escalations.py:191: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    assert ext.expires_at > datetime.utcnow()
+
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_build_block_sla
+  C:\Users\oalan\alter_ego\tests\web\test_mandatory_escalations.py:220: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 22 passed, 35 warnings in 1.74s =======================

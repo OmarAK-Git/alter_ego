@@ -12,8 +12,20 @@ import yaml
 from sqlalchemy import and_, desc, select
 from sqlalchemy.orm import Session
 
+from core.attestation import (
+    ANCHOR_HISTORY_COUNT,
+    MIN_DWELL_BUILDS,
+    QUIET_WINDOW_DAYS,
+    attest,
+)
 from core.database import SessionLocal
-from core.models import DecisionRecordModel, ProfileArtifactModel, ResolvedEventModel
+from core.models import (
+    AlertWorkflowStateModel,
+    DecisionRecordModel,
+    ProfileArtifactModel,
+    ResolvedEventModel,
+    log_audit_event,
+)
 from core.schemas.profiles import (
     DEFAULT_EMBEDDING_DIMENSIONALITY,
     DEFAULT_EMBEDDING_MODEL_ID,
@@ -28,6 +40,8 @@ logger = logging.getLogger(__name__)
 ACTIVE_ALERT_STATES = frozenset({"new", "acknowledged", "investigating"})
 BUILD_BLOCK_SUPERVISOR_ESCALATION_FLAG = "profile_build_block_supervisor_escalation"
 SUPERVISOR_ESCALATION_SLA_HOURS = 24
+AUTO_RESOLVED_AUDIT_ACTION = "alert_auto_resolved"
+BUILD_BLOCK_ESCALATION_AUDIT_ACTION = "profile_build_block_mandatory_review"
 
 def extract_role(entity_id: str, entity_type: str) -> str:
     if entity_type == "service_account":
@@ -69,6 +83,254 @@ def _block_days_for_entity(
     return (as_of - earliest_start).total_seconds() / 86400.0
 
 
+def _flags_has_drift_alert(flags) -> bool:
+    if isinstance(flags, dict):
+        return bool(flags.get("drift_alert"))
+    if isinstance(flags, list):
+        return "drift_alert" in flags
+    return False
+
+
+def _entity_is_quiet(db_session: Session, entity_id: str, as_of: datetime) -> bool:
+    """QUIET: no anomaly DecisionRecord for entity within trailing quiet_window_days."""
+    cutoff = as_of - timedelta(days=QUIET_WINDOW_DAYS)
+    recent = (
+        db_session.query(DecisionRecordModel)
+        .filter(
+            DecisionRecordModel.entity_id == entity_id,
+            DecisionRecordModel.is_anomaly.is_(True),
+            DecisionRecordModel.timestamp > cutoff,
+            DecisionRecordModel.timestamp <= as_of,
+        )
+        .first()
+    )
+    return recent is None
+
+
+def _shadow_builds_during_block(
+    db_session: Session, entity_id: str, block_start: datetime
+) -> list[ProfileArtifactModel]:
+    return (
+        db_session.query(ProfileArtifactModel)
+        .filter(
+            ProfileArtifactModel.entity_id == entity_id,
+            ProfileArtifactModel.is_shadow.is_(True),
+            ProfileArtifactModel.created_at >= block_start,
+        )
+        .order_by(ProfileArtifactModel.created_at)
+        .all()
+    )
+
+
+def _min_dwell_satisfied(
+    db_session: Session, entity_id: str, block_start: datetime
+) -> bool:
+    shadows = _shadow_builds_during_block(db_session, entity_id, block_start)
+    return len(shadows) >= MIN_DWELL_BUILDS
+
+
+def _get_anchor_features(
+    db_session: Session, entity_id: str, history_count: int = ANCHOR_HISTORY_COUNT
+) -> dict:
+    """Promoted profile features from history_count promotions back (P_{-n})."""
+    rows = (
+        db_session.query(ProfileArtifactModel)
+        .filter(
+            ProfileArtifactModel.entity_id == entity_id,
+            ProfileArtifactModel.is_shadow.is_(False),
+            ProfileArtifactModel.promoted_at.isnot(None),
+        )
+        .order_by(desc(ProfileArtifactModel.promoted_at))
+        .limit(history_count)
+        .all()
+    )
+    if not rows:
+        return {}
+    # Newest first; anchor is the oldest in the window (P_{-n} or earliest available).
+    anchor = rows[-1]
+    return anchor.features or {}
+
+
+def _get_promoted_features(db_session: Session, entity_id: str) -> dict:
+    row = (
+        db_session.query(ProfileArtifactModel)
+        .filter(
+            ProfileArtifactModel.entity_id == entity_id,
+            ProfileArtifactModel.is_shadow.is_(False),
+            ProfileArtifactModel.promoted_at.isnot(None),
+            ProfileArtifactModel.superseded_at.is_(None),
+        )
+        .first()
+    )
+    return (row.features if row else None) or {}
+
+
+def _get_latest_shadow_features(db_session: Session, entity_id: str) -> dict:
+    row = (
+        db_session.query(ProfileArtifactModel)
+        .filter(
+            ProfileArtifactModel.entity_id == entity_id,
+            ProfileArtifactModel.is_shadow.is_(True),
+        )
+        .order_by(desc(ProfileArtifactModel.created_at))
+        .first()
+    )
+    return (row.features if row else None) or {}
+
+
+def _refresh_or_open_drift_alert(
+    db_session: Session,
+    *,
+    entity_id: str,
+    blocked_entities: set[str],
+    decision_id: str,
+    build_timestamp: datetime,
+    new_accumulator: float,
+    profile_version: str,
+    config: dict,
+    role: str,
+    prev_accumulator: float,
+    norm_drift: float,
+) -> None:
+    """D1 hygiene: refresh existing drift-class workflow row when already blocked."""
+    existing_drift_row = None
+    if entity_id in blocked_entities:
+        active_rows = (
+            db_session.query(AlertWorkflowStateModel)
+            .filter(
+                AlertWorkflowStateModel.entity_id == entity_id,
+                AlertWorkflowStateModel.state.in_(list(ACTIVE_ALERT_STATES)),
+            )
+            .all()
+        )
+        for row in active_rows:
+            dec = db_session.get(DecisionRecordModel, row.decision_id)
+            if dec is not None and _flags_has_drift_alert(dec.flags):
+                existing_drift_row = (row, dec)
+                break
+
+    if existing_drift_row is not None:
+        row, dec = existing_drift_row
+        dec.score = new_accumulator
+        dec.contributions = {"cumulative_drift": new_accumulator}
+        flags = dict(dec.flags) if isinstance(dec.flags, dict) else {"drift_alert": True}
+        flags.update(
+            {
+                "drift_alert": True,
+                "prev_accumulator": prev_accumulator,
+                "norm_drift": norm_drift,
+                "refreshed_at": build_timestamp.isoformat(),
+            }
+        )
+        dec.flags = flags
+        dec.profile_version = profile_version
+        row.updated_at = build_timestamp
+        return
+
+    contributions = {"cumulative_drift": new_accumulator}
+    db_decision = DecisionRecordModel(
+        decision_id=decision_id,
+        event_id="PROFILE_BUILD",
+        entity_id=entity_id,
+        timestamp=build_timestamp,
+        score=new_accumulator,
+        confidence=0.8,
+        profile_version=profile_version,
+        scoring_config_version=config.get("version", "unknown"),
+        contributions=contributions,
+        is_anomaly=True,
+        cohort_used=role,
+        cohort_unsupported=False,
+        flags={
+            "drift_alert": True,
+            "prev_accumulator": prev_accumulator,
+            "norm_drift": norm_drift,
+        },
+    )
+    db_session.add(db_decision)
+    from worker.recorder import open_active_alert_if_needed
+
+    open_active_alert_if_needed(db_session, decision_id, entity_id)
+
+
+def _auto_resolve_quiet_attested_alerts(
+    db_session: Session,
+    blocked_alert_rows: list,
+    as_of: datetime,
+    drift_threshold: float,
+) -> list[str]:
+    """D3: entity-level auto-resolve of `new` rows when QUIET ∧ ATTEST ∧ min_dwell."""
+    entity_alerts: dict[str, list] = {}
+    for row in blocked_alert_rows:
+        entity_alerts.setdefault(row.entity_id, []).append(row)
+
+    resolved_entities: list[str] = []
+    for entity_id, alerts in entity_alerts.items():
+        new_rows = [a for a in alerts if a.state == "new"]
+        if not new_rows:
+            continue
+
+        block_days_alerts = alerts
+        block_start_days = _block_days_for_entity(db_session, block_days_alerts, as_of)
+        # Reconstruct block_start from days approximation is brittle; use earliest decision ts.
+        earliest: datetime | None = None
+        for alert in alerts:
+            dec = db_session.get(DecisionRecordModel, alert.decision_id)
+            start = dec.timestamp if dec is not None else alert.updated_at
+            if earliest is None or start < earliest:
+                earliest = start
+        if earliest is None:
+            continue
+
+        if not _min_dwell_satisfied(db_session, entity_id, earliest):
+            continue
+        if not _entity_is_quiet(db_session, entity_id, as_of):
+            continue
+
+        shadows = _shadow_builds_during_block(db_session, entity_id, earliest)
+        shadow_drifts = [
+            float((s.features or {}).get("cumulative_drift", 0.0)) for s in shadows
+        ]
+        shadow_features = _get_latest_shadow_features(db_session, entity_id)
+        if not shadow_features and shadows:
+            shadow_features = shadows[-1].features or {}
+        promoted_features = _get_promoted_features(db_session, entity_id)
+        anchor_features = _get_anchor_features(db_session, entity_id)
+
+        ok, detail = attest(
+            shadow_features=shadow_features,
+            promoted_features=promoted_features,
+            anchor_features=anchor_features or promoted_features,
+            shadow_drifts_during_block=shadow_drifts,
+            drift_threshold=drift_threshold,
+        )
+        if not ok:
+            continue
+
+        for row in new_rows:
+            row.state = "auto_resolved"
+            row.updated_at = as_of
+            row.clear_reason = "auto_resolved:QUIET∧ATTEST"
+            log_audit_event(
+                db_session,
+                action=AUTO_RESOLVED_AUDIT_ACTION,
+                entity_id=entity_id,
+                details={
+                    "decision_id": row.decision_id,
+                    "attestation": detail,
+                    "block_days": block_start_days,
+                },
+                commit=False,
+            )
+        resolved_entities.append(entity_id)
+        logger.info(
+            "Auto-resolved %d new alert(s) for entity %s (QUIET∧ATTEST)",
+            len(new_rows),
+            entity_id,
+        )
+    return resolved_entities
+
+
 def _emit_build_block_supervisor_escalations(
     db_session: Session,
     blocked_alert_rows: list,
@@ -77,7 +339,7 @@ def _emit_build_block_supervisor_escalations(
     config: dict,
     build_timestamp: datetime,
 ) -> list[str]:
-    """Emit auditable supervisor-escalation decisions for prolonged build blocks."""
+    """Emit auditable supervisor-escalation decisions for prolonged build blocks (D5)."""
     entity_alerts: dict[str, list] = {}
     for row in blocked_alert_rows:
         entity_alerts.setdefault(row.entity_id, []).append(row)
@@ -124,8 +386,20 @@ def _emit_build_block_supervisor_escalations(
                     "block_days": block_days,
                     "max_profile_build_block_days": max_block_days,
                     "sla_hours": SUPERVISOR_ESCALATION_SLA_HOURS,
+                    "mandatory_review": True,
                 },
             )
+        )
+        log_audit_event(
+            db_session,
+            action=BUILD_BLOCK_ESCALATION_AUDIT_ACTION,
+            entity_id=entity_id,
+            details={
+                "decision_id": decision_id,
+                "block_days": block_days,
+                "max_profile_build_block_days": max_block_days,
+            },
+            commit=False,
         )
         escalated.append(entity_id)
     return escalated
@@ -159,7 +433,6 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
     temp_file_recent: Path | None = None
     try:
         # Check for active alerts in the new workflow state model
-        from core.models import AlertWorkflowStateModel
         blocked_alerts_stmt = select(AlertWorkflowStateModel).where(
             AlertWorkflowStateModel.state.in_(list(ACTIVE_ALERT_STATES))
         )
@@ -171,10 +444,15 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         window_start_limit = as_of - timedelta(days=window_days)
         recent_start_limit = as_of - timedelta(days=recent_days)
 
+        # Builder-visible partitions (Design 1 §0.2): production always;
+        # S2/S3/S5 eval partitions feed hist+recent so boil-the-frog absorption is measurable.
+        # S1/S4 remain excluded (sharp / service point attacks).
+        builder_partitions = ("production", "eval_scenario_2", "eval_scenario_3", "eval_scenario_5")
+
         # Historical window (for profile content)
         stmt_hist = select(ResolvedEventModel).where(
             and_(
-                ResolvedEventModel.simulation_partition == "production",
+                ResolvedEventModel.simulation_partition.in_(builder_partitions),
                 ResolvedEventModel.timestamp <= as_of,
                 ResolvedEventModel.timestamp >= window_start_limit
             )
@@ -183,7 +461,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         # Recent window (for drift detection)
         stmt_recent = select(ResolvedEventModel).where(
             and_(
-                ResolvedEventModel.simulation_partition == "production",
+                ResolvedEventModel.simulation_partition.in_(builder_partitions),
                 ResolvedEventModel.timestamp <= as_of,
                 ResolvedEventModel.timestamp >= recent_start_limit
             )
@@ -197,6 +475,19 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         
         if not events_hist:
             build_timestamp = datetime.utcnow()
+            _auto_resolve_quiet_attested_alerts(
+                db_session,
+                blocked_alert_rows,
+                as_of,
+                drift_threshold,
+            )
+            blocked_alert_rows = list(
+                db_session.execute(
+                    select(AlertWorkflowStateModel).where(
+                        AlertWorkflowStateModel.state.in_(list(ACTIVE_ALERT_STATES))
+                    )
+                ).scalars().all()
+            )
             _emit_build_block_supervisor_escalations(
                 db_session,
                 blocked_alert_rows,
@@ -452,28 +743,40 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
             )
             db_session.add(db_profile)
             
-            # Emit Drift Decision if threshold crossed
+            # Emit Drift Decision if threshold crossed (D1: refresh if already blocked)
             if new_accumulator >= drift_threshold:
                 decision_id = f"drift_{profile_version}"
-                contributions={"cumulative_drift": new_accumulator},
-                db_decision = DecisionRecordModel(
-                    decision_id=decision_id,
-                    event_id="PROFILE_BUILD",
+                _refresh_or_open_drift_alert(
+                    db_session,
                     entity_id=entity_id,
-                    timestamp=build_timestamp,
-                    score=new_accumulator,
-                    confidence=0.8, # Static confidence for drift engine
+                    blocked_entities=blocked_entities,
+                    decision_id=decision_id,
+                    build_timestamp=build_timestamp,
+                    new_accumulator=new_accumulator,
                     profile_version=profile_version,
-                    scoring_config_version=config.get("version", "unknown"),
-                    contributions=contributions,
-                    is_anomaly=True,
-                    cohort_used=rec["role"],
-                    cohort_unsupported=False,
-                    flags={"drift_alert": True, "prev_accumulator": prev_accumulator, "norm_drift": norm_drift}
+                    config=config,
+                    role=rec["role"],
+                    prev_accumulator=prev_accumulator,
+                    norm_drift=norm_drift,
                 )
-                db_session.add(db_decision)
 
             count += 1
+
+        # D3 — auto-resolve new rows when QUIET ∧ ATTEST ∧ min_dwell (entity-level)
+        _auto_resolve_quiet_attested_alerts(
+            db_session,
+            blocked_alert_rows,
+            as_of,
+            drift_threshold,
+        )
+        # Re-read active blocks after auto-resolution for SLA escalation.
+        blocked_alert_rows = list(
+            db_session.execute(
+                select(AlertWorkflowStateModel).where(
+                    AlertWorkflowStateModel.state.in_(list(ACTIVE_ALERT_STATES))
+                )
+            ).scalars().all()
+        )
 
         _emit_build_block_supervisor_escalations(
             db_session,

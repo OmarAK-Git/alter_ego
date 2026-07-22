@@ -1,34 +1,32 @@
 # Tasks
 
-**Canonical T3 state:** `.workflow/2026-07-12-v1-portfolio-ready/state.json`
+**Canonical T3 state:** `.workflow/2026-07-19-d4-time-axis/state.json`
 
 ## Autopilot
 
-**Next runnable:** none — program drained (all S0–S6 packets + gates `done`/`wontfix`)  
-**Active sprint:** S6 (closed)
-
-## Done
-
-### S0–S4 + gates
-- [x] S0–S4 + EXIT-GATEs + HUMAN-DRIFT-RESEARCH
-
-### S5
-- [x] S5.1–S5.12
-- [x] **S5-EXIT-GATE** — chat_gate PASS; `results/S5-EXIT-GATE-verifier-result.md`
-
-### S6
-- [x] S6.1 — `docs/hardening-sweep-checklist.md`
-- [x] S6.2 — `docs/residual-risk-drift-hypotheses.md`
-- [x] S6.3 — OPS standing rule (sweep + governance)
-- [x] Align `DEFAULT_EMBEDDING_INPUT_NORMALIZER_VERSION` with runtime (`1.0-char-3gram-hash-128`)
-- [x] Google / Vertex provider path on `RealLLMProvider` (`GOOGLE_API_KEY`)
-- [x] **S6-EXIT-GATE** — chat_gate PASS; pytest 121 + ruff clean + verify_run ok; `results/S6-EXIT-GATE-verifier-result.md`
+**Active sprint:** SD (D4 time-axis + Series D)  
+**Next runnable:** `SD-EXIT-GATE` — **blocked** (operator stop-before-gate)  
+**Stop before:** `SD-EXIT-GATE`  
+**Design status:** executing; SD0–SD7 done
 
 ## In queue
 
-- none — program drain complete
+- [x] **SD0** — C2 red-first (seam rewrite; no fix)
+- [x] **SD1** — Fix `get_latest_shadow_profile` sim-time axis + audit
+- [x] **SD2** — No silent fallback (WARN + flag)
+- [x] **SD3** — Future-`created_at` regression
+- [x] **SD4** — Dual `promotion_coverage` (N=5) + Series D harness skeleton
+- [x] **SD5-REVIEW-GATE** — items 1–5 STOP — **ready_for_review** (ACCEPT-WITH-GAPS)
+- [x] **SD6** — Series D sweep (DONE_WITH_CONCERNS; Not CALIBRATED)
+- [x] **SD7** — Series D governance
+- [ ] **SD-EXIT-GATE** — (**blocked** — operator stop-before-gate)
 
-## Later (operator)
+## Later (operator / separate)
 
-- [ ] Human drift research → optional new sweep per checklist (`docs/residual-risk-drift-hypotheses.md`)
-- [x] Empirical S5.7 LLM determinism — executed 2026-07-14 (Vertex `gemini-3.5-flash`); **not** byte-identical → lineage rule confirmed
+- [ ] Attestation YAML hygiene S6.3 (zero behavioral diff; out of this packet)
+
+## Prior drained
+
+- Series C — `.workflow/2026-07-19-series-c/` EXIT ACCEPT-WITH-GAPS; Not CALIBRATED
+- S55 R-INTERLOCK — drained
+- V1 portfolio-ready — drained

@@ -85,6 +85,11 @@
                         </div>
 
                         <div class="card mt-4">
+                            <h3>Shadow Attestation (block era)</h3>
+                            <p id="detail-attestation" class="text-muted">--</p>
+                        </div>
+
+                        <div class="card mt-4">
                             <h3>Feature Contributions</h3>
                             <ul id="detail-contributions" class="contribution-list">
                                 <!-- Populated by JS -->
@@ -153,6 +158,7 @@
         <div class="modal-content">
             <h3>Clear Alert</h3>
             <p>Please provide a reason for clearing this alert.</p>
+            <p id="clear-attestation-status" class="text-muted" style="font-size:0.85rem;"></p>
             <textarea id="clear-reason-input" rows="4" placeholder="Enter reason..."></textarea>
             <div class="modal-actions">
                 <button id="btn-cancel-clear" class="btn secondary">Cancel</button>
@@ -161,6 +167,6 @@
         </div>
     </div>
 
-    <script type="module" src="/static/app.js?v=3"></script>
+    <script type="module" src="/static/app.js?v=4"></script>
 </body>
 </html>

@@ -1,0 +1,40 @@
+# T-PATIENT: same ladder as s2_process_ladder.yaml, split across QUIET∧ATTEST windows.
+# Spec: docs/superpowers/specs/2026-07-18-boil-the-frog-invariants-design.md §0.2
+# Schedule (Approach A / Series C):
+#   rung_segments [[0,1] | quiet≥4d in-family | [2,3] | quiet≥4d | [4,5,6]]
+#   1 calendar day per ladder step; quiet_days between segments (≥ quiet_window_days=3).
+#   Attack: ladder procs, scenario_5_patient_cycle, partition eval_scenario_5.
+#   Quiet: baseline_family only, is_malicious=False, partition eval_scenario_5 (feeds builder).
+seed: 42
+victim_role: Engineer
+s2_ladder_ref: s2_process_ladder.yaml
+quiet_days: 4
+rung_segments:
+  - [0, 1]
+  - [2, 3]
+  - [4, 5, 6]
+# Embedded ladder semantics (must stay aligned with s2_process_ladder.yaml)
+baseline_family:
+  - explorer.exe
+  - chrome.exe
+  - teams.exe
+  - git.exe
+  - python.exe
+  - docker.exe
+  - kubectl.exe
+ladder_by_day:
+  0: [git.exe]
+  1: [python.exe]
+  2: [kubectl.exe]
+  3: [kubectl.exe]
+  4: [kubectl.exe]
+  5: [custodian-agent.exe]
+  6: [custodian-agent.exe]
+command_line_by_day:
+  0: "{process} --silent"
+  1: "{process} -v --workdir=/home/eng"
+  2: "{process} get pods -n default"
+  3: "{process} exec -it debug-pod-{burst} -- /bin/sh -c id"
+  4: "{process} apply -f review-manifest-{burst}.yaml --server-side"
+  5: "{process} --collect-logs --dest=/var/tmp/bundle-{burst}.tgz --verbose"
+  6: "{process} --exfil-channel socks5 --retry {burst} --packet-pad=9"

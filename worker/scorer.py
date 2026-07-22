@@ -565,7 +565,30 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
     # This is deliberate: a sustained high-drift entity trips the alarm at ~2.25
     # accumulated drift units, well before the 5-unit "full" threshold. The cap
     # and threshold are intentionally asymmetric to give drift early-warning power.
+    #
+    # S55 D4: while entity is build-blocked, read cumulative_drift from latest
+    # shadow profile; all other features stay on the promoted profile.
     drift_accum = profile.features.get("cumulative_drift", 0.0)
+    drift_source_version = profile.profile_version
+    if entity_has_active_uncleared_alert(db, resolved_event.entity_id):
+        store = ProfileStore(db)
+        shadow = store.get_latest_shadow_profile(
+            resolved_event.entity_id, as_of=resolved_event.timestamp
+        )
+        if shadow is not None:
+            drift_accum = shadow.features.get("cumulative_drift", 0.0)
+            drift_source_version = shadow.profile_version
+            if drift_source_version != profile.profile_version:
+                flags.append(f"drift_source_profile_version:{drift_source_version}")
+        else:
+            active_shadow_count = store.count_shadow_profiles(resolved_event.entity_id)
+            logger.warning(
+                "drift_shadow_fallback entity_id=%s as_of=%s active_shadow_count=%s",
+                resolved_event.entity_id,
+                resolved_event.timestamp,
+                active_shadow_count,
+            )
+            flags.append("drift_shadow_fallback:no_shadow")
     drift_threshold = config.get("drift_threshold", 5.0)
     weight_drift = features_config.get("drift_alert", {}).get("weight", 100.0)
     score_drift = 0.0

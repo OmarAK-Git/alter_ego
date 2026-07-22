@@ -1,7 +1,7 @@
 import json
 import random
 from datetime import datetime, timedelta
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional, Set
 import uuid
 
 from core.schemas.events import Event, AuthEventData, ProcessEventData
@@ -183,34 +183,61 @@ class EventGenerator:
         return events, labels
 
     def inject_scenario_2_slow_roll(self, events: List[Event], labels: List[Dict], start_ts: datetime) -> Tuple[List[Event], List[Dict]]:
-        # Gradual shift over a week
-        entity = self.rng.choice([e for e in self.entities.values() if e.entity_type == "human" and e.role == "Engineer"])
-        
+        """Gradual in-family → mild ladder_only ramp per s2_process_ladder.yaml."""
+        from pathlib import Path
+        import yaml
+
+        ladder_path = (
+            Path(__file__).resolve().parents[2]
+            / "tests"
+            / "fixtures"
+            / "boil_the_frog"
+            / "s2_process_ladder.yaml"
+        )
+        with open(ladder_path, encoding="utf-8") as f:
+            ladder = yaml.safe_load(f)
+        ladder_by_day = {int(k): list(v) for k, v in ladder["ladder_by_day"].items()}
+        cmd_by_day = {int(k): v for k, v in ladder["command_line_by_day"].items()}
+
+        entity = self.rng.choice(
+            [e for e in self.entities.values() if e.entity_type == "human" and e.role == "Engineer"]
+        )
+
         current_ts = start_ts
-        for step in range(7): # 7 days
+        for step in range(7):
             current_ts += timedelta(days=1)
-            for burst in range(5): # 5 events per day
+            procs = ladder_by_day[step]
+            cmd_tmpl = cmd_by_day[step]
+            # Gradual hour drift within / just past shift (not a 3AM cliff)
+            hour = min(23, entity.base_shift_hour + min(step, 3))
+            for burst in range(5):
                 event_id = str(uuid.UUID(int=self.rng.getrandbits(128), version=4))
-                shifted_ts = current_ts.replace(hour=min(23, entity.base_shift_hour + step), minute=burst*10)
-                
-                events.append(Event(
-                    event_id=event_id,
-                    timestamp=shifted_ts,
-                    event_type="process",
-                    raw_entity_id=entity.entity_id,
-                    simulation_partition="eval_scenario_2",
-                    event_data=ProcessEventData(
-                        process_name="powershell.exe",
-                        command_line=f"powershell.exe -EncodedCommand XYZ{step}_{burst}",
-                        endpoint_id=entity.primary_endpoint
+                process_name = procs[burst % len(procs)]
+                command_line = cmd_tmpl.format(process=process_name, burst=burst, day=step)
+                shifted_ts = current_ts.replace(hour=hour, minute=burst * 10)
+
+                events.append(
+                    Event(
+                        event_id=event_id,
+                        timestamp=shifted_ts,
+                        event_type="process",
+                        raw_entity_id=entity.entity_id,
+                        simulation_partition="eval_scenario_2",
+                        event_data=ProcessEventData(
+                            process_name=process_name,
+                            command_line=command_line,
+                            endpoint_id=entity.primary_endpoint,
+                        ),
                     )
-                ))
-                labels.append({
-                    "event_id": event_id,
-                    "is_malicious": True,
-                    "scenario": "scenario_2_slow_roll"
-                })
-            
+                )
+                labels.append(
+                    {
+                        "event_id": event_id,
+                        "is_malicious": True,
+                        "scenario": "scenario_2_slow_roll",
+                    }
+                )
+
         events.sort(key=lambda x: x.timestamp)
         return events, labels
 
@@ -271,6 +298,109 @@ class EventGenerator:
             "scenario": "scenario_4_service_abuse"
         })
         
+        events.sort(key=lambda x: x.timestamp)
+        return events, labels
+
+    def inject_scenario_5_patient_cycle(
+        self,
+        events: List[Event],
+        labels: List[Dict],
+        start_ts: datetime,
+        exclude_entity_ids: Optional[Set[str]] = None,
+    ) -> Tuple[List[Event], List[Dict]]:
+        """T-PATIENT: S2 ladder split across QUIET∧ATTEST quiet windows (s5_patient_cycle.yaml)."""
+        from pathlib import Path
+        import yaml
+
+        fixture_path = (
+            Path(__file__).resolve().parents[2]
+            / "tests"
+            / "fixtures"
+            / "boil_the_frog"
+            / "s5_patient_cycle.yaml"
+        )
+        with open(fixture_path, encoding="utf-8") as f:
+            fixture = yaml.safe_load(f)
+
+        ladder_by_day = {int(k): list(v) for k, v in fixture["ladder_by_day"].items()}
+        cmd_by_day = {int(k): v for k, v in fixture["command_line_by_day"].items()}
+        baseline_family = list(fixture["baseline_family"])
+        quiet_days = int(fixture["quiet_days"])
+        rung_segments = [list(seg) for seg in fixture["rung_segments"]]
+
+        candidates = [
+            e
+            for e in self.entities.values()
+            if e.entity_type == "human" and e.role == "Engineer"
+        ]
+        if exclude_entity_ids:
+            candidates = [e for e in candidates if e.entity_id not in exclude_entity_ids]
+        if not candidates:
+            raise ValueError("no Engineer victims available after exclude_entity_ids")
+        entity = self.rng.choice(candidates)
+
+        current_ts = start_ts
+        for seg_idx, segment in enumerate(rung_segments):
+            if seg_idx > 0:
+                for _ in range(quiet_days):
+                    current_ts += timedelta(days=1)
+                    hour = entity.base_shift_hour
+                    for burst in range(5):
+                        event_id = str(
+                            uuid.UUID(int=self.rng.getrandbits(128), version=4)
+                        )
+                        process_name = baseline_family[burst % len(baseline_family)]
+                        shifted_ts = current_ts.replace(hour=hour, minute=burst * 10)
+                        events.append(
+                            Event(
+                                event_id=event_id,
+                                timestamp=shifted_ts,
+                                event_type="process",
+                                raw_entity_id=entity.entity_id,
+                                simulation_partition="eval_scenario_5",
+                                event_data=ProcessEventData(
+                                    process_name=process_name,
+                                    command_line=f"{process_name} --silent",
+                                    endpoint_id=entity.primary_endpoint,
+                                ),
+                            )
+                        )
+                        # Quiet: not malicious — omit GT label (feeds builder via partition)
+
+            for day_index in segment:
+                current_ts += timedelta(days=1)
+                procs = ladder_by_day[int(day_index)]
+                cmd_tmpl = cmd_by_day[int(day_index)]
+                hour = min(23, entity.base_shift_hour + min(int(day_index), 3))
+                for burst in range(5):
+                    event_id = str(uuid.UUID(int=self.rng.getrandbits(128), version=4))
+                    process_name = procs[burst % len(procs)]
+                    command_line = cmd_tmpl.format(
+                        process=process_name, burst=burst, day=int(day_index)
+                    )
+                    shifted_ts = current_ts.replace(hour=hour, minute=burst * 10)
+                    events.append(
+                        Event(
+                            event_id=event_id,
+                            timestamp=shifted_ts,
+                            event_type="process",
+                            raw_entity_id=entity.entity_id,
+                            simulation_partition="eval_scenario_5",
+                            event_data=ProcessEventData(
+                                process_name=process_name,
+                                command_line=command_line,
+                                endpoint_id=entity.primary_endpoint,
+                            ),
+                        )
+                    )
+                    labels.append(
+                        {
+                            "event_id": event_id,
+                            "is_malicious": True,
+                            "scenario": "scenario_5_patient_cycle",
+                        }
+                    )
+
         events.sort(key=lambda x: x.timestamp)
         return events, labels
 

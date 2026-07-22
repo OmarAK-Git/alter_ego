@@ -198,15 +198,22 @@ def verify_audit_log_chain(
     )
 
 
-def log_audit_event(db, action: str, entity_id: str | None = None, details: dict | None = None) -> AuditLogModel:
+def log_audit_event(
+    db,
+    action: str,
+    entity_id: str | None = None,
+    details: dict | None = None,
+    *,
+    commit: bool = True,
+) -> AuditLogModel:
     from sqlalchemy import desc
-    
+
     if details is None:
         details = {}
-        
+
     prev_log = db.query(AuditLogModel).order_by(desc(AuditLogModel.log_id)).first()
     prev_hash = prev_log.compute_hash() if prev_log else None
-    
+
     new_log = AuditLogModel(
         action=action,
         entity_id=entity_id,
@@ -214,8 +221,9 @@ def log_audit_event(db, action: str, entity_id: str | None = None, details: dict
         previous_log_hash=prev_hash
     )
     db.add(new_log)
-    db.commit()
-    db.refresh(new_log)
+    if commit:
+        db.commit()
+        db.refresh(new_log)
     return new_log
 
 class EvalGroundTruthModel(Base):
@@ -247,7 +255,8 @@ class AlertWorkflowStateModel(Base):
     __tablename__ = "alert_workflow_state"
     decision_id = Column(String, primary_key=True)
     entity_id = Column(String, nullable=False, index=True)
-    state = Column(String, nullable=False, default="new") # new, acknowledged, investigating, cleared
+    # new | acknowledged | investigating | cleared | auto_resolved
+    state = Column(String, nullable=False, default="new")
     assignee = Column(String, nullable=True)
     clear_reason = Column(String, nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

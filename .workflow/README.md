@@ -32,6 +32,10 @@ Update `state.json` first; sync memory-bank after.
 
 | Slug | Status | Purpose |
 |---|---|---|
+| `2026-07-19-d4-time-axis` | **open** (SD0–SD7 done; SD-EXIT-GATE blocked — operator stop-before-gate) | D4 shadow sim-time axis + Series D re-sweep + governance |
+| `2026-07-19-series-c` | **drained** (EXIT ACCEPT-WITH-GAPS) | Series C: R-INTERLOCK baseline + scenario_5; Not CALIBRATED |
+| `2026-07-18-s55-alert-lifecycle` | **drained** (EXIT ACCEPT-WITH-GAPS) | §5.5 R-INTERLOCK: alert lifecycle × shadow-signal (D1–D5) |
+| `2026-07-18-boil-the-frog-invariants` | closed (Series B) | Design 1 invariants + BTF claim hygiene |
 | `2026-07-12-v1-portfolio-ready` | **drained** (S6-EXIT-GATE passed) | V1 portfolio-ready: S0–S6 packets + human drift gate; operator drift research remains open |
 | `2026-07-12-agentic-bootstrap` | complete | Workflow + memory-bank + honest README bootstrap |
 

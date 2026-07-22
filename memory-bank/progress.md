@@ -1,9 +1,9 @@
 # Progress
 
-**Updated:** 2026-07-12  
+**Updated:** 2026-07-19  
 **Plan authority:** Honest merge of `docs/SPEC.md` (Phase 0–4, UI, threat model) + `docs/SPEC_V3.md` (§7 reopen gates, §9 portfolio). Doc revisions v2/v3 ≠ product versions; product scope remains **v1**.
 
-**T3 autopilot (canonical):** `.workflow/2026-07-12-v1-portfolio-ready/` — packet IDs `S0.1`…`S6.3` + `HUMAN-DRIFT-RESEARCH` live in `state.json`. This file is the human roadmap; **update `state.json` first** when executing. Validate: `python <ultimate-agentic-workflow>/scripts/verify_run.py --run-dir .workflow/2026-07-12-v1-portfolio-ready`
+**T3 autopilot (canonical):** `.workflow/2026-07-19-d4-time-axis/` — SD0–SD7 + **SD-EXIT-GATE CLOSED** 2026-07-19 (ACCEPT-WITH-GAPS; pytest 163, ruff clean; in-gate scrub of prohibited C→D framing). Prior drained: Series C, S55, v1 portfolio.
 
 ## Decisions locked (2026-07-12)
 
@@ -33,6 +33,42 @@ Source: `docs/calibration_final_metrics.json` (S3.1 re-sweep, seed 42; do not tr
 - Per-scenario recall: S1 **1.0** · S2 **1.0** (35/35) · S3 **0.667** (15 FN) · S4 **1.0**
 - PR-curve best-F1 **thr=55** (P 0.041, R 0.585, FP 1136) — diagnostic only, **not applied**
 - **Not CALIBRATED.** Residual note: `docs/phase2-s3-operating-point.md`
+- **S2 boil-the-frog claim retracted (2026-07-18):** R=1.0 is Series A harness artifact — see `docs/residual-risk-drift-hypotheses.md` §2.6 / H11; invariants in `tests/test_boil_the_frog_invariants.py` (A1/A2/B2 red)
+
+## Follow-on — Series C (post §5.5 R-INTERLOCK)
+
+**Status (2026-07-19):** Sweep executed — `.workflow/2026-07-19-series-c/`. Artifact: `docs/calibration_series_c_metrics.json`. Governance: `docs/scoring-config-governance-series-c.md`.
+
+| Item | Status |
+|---|---|
+| Full Series C sweep under QUIET∧ATTEST + D4 | **done** (NOT CALIBRATED; S2/S5 R=0; promotion_coverage=1.0) |
+| `scenario_5_patient_cycle` inject | **done** |
+| YAML write of attestation knobs | **deferred** (still code defaults) |
+
+**Do not** cite B→C FP/P/R deltas. B4 remains the only scoped boil-the-frog license.
+
+## Follow-on — Series D (post D4 time-axis fix)
+
+**Status (2026-07-19):** Sweep executed — `.workflow/2026-07-19-d4-time-axis/`. Artifact: `docs/calibration_series_d_metrics.json`. Governance: `docs/scoring-config-governance-series-d.md`.
+
+| Item | Status |
+|---|---|
+| Full Series D sweep under D4 as-of fix | **done** (NOT CALIBRATED; S2 R=0.714; D4 engagement=12840) |
+| Dual promotion_coverage (ever + in_window N=5) | **done** (ever=1.0; in_window=0.413) |
+| YAML write of attestation knobs | **deferred** (still code defaults; separate S6.3 hygiene) |
+
+**Do not** cite C→D FP/P/R deltas. Only permitted C→D claim: D4 engagement 0→12840. Concerns: fallback storm (1084), P≈0.011 / FP=5432.
+
+## Follow-on (not started) — Design 2 + attribution governance
+
+Tracked under `.workflow/2026-07-18-boil-the-frog-invariants/` packet `BTF1.1`:
+
+1. Lift Design 2 sweep-report fields: `early_below_threshold_fraction`, `drift_necessary_tp_fraction`, `attack_raised_cumulative_drift`, plus `caught_before_absorption` / `absorbed` (predicates in Design 1 spec §1).
+2. **S6.3 generalization:** any headline recall claim requires attribution decomposition showing TP signal is causally traceable to the injected attack (would have caught Phase 2B embedding-mock artifact and Series A S2 overstatement).
+3. **§5.5 R-INTERLOCK (S55 — EXIT closed 2026-07-19):** design APPROVED; D1–D5 + C1–C3/Design-1F in `.workflow/2026-07-18-s55-alert-lifecycle/` (skeptic ACCEPT-WITH-GAPS: Series-C deferrals only; pytest 148). Detection YAML untouched. Governance: `docs/scoring-config-governance-s55-lifecycle.md`.
+4. **Design 1 fixture limitation (documented):** fixture all-green has **no FP storm by construction** — Design 1F + C1 cover the deadlock companion; fixture green ≠ full-sweep evidence.
+
+Do not treat Series B headline metrics as characteristic rates until Series C under R-INTERLOCK.
 
 ## Working config
 

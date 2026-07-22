@@ -1,0 +1,113 @@
+{
+  "goal": "Honest SPEC §6.4 boil-the-frog invariants: retract artifactual S2 claim; decide S2/S3 partition semantics; ship Design 1 always-on failing tests; defer Design 2 metric-contract fields.",
+  "success_criteria": [
+    "residual-risk-drift-hypotheses.md §1/§2.6/H11 retract S2 boil-the-frog overstatement with evidence pointers",
+    "Partition semantics for S2/S3 builder visibility recorded in Design 1 spec with rationale",
+    "docs/superpowers/specs/<date>-boil-the-frog-invariants-design.md approved",
+    "tests/test_boil_the_frog_invariants.py Layer A+B always-on under default pytest; expected red until remediation approved",
+    "Design 2 metric-contract + attribution governance logged as follow-on only (not implemented)",
+    "No production/generator/partition code changes in this run without separate remediation approval"
+  ],
+  "constraints": [
+    "Execute Steps 0→1→2→3→4 in order; stop for operator confirm after Step 0+1 before writing the Design 1 spec",
+    "Claim retraction first; tests expose overstatement; do not green-wash",
+    "No golden-file score dumps (Design 3 rejected)",
+    "Design 2 deferred; log only in Step 4",
+    "No weight/threshold YAML changes"
+  ],
+  "risks": [
+    {
+      "risk": "Partition decision conflicts with S1.1 eval-integrity tests",
+      "approval_required": true,
+      "mitigation": "Record decision in Design 1 spec; remediation packet separately updates S1.1 asserts if builder includes S2/S3"
+    },
+    {
+      "risk": "Layer B fixture too heavy for default pytest",
+      "approval_required": false,
+      "mitigation": "Minimal in-memory sqlite; no tooling rollout; seed-fixed; seconds not minutes"
+    }
+  ],
+  "max_concurrent_agents": 1,
+  "max_total_agents": 4,
+  "active_sprint": "BTF0",
+  "canonical_projections": {
+    "progress": "memory-bank/progress.md",
+    "tasks": "memory-bank/tasks.md",
+    "active_context": "memory-bank/activeContext.md"
+  },
+  "autopilot": {
+    "style": "uaw-t3-gsd-roles",
+    "agents": {
+      "research": "researcher",
+      "implement": "implementer",
+      "test": "test-runner",
+      "verify": "skeptic-verifier"
+    },
+    "implementation_model": "composer-2.5",
+    "verification_model": "cursor-grok-4.5-high",
+    "gate_run_mode": "chat_gate",
+    "rules": [
+      "Update state.json packet status before memory-bank mirrors",
+      "Do not write Design 1 spec until operator confirms Step 0 edits + Step 1 partition decision",
+      "Step 3: failing tests only — no remediation without approval",
+      "Step 4: log follow-on only"
+    ],
+    "exit_gates": ["BTF-EXIT-GATE"]
+  },
+  "packets": [
+    {
+      "id": "BTF0.0",
+      "label": "sprint:BTF0|docs|claim-retraction",
+      "objective": "Demote S2 boil-the-frog overstatement in residual-risk-drift-hypotheses.md (§1, §2.6, H11; H5 honesty)",
+      "files_or_sources": ["docs/residual-risk-drift-hypotheses.md"],
+      "status": "done",
+      "notes": "2026-07-18: claim retraction complete; awaiting operator confirm before Step 1 lock + Step 2 spec"
+    },
+    {
+      "id": "BTF0.1",
+      "label": "sprint:BTF0|spec|partition-decision",
+      "objective": "Record S2/S3 builder-visibility partition decision with rationale (operator confirm)",
+      "files_or_sources": ["docs/superpowers/specs/2026-07-18-boil-the-frog-invariants-design.md"],
+      "status": "done",
+      "notes": "Locked in Design 1 spec §0: S2/S3 feed builder; operational caught_before_absorption / absorbed; scenario table; Series A/B discontinuity"
+    },
+    {
+      "id": "BTF0.2",
+      "label": "sprint:BTF0|spec|design-1",
+      "objective": "Write Design 1 boil-the-frog invariants spec with Layer A/B amendments",
+      "files_or_sources": ["docs/superpowers/specs/2026-07-18-boil-the-frog-invariants-design.md"],
+      "status": "done",
+      "notes": "Amended: padding cohort, declared constants, pinned A2, B1↔B3; Step 3 executed"
+    },
+    {
+      "id": "BTF1.0",
+      "label": "sprint:BTF1|test|failing-invariants",
+      "objective": "Implement tests/test_boil_the_frog_invariants.py Layer A+B always-on; expect red",
+      "files_or_sources": [
+        "tests/test_boil_the_frog_invariants.py",
+        "tests/fixtures/boil_the_frog/s2_process_ladder.yaml"
+      ],
+      "status": "done",
+      "notes": "2026-07-18: 3 failed (A1,A2,B2), 3 passed (A3,B1,B3 vacuous). No production fixes."
+    },
+    {
+      "id": "BTF1.1",
+      "label": "sprint:BTF1|debt|design-2-follow-on",
+      "objective": "Log Design 2 metric-contract fields + attribution governance rule as tracked follow-on",
+      "files_or_sources": ["memory-bank/progress.md", "OPS.md"],
+      "status": "done",
+      "notes": "Logged only; not implemented"
+    },
+    {
+      "id": "BTF-EXIT-GATE",
+      "label": "sprint:BTF1|gate",
+      "objective": "Remediation + Series B + B4 observation; B3 post-absorption finding retained",
+      "files_or_sources": [
+        "docs/calibration_series_b_metrics.json",
+        "docs/scoring-config-governance-btf-series-b.md"
+      ],
+      "status": "done",
+      "notes": "A1/A2/B1/B2/B4 green; B3 red (post-absorption day-6 M>α) — not tuned. Series B baseline established. Knobs unchanged."
+    }
+  ]
+}

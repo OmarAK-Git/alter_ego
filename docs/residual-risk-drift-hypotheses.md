@@ -21,7 +21,13 @@ Implementation: `batch/profile_builder/builder.py` (accumulator) + `worker/score
 | Builder alert | `cumulative_drift ≥ drift_threshold` → drift `DecisionRecord` | `drift_threshold: 5.0` |
 | Scorer contribution | `min(cap, (cumulative_drift / drift_threshold) × drift_alert_weight)` | `drift_alert` weight **100.0**, `contribution_scale_max: 50.0` |
 
-Saved sweep: **46 drift alerts** at the operating point ([`calibration_final_metrics.json`](calibration_final_metrics.json)). S2 slow-roll recall is **1.0** (35/35) — drift path catches boil-the-frog under the current harness; S3 subtle does not fully.
+Saved sweep artifacts:
+- **Series A (archived):** [`calibration_series_a_metrics.json`](calibration_series_a_metrics.json)
+- **Series B (archived for §5.5-arming-without-lifecycle):** [`calibration_series_b_metrics.json`](calibration_series_b_metrics.json) — S2 R=**0.0**; absorbing-block regime; **do not compare FP/P to Series A.**
+- **Series C (archived, R-INTERLOCK + S5):** [`calibration_series_c_metrics.json`](calibration_series_c_metrics.json) — S2/S5 R=**0.0**; promotion_coverage_ever **1.0**; auto_resolved **1817**; D4 engagement **0**; **do not compare FP/P to A or B.**
+- **Series D (current baseline, D4 time-axis fix):** [`calibration_series_d_metrics.json`](calibration_series_d_metrics.json) — S2 R=**0.714**; S5 R=**0.371**; promotion_coverage_ever **1.0**; promotion_coverage_in_window (N=5) **0.413**; D4 engagement **12840**; auto_resolved **2269**; **do not compare FP/P/R to A, B, or C.**
+
+**Frozen framing:** S2 headline recall alone does **not** reclaim boil-the-frog — **B4 is the license**, and only under Design 1 fixture conditions. See §2.6 / H11.
 
 ---
 
@@ -36,9 +42,11 @@ Saved sweep: **46 drift alerts** at the operating point ([`calibration_final_met
 | Recall | 0.817 | same |
 | Operating threshold | `anomaly_threshold: 45` (unchanged) | `config/scoring_config.yaml` v2.2 |
 
-**Risk:** Analyst triage at thr=45 is impractical without downstream filtering. Drift contributes (`drift_alert` weight 100) but point-rarity features dominate FP volume — not solved by drift tuning alone.
+**Risk (reframed 2026-07-18):** FP rate is no longer only an analyst-triage cost. Under armed §5.5 (Series B semantics), **every FP is a detection kill-switch for the drift path**: each anomaly opens a permanent `AlertWorkflowState` row, which freezes the entity's profile promotion, which freezes the scorer-visible `cumulative_drift` at its pre-block value — permanently, because no lifecycle ever closes a workflow (§2.7). Analyst triage impracticality at thr=45 still holds, but it is now the *lesser* consequence.
 
-**Evidence pointer:** [`phase2-s3-operating-point.md`](phase2-s3-operating-point.md) §Residual error modes #1.
+The old framing ("point-rarity features dominate FP volume — not solved by drift tuning alone") is **inverted** by §2.7: point-anomaly precision is a **prerequisite for drift-path function**, at the top of the dependency graph — the drift path cannot operate at all in a sustained-FP regime until either point-anomaly precision or the §5.5 blocking/lifecycle design is fixed. Drift tuning is downstream of both.
+
+**Evidence pointer:** [`phase2-s3-operating-point.md`](phase2-s3-operating-point.md) §Residual error modes #1; §2.7 Q1–Q3 tables (Series B DB, 2026-07-18).
 
 ### 2.2 scenario_3_subtle false negatives
 
@@ -90,6 +98,132 @@ These are documented non-ships, not hidden debt:
 
 **Evidence pointer:** SPEC §5.4, §6.5, §6.6, §7.3, §13.1 defer banners; `memory-bank/progress.md` knob inventory.
 
+### 2.6 S2 boil-the-frog — scoped claim + residuals (updated 2026-07-18)
+
+**Framing (frozen):** S2 R=1.0 alone does **not** reclaim boil-the-frog — **B4 is the license**, and only under Design 1 fixture conditions.
+
+**Series A retraction:** production-only builder + powershell inject R=1.0 was artifactual (inherited drift + embedding).
+
+**§5.5 finding (queried on Design 1 fixture before the fix):**  
+Cause was **#2 — build-blocking did not arm on these alerts**. Builder correctly keys on `AlertWorkflowState` ∈ `{new, acknowledged, investigating}`, but `record_decision` wrote `is_anomaly=True` **without** opening a workflow row (0 workflow rows vs 36 anomaly decisions; 0 shadow profiles; M rose to ≈0.074 after catch). Drift `PROFILE_BUILD` DecisionRecords likewise never opened workflow state. Not “absorption predates alert.”
+
+**Fix shipped:** `worker.recorder.open_active_alert_if_needed` on anomaly; builder drift DecisionRecords call the same. Acceptance: Design 1 **B3b** (containment / `M<α`) now **passes**.
+
+**Design 1 fixture license (narrow):**  
+> The drift path fires a pre-absorption, drift-necessary alert on an honest slow roll under Design 1 fixture conditions (7×5, clean baseline, seed 42).
+
+A1/A2/B1/B2/B3a/B3b/B4 all green on that fixture. This does **not** generalize to the full four-scenario sweep.
+
+**Series B full sweep** ([`calibration_series_b_metrics.json`](calibration_series_b_metrics.json), post-§5.5 arming, pre-lifecycle): S2 **R=0.0** (35 FN), `early_below_threshold_fraction=1.0`, `caught_before_absorption_proxy=false`, 2324 active workflows, **0** auto_resolved, promotion collapsed. Attribution fields are present. **Cross-series FP vs Series A remains invalid.**
+
+**Series C full sweep** ([`calibration_series_c_metrics.json`](calibration_series_c_metrics.json), R-INTERLOCK + `scenario_5_patient_cycle`, 2026-07-19): S2/S5 **R=0.0**, S1 **R=1.0**, `auto_resolved_count=1817`, `promotion_coverage_ever=1.0`, D4 engagement **0**. Absorbing-block topology broken; slow-roll event catch still not earned. **B→C FP/P/R comparisons INVALID.**
+
+**Series D full sweep** ([`calibration_series_d_metrics.json`](calibration_series_d_metrics.json), D4 time-axis fix, 2026-07-19): S2 **R=0.714** (25/35), S5 **R=0.371**, S1 **R=1.0**, `auto_resolved_count=2269`, `promotion_coverage_ever=1.0`, `promotion_coverage_in_window` (N=5) **0.413**, D4 engagement **12840** (vs Series C **0** — only permitted C→D claim). S2 stays blocked at sweep end (137 active `new` alerts); shadow drift visible in scorer. **C→D FP/P/R comparisons INVALID.**
+
+**Residual §2.7:** Series B confirmed the deadlock; Series C re-measured under the approved interlock; Series D re-measures after D4 as-of fix (below).
+
+---
+
+### 2.7 §5.5 arming × FP storm = drift starvation deadlock (Series B confirmed; Series C topology update)
+
+**Status (Series B):** Mechanism **confirmed by direct queries** against the Series B sweep DB (`alter_ego_calibrate_s31.db`, rebuilt 2026-07-18). Under pre-lifecycle §5.5 this was **ARCHITECTURAL, not parametric** — absorbing block (Q1–Q3 below preserved as Series B evidence).
+
+**Status (Series C, 2026-07-19):** Design APPROVED and shipped (`.workflow/2026-07-18-s55-alert-lifecycle/`). Series C sweep ([`calibration_series_c_metrics.json`](calibration_series_c_metrics.json), seed 42, v2.2 @ thr=45, S1–S5 + tooling):
+
+| Quantity | Series B | Series C |
+|---|---|---|
+| auto_resolved | 0 | **1817** |
+| promotion_coverage_ever (end) | collapsed (~5/55 promoting) | **1.0 (55/55)** |
+| active workflow rows | 2324 (all `new`) | 1523 |
+| S2 event recall | 0.0 | 0.0 |
+| S5 event recall | n/a | 0.0 |
+| D4 engagement | n/a | **0** |
+| `caught_before_absorption_proxy` (S2/S5) | false | false |
+
+**Reading:** R-INTERLOCK removes the Series B *absorbing-block* failure mode (lifecycle closes `new` rows under QUIET∧ATTEST; D4 keeps shadow drift visible under block; promotion resumes). It does **not** earn full-sweep S2/S5 event recall under the tooling+FP mix — scores stay below thr=45 (`early_below_threshold_fraction=1.0`). New residual is **detection under recovered promotion**, not fleet promotion collapse. Design 1 B4 remains the only scoped boil-the-frog license. **Do not cite B→C FP/P as improvement.**
+
+**Series C post-mortem (2026-07-19):** diagnostics in `scratch/series_c_s2_diagnosis.json` + `.workflow/2026-07-19-series-c/results/series-c-d4-asof-bug-note.md`. For S2, shadow `cumulative_drift` rose to **24.3** while scorer-visible promoted stayed **0.0**. Load-bearing defect: `ProfileStore.get_latest_shadow_profile(as_of=…)` filtered **`created_at` (wall)** against **event sim time** — D4 silently no-ops. Fixed in Series D (`.workflow/2026-07-19-d4-time-axis/`).
+
+**Status (Series D, 2026-07-19):** D4 time-axis fix shipped; Series D sweep ([`calibration_series_d_metrics.json`](calibration_series_d_metrics.json), seed 42, v2.2 @ thr=45):
+
+Only the **D4 engagement count** is a permitted C→D comparison. The Series C column below is **archival context, not a comparability baseline** — every non-engagement row is a **Series-D diagnostic**, and any C→D P/R/FP/recall delta read off it is **INVALID**.
+
+| Quantity | Series C (archival, not a baseline) | Series D |
+|---|---|---|
+| D4 engagement (`drift_source_profile_version`) — *only permitted C→D claim* | **0** | **12840** |
+| S2 event recall *(D-only diagnostic)* | 0.0 | **0.714** (25/35) |
+| S5 event recall *(D-only diagnostic)* | 0.0 | **0.371** |
+| P / FP *(D-only diagnostic)* | 0.0003 / 3320 | **0.011 / 5432** |
+| promotion_coverage_ever | 1.0 | 1.0 |
+| promotion_coverage_in_window (N=5) | n/a | **0.413** |
+| fallback_flag_count | n/a | **1084** |
+| S2 stays blocked (active `new` at end) | n/a | **137** |
+
+**Reading:** D4 fix works — engagement 0→12840 is the **only permitted C→D comparison**. S2 shadow drift now feeds scorer (`drift_alert_raw` up to 16.86); entity re-alerted and stayed blocked as shadow cumulative_drift rose (peak 24.33). Within Series D framing S2 recall is **0.714**, but **C→D P/R deltas are INVALID** (the Series C column is archival context only). Precision is low (P≈0.011, FP=5432) — topology changed, not a calibration win. Fallback storm (1084 global `drift_shadow_fallback:no_shadow`) exceeds SD2 expectation. Dual coverage exposes staleness (`in_window` 0.413) that `ever` hides.
+
+Governance: [`scoring-config-governance-series-d.md`](scoring-config-governance-series-d.md) (current); [`scoring-config-governance-series-c.md`](scoring-config-governance-series-c.md) (archived). Design: [`superpowers/specs/2026-07-19-d4-time-axis-design.md`](superpowers/specs/2026-07-19-d4-time-axis-design.md) + [`superpowers/specs/2026-07-18-s55-blocking-scope-and-alert-lifecycle-design.md`](superpowers/specs/2026-07-18-s55-blocking-scope-and-alert-lifecycle-design.md) (**APPROVED**).
+
+**Follow-on (not executed):** Attestation YAML hygiene — promote `core/attestation.py` defaults to YAML under separate S6.3; acceptance = zero behavioral diff.
+
+#### Series B confirmed causal chain (each link query-checked; historical)
+
+1. The honest S2 ladder is sub-threshold by design, so S2 event detection depends on the `drift_alert` contribution: max S2 attack-event score **16.29** @ thr=45; `drift_alert` contribution **0.0 on all 35** attack-event decisions.
+2. The point-anomaly layer opens `AlertWorkflowState` rows on every anomaly (correct §5.5 arming): **269 rows opened from the first scored day** (Jan 2 events); **2324** total by sweep end (2236 benign FP + 87 builder drift + 1 S1 attack event).
+3. The builder's blocking predicate (`batch/profile_builder/builder.py`, `blocked_entities`) demotes any entity with an active own workflow row to **shadow-only builds**: promoted builds collapsed 55/55 (Jan 2–3) → **10/55 (Jan 4, third build)** → 5/55 by sweep end, and never recovered.
+4. Nothing closes workflows (S4.3 deferral, §2.5): all **2324** rows end the sweep in state `new` — blocked is an **absorbing state**. 0 supervisor escalations fired (S5.6 `max_profile_build_block_days=30` exceeds the 19-day sweep, and escalation observes; it does not unblock).
+5. The scorer reads only promoted profiles (`worker/profile_store.py` `get_active_profile`: `is_shadow=False`): scorer-visible `cumulative_drift` for the S2 entity is **0.0 at every build step of the sweep** (frozen at its Jan-3 promotion) → `drift_alert` contributes 0 to every S2 event → S2 R=**0.0** (35 FN).
+
+**Circularity (Series B):** slow-roll *event* detection requires scorer-visible drift → scorer-visible drift requires profile promotion → promotion requires no active own alerts → sustained FP + no lifecycle guarantees active alerts forever.
+
+#### Mechanism refinement (evidence-forced; supersedes the "accumulator flatline" phrasing)
+
+Builds do not stop — **promotions** stop. Shadow builds continue, and the builder-side accumulator not only updates but **fires**: the S2 entity crossed `drift_threshold=5.0` on the **first attack day** (Jan-10 build, accumulator 7.66) and emitted builder drift DecisionRecords daily thereafter (8 total, scores 7.66→81.72). The drift signal was computed, alarmed — and then **quarantined**: shadow-lineage state never reaches the runtime score path (promotion frozen), and `PROFILE_BUILD` decisions never count toward event-level recall. Each quarantined drift alarm also opens another workflow row, deepening the entity's own block. The deadlock starves drift *visibility*, not drift *computation*; the detection kill at the headline-metric level is total either way.
+
+#### Q1 — build starvation (S2 entity `user_engineer_11`)
+
+| Quantity | Value |
+|---|---|
+| Sweep start / first own workflow row | Jan 1 / **Jan 2 07:17** (own benign FP, score 50.5) |
+| Last promoted profile | **Jan 3** (2 promoted of 17 builds; 15 shadow) |
+| Attack window | Jan 10 07:00 – Jan 16 10:40 |
+| Promoted builds during or after the attack window | **0** — promotion never resumed |
+| Fleet promoted-build collapse | 55/55 (Jan 2–3) → 10/55 (Jan 4) → 5/55 (sweep end) |
+
+#### Q2 — accumulator vs scorer visibility (S2 entity)
+
+| Series | Behavior |
+|---|---|
+| Shadow-lineage `cumulative_drift` | 0.02 (Jan 7) → 0.52 (Jan 8) → 2.32 (Jan 9, pre-attack) → **7.66 (Jan 10, first attack day — crosses `drift_threshold=5.0`)** → 81.72 (Jan 16) |
+| Scorer-visible (promoted) `cumulative_drift` | **0.0 at all 17 build steps** — frozen at the Jan-3 promotion |
+| `drift_alert` contribution on the 35 S2 event decisions | **0.0 on all**; max event score 16.29 |
+| Builder drift DecisionRecords for the S2 entity | **8** (Jan 10–16, scores 7.66→81.72), `event_id="PROFILE_BUILD"` — invisible to event-level recall |
+
+The `attack_raised_cumulative_drift_max: 81.72` field in [`calibration_series_b_metrics.json`](calibration_series_b_metrics.json) is the shadow-lineage maximum — it coexists with a 0.0 scorer-visible series; the two must not be conflated.
+
+#### Q3 — blocking scope attribution
+
+| Check | Result |
+|---|---|
+| Predicate scope (code: `builder.py` `blocked_entities`) | **Per-entity, own alerts only** — no cohort or global blocking exists |
+| Empirical cross-check | 0 shadow builds without a prior own workflow row; 0 entities with workflow rows that kept promoting |
+| First-block cause across all 50 blocked entities | **47 own benign FP · 3 own drift alert · 0 cross-entity/global** |
+| S2 entity's own rows | 67 = **59 own benign FP + 8 own drift alerts** (0 attack-event rows) |
+| Fleet frozen by sweep end | **50/55 entities (90.9%)**; only 5 service accounts never blocked; median 47 rows per blocked entity |
+
+**Scope finding:** every block is caused by the entity's **own** alerts — overwhelmingly its own benign FPs. Per the remediation decision table, **the missing alert lifecycle is the primary defect**. The predicate's cross-entity *scope* is not implicated (it is already per-entity); the scope-adjacent defect is the predicate's **insensitivity** — any single active alert, of any severity, confidence, or age (here: a day-2 FP scoring 50.5, barely over thr=45) freezes the baseline forever.
+
+#### Why Series B was architectural, not parametric
+
+Threshold tuning changes the deadlock's **timescale, not its topology**. §2.3's thr=55 diagnostic (Series A, diagnostic only): FP 3448→1136 at the cost of **19 extra FN** (15→34, including S3 hits). Under block-forever semantics, *any* sustained FP rate ε>0 eventually freezes every entity's baseline with probability → 1; at Series B rates 45/55 entities froze after **one** scored day, and a 3× FP reduction only stretches the storm across days. No `anomaly_threshold` value simultaneously preserves recall and keeps the fleet promotable while workflows never close.
+
+The two real design surfaces were addressed by the R-INTERLOCK design (shipped; see Series C status above):
+
+1. **Workflow lifecycle** — QUIET∧ATTEST auto-resolution (`auto_resolved`); analyst `clear_with_reason` retained.
+2. **Shadow-signal (D4)** — `drift_alert` reads shadow accumulator under block; baselines stay promoted.
+
+**Frozen claim language (successor):** B4 is the license; Series B, C, *or* D S2/S5 R alone does not reclaim boil-the-frog. Full-sweep B4 generalization is **not earned** after Series D either (S2 R=0.714, not 1.0).
+
+**Evidence:** `docs/calibration_series_b_metrics.json` §`s55_finding`; Series B DB queries (Q1–Q3, 2026-07-18); `docs/calibration_series_c_metrics.json` + `docs/calibration_series_d_metrics.json` + governance records; Design 1 fixture remains green — but see the fixture-limitation note in the Design 1 spec (no FP storm by construction).
 ---
 
 ## 3. Open drift hypotheses (for human research)
@@ -132,9 +266,9 @@ These are **open questions**, not solved or recommended changes. Validate with s
 
 **Observation:** 7-day half-life decay on `cumulative_drift`; S3 inject schedule may be slower or bursty relative to decay.
 
-**Hypothesis:** Attacks with pauses between steps reset accumulator faster than attack adds norm_drift — boil-the-frog caught for S2 (35 events) but not S3 (45 events, coordinated).
+**Hypothesis:** Attacks with pauses between steps reset accumulator faster than attack adds norm_drift — may explain S3 FN (45 events, coordinated) under an honest harness (see H11; Series C S2/S5 event R=0.0 — do **not** treat any headline S2 R as a successful boil-the-frog catch; B4 remains the scoped license).
 
-**Research:** Plot accumulator time series for S2 TP vs S3 FN entities; sensitivity analysis on `drift_half_life_days` in isolated scratch (governance required for YAML).
+**Research:** Plot accumulator time series for S3 FN entities (and S2 only after partition/shape invariants land); sensitivity analysis on `drift_half_life_days` in isolated scratch (governance required for YAML).
 
 ### H6 — Dual semantics of `drift_threshold`
 
@@ -176,6 +310,14 @@ These are **open questions**, not solved or recommended changes. Validate with s
 
 **Research:** KL sensitivity to α on S3 vs benign rollout events (tooling rollout partition in sweep).
 
+### H11 — S2 boil-the-frog claim discipline
+
+**Observation:** Series A R=1.0 was harness-artifactual. After ladder + builder-visible S2/S3 + §5.5 alert-arming: Design 1 fixture A1–B4 green (scoped B4 license); Series B full mix S2 R=0.0 with attribution (`calibration_series_b_metrics.json`). Series C under R-INTERLOCK + S5: promotion recovered (`promotion_coverage_ever=1.0`, `auto_resolved=1817`) but S2/S5 event R still **0.0** (D4 engagement **0**). Series D after D4 as-of fix: S2 R=**0.714**, D4 engagement **12840**, but S2 stays blocked (137 active `new`); P≈0.011 / FP=5432.
+
+**Hypothesis:** Fixture isolation (no tooling rollout) is required for the §6.4 demonstration; production-like FP + §5.5 still limits full-sweep slow-roll catch even after D4 unblocks shadow drift. Full-sweep generalization of the B4 license is **not** earned. **C→D P/R comparisons are INVALID** — cite Series D numbers only.
+
+**Research:** FP reduction (S6.3) without disabling §5.5; keep B3a/B3b/B4 always-on; investigate fallback storm (1084 flags) and in-window staleness (0.413); do not round fixture B4 or Series D S2 partial recall up to a general “drift catches boil-the-frog” claim.
+
 ---
 
 ## 4. Suggested research workflow
@@ -192,7 +334,7 @@ These are **open questions**, not solved or recommended changes. Validate with s
 
 ## 5. What this doc is not
 
-- **Not CALIBRATED** — global precision ~1.9%, 3448 FP, 15 S3 FN remain.
+- **Not CALIBRATED** — Series D is the current baseline ([`calibration_series_d_metrics.json`](calibration_series_d_metrics.json)); prior Series A/C precision figures are not Series D rates. **C→D FP/P/R comparisons are INVALID.**
 - **Not a threshold recommendation** — thr=55 is documented diagnosis only; thr=45 remains YAML operating point.
 - **Not a weight-tuning mandate** — hypotheses require evidence before governance-approved changes.
 - **Not a substitute for S6.3** — standing rule: no knob change without recorded sweep + governance.

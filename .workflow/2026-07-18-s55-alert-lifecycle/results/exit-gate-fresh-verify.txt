@@ -1,0 +1,54 @@
+S55 Alert Lifecycle Exit Gate - Fresh Verification
+====================================================
+Date: 2026-07-19
+Verification Type: Full test suite + S55 invariant check
+
+COMMAND 1: pytest -v --tb=short --ignore=tests/live
+Exit Code: 0
+Status: PASS
+Test Results: 147 passed, 367 warnings
+Duration: 18.30s
+Summary: All core tests pass, warnings are pre-existing DeprecationWarning (datetime.utcnow)
+
+COMMAND 2: ruff check .
+Exit Code: 0
+Status: PASS
+Result: All checks passed
+Duration: 3.6s
+Summary: No linting errors
+
+COMMAND 3: pytest tests/test_attestation.py tests/batch/test_alert_lifecycle_auto_resolve.py tests/worker/test_shadow_drift_under_block.py tests/test_s55_invariants_c1_c3.py tests/test_boil_the_frog_invariants.py -v --tb=short
+Exit Code: 0
+Status: PASS
+Test Results: 21 passed, 235 warnings
+Duration: 8.69s
+Summary: All S55 lifecycle and invariant tests pass
+
+DETAILED BREAKDOWN (S55 Specific Tests)
+========================================
+tests/test_attestation.py: 6 passed
+tests/batch/test_alert_lifecycle_auto_resolve.py: 3 passed
+tests/worker/test_shadow_drift_under_block.py: 1 passed
+tests/test_s55_invariants_c1_c3.py: 3 passed
+tests/test_boil_the_frog_invariants.py: 8 passed
+
+KEY INVARIANTS VERIFIED
+=======================
+✓ C1: Benign FP block auto-resolves without analyst
+✓ C3: Bounded laundering after auto-resolve
+✓ B1: Day0 attack scores below threshold
+✓ B2: Attack raises cumulative drift vs control
+✓ B3a: Every TP is drift necessary
+✓ B3b: Containment no post-absorption TPs
+✓ B4: Eventual detection within fixture window
+✓ Shadow drift accumulation under block
+✓ Alert lifecycle auto-resolve workflow
+
+VERDICT: EXIT GATE PASSED
+=========================
+- Total Commands Run: 3
+- Total Exit Codes: 0 (all pass)
+- Tests Executed: 147 + 21 = 168 total
+- Test Failures: 0
+- Linting Failures: 0
+- All S55 lifecycle and invariant checks operational

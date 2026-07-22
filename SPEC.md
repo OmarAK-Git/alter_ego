@@ -184,9 +184,11 @@ A profile contains, per entity:
 
 ▲ **Active-alert profile-build blocking is a Phase 1 correctness invariant, not Phase 4 hardening.** Without it, slow-roll drift evaluation in Phase 2 calibration silently allows attack behavior to be learned into the entity baseline, producing thresholds that are invalid as soon as blocking is added. Therefore the implementation order requires this property to hold during calibration.
 
-Profile builds run on schedule (cold path). **Builds for entities with active uncleared alerts are blocked or run in shadow mode only** — committing a new profile for an entity currently under suspicion would learn the suspected attack behavior into the new baseline, defeating drift detection. Shadow profiles are computed and stored but not promoted to the active profile until the alert is cleared.
+Profile builds run on schedule (cold path). **Builds for entities with active uncleared alerts are blocked or run in shadow mode only** — committing a new profile for an entity currently under suspicion would learn the suspected attack behavior into the new baseline, defeating drift detection. Shadow profiles are computed and stored but not promoted to the active profile until the alert is cleared **or auto-resolved** (below). Active (blocking) workflow states remain `{new, acknowledged, investigating}`. Terminal states `cleared` (analyst) and `auto_resolved` (machine) do not block.
 
-▲ **Maximum profile-build-block duration (shipped S5.6).** A configurable `max_profile_build_block_days` (scoring_config, default=30) limits how long an entity can remain in build-blocked state. When exceeded without the alert being cleared, an auditable supervisor escalation (`profile_build_block_supervisor_escalation`) is emitted with structured SLA metadata, **independent of the staleness circuit breaker (§5.7)**. This handles the case where an alert is never cleared — analyst turnover, backlog deprioritization, chronic understaffing — preventing indefinite block without observation.
+▲ **R-INTERLOCK (shipped S55 lifecycle):** lifecycle closure and shadow-signal visibility are mandatory together. While an entity is build-blocked, the scorer's `drift_alert` contribution reads `cumulative_drift` from the entity's **latest shadow profile**; all other scoring features continue to read the **promoted** profile (full shadow scoring is rejected). When the consulted shadow version differs from `profile_version`, decisions record `drift_source_profile_version` for replay determinism. A blocking alert may leave the active set only via analyst `clear_with_reason` (§11.5) or machine **auto-resolution** gated on entity-level **QUIET ∧ ATTEST** (no time-only expiry): no new anomaly DecisionRecord within `quiet_window_days`, peak shadow `cumulative_drift` during the block below `drift_threshold`, and novel-mass gates vs last-promoted and anchor history (`alpha_prod` / `alpha_anchor` — declared code defaults; see `docs/scoring-config-governance-s55-lifecycle.md`). Auto-resolution transitions only `new` rows; analyst-touched `acknowledged` / `investigating` rows are exempt. Builder drift decisions for an already-blocked entity **refresh** the existing drift-class workflow row rather than stacking a new row per build.
+
+▲ **Maximum profile-build-block duration (shipped S5.6; D5 enqueue S55).** A configurable `max_profile_build_block_days` (scoring_config, default=30) limits how long an entity can remain in build-blocked state. When exceeded without the alert being cleared, an auditable supervisor escalation (`profile_build_block_supervisor_escalation`) is emitted **and enqueued on the mandatory analyst review queue** (same surface as §5.7 staleness×active-alert escalations), **independent of the staleness circuit breaker (§5.7)**. Auto-resolution may still clear eligible `new` rows after escalation; the SLA forces human attention, it does not force closure.
 
 ### 5.6 Profile Schema Versioning
 
@@ -526,7 +528,7 @@ Beyond detection precision/recall, explanation quality is itself measured:
 
 - One row per active alert
 - `raw_score` prominently displayed (v1 API field: `score`), no other numeric scores in this view
-- Entity ID, timestamp, ▲ asset blast-radius indicator deferred with §12, ▲ alert workflow state badge (`new`, `acknowledged`, `investigating` per §11.5) — not profile lifecycle (§5.4, deferred)
+- Entity ID, timestamp, ▲ asset blast-radius indicator deferred with §12, ▲ alert workflow state badge (`new`, `acknowledged`, `investigating`, `cleared`, `auto_resolved` per §11.5) — not profile lifecycle (§5.4, deferred)
 - Non-numeric icons for: `stale_profile`, `low_resolution_confidence`, `cohort_unsupported`. ▲ `calendar_context_active` icon deferred with §6.6; ▲ `infrastructure_volatile` icon deferred with §12; ▲ `reactivated_dormant` icon deferred with §5.4
 - Sort/filter by score, time, entity type. ▲ Sort/filter by asset class deferred with §12
 
@@ -563,7 +565,8 @@ The UI must support these alert state transitions:
 
 - `acknowledge` — analyst assigns to self
 - `mark_investigating` — alert is actively being worked
-- `clear_with_reason` — alert is resolved; clearing is a documented action with a required `clear_reason` field. **Clearing unblocks profile builds for the entity (§5.5).**
+- `clear_with_reason` — alert is resolved; clearing is a documented action with a required `clear_reason` field. **Clearing unblocks profile builds for the entity (§5.5).** The detail/clear surfaces **must display the entity's shadow attestation status** at clear time; clearing against a failing attestation is allowed and logged as `attestation_override` on the audit chain.
+- `auto_resolved` — machine path (builder): entity-level **QUIET ∧ ATTEST** (§5.5); not an analyst control, but must appear as a terminal badge distinct from `cleared`
 - `queue_simulated_containment` — exercises the containment queue and the simulated-action path
 - `view_lineage` — opens decision/explanation/replay lineage in detail view
 

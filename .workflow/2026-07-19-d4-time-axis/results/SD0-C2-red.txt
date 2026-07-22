@@ -1,0 +1,20 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.12, pytest-9.0.3, pluggy-1.5.0 -- C:\Users\oalan\scoop\apps\miniconda3\current\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\oalan\alter_ego
+configfile: pyproject.toml
+plugins: anyio-4.10.0, cov-7.1.0
+collecting ... collected 1 item
+
+tests/worker/test_shadow_drift_under_block.py::test_shadow_drift_under_block_equals_unblocked_accumulator FAILED [100%]
+
+================================== FAILURES ===================================
+_________ test_shadow_drift_under_block_equals_unblocked_accumulator __________
+tests\worker\test_shadow_drift_under_block.py:162: in test_shadow_drift_under_block_equals_unblocked_accumulator
+    assert abs(drift_c.raw_value - shadow_drift) < 1e-9
+E   AssertionError: assert 3.0 < 1e-09
+E    +  where 3.0 = abs((0.0 - 3.0))
+E    +    where 0.0 = FeatureContribution(contribution_id='feat_drift_ae729907', feature_name='drift_alert', raw_value=0.0, contribution_score=0.0, confidence_weight=0.8).raw_value
+=========================== short test summary info ===========================
+FAILED tests/worker/test_shadow_drift_under_block.py::test_shadow_drift_under_block_equals_unblocked_accumulator
+============================== 1 failed in 0.80s ==============================

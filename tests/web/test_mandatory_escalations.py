@@ -221,3 +221,54 @@ def test_expired_extend_halt_returns_entity_to_queue(client, db_session):
 
     res = client.get("/api/mandatory-escalations")
     assert any(item["entity_id"] == "ent_5" for item in res.json())
+
+
+def test_mandatory_escalations_lists_build_block_sla(client, db_session):
+    """S55 D5 — build-block supervisor escalation appears on mandatory queue."""
+    from batch.profile_builder.builder import BUILD_BLOCK_SUPERVISOR_ESCALATION_FLAG
+
+    _add_decision(
+        db_session,
+        decision_id="dec_alert_bb",
+        entity_id="ent_bb",
+        is_anomaly=True,
+        flags=[],
+    )
+    db_session.add(
+        AlertWorkflowStateModel(
+            decision_id="dec_alert_bb",
+            entity_id="ent_bb",
+            state="new",
+        )
+    )
+    db_session.add(
+        DecisionRecordModel(
+            decision_id="dec_bb_esc",
+            event_id="PROFILE_BUILD",
+            entity_id="ent_bb",
+            timestamp=datetime.utcnow(),
+            score=0.0,
+            confidence=1.0,
+            profile_version="v1",
+            scoring_config_version="2.2",
+            contributions={"build_block_days": 35.0},
+            is_anomaly=False,
+            cohort_used="unknown",
+            cohort_unsupported=False,
+            flags={
+                BUILD_BLOCK_SUPERVISOR_ESCALATION_FLAG: True,
+                "mandatory_review": True,
+                "block_days": 35.0,
+            },
+            embedding_model_version="1.0",
+        )
+    )
+    db_session.commit()
+
+    res = client.get("/api/mandatory-escalations")
+    assert res.status_code == 200
+    data = res.json()
+    match = [item for item in data if item["entity_id"] == "ent_bb"]
+    assert len(match) == 1
+    assert match[0]["escalation_type"] == "build_block"
+    assert match[0]["escalation_decision_id"] == "dec_bb_esc"

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from core.database import SessionLocal
-from core.models import DecisionRecordModel, ContainmentQueueModel
+from core.models import DecisionRecordModel, ContainmentQueueModel, AlertWorkflowStateModel
 from core.schemas.decisions import DecisionRecord
 
 
@@ -16,6 +16,30 @@ def queue_simulated_containment(
     )
     db.add(cq)
     return cq
+
+
+def open_active_alert_if_needed(
+    db: Session, decision_id: str, entity_id: str
+) -> AlertWorkflowStateModel | None:
+    """SPEC §5.5: anomaly → active workflow state so profile builds block.
+
+    Without this, DecisionRecord.is_anomaly alone never arms build-blocking
+    (builder keys only on AlertWorkflowState in {new, acknowledged, investigating}).
+    """
+    existing = (
+        db.query(AlertWorkflowStateModel)
+        .filter(AlertWorkflowStateModel.decision_id == decision_id)
+        .first()
+    )
+    if existing:
+        return existing
+    state = AlertWorkflowStateModel(
+        decision_id=decision_id,
+        entity_id=entity_id,
+        state="new",
+    )
+    db.add(state)
+    return state
 
 
 def record_decision(decision: DecisionRecord, db: Session | None = None):
@@ -43,6 +67,10 @@ def record_decision(decision: DecisionRecord, db: Session | None = None):
         from sqlalchemy.exc import IntegrityError
         try:
             db_session.add(db_decision)
+            if decision.is_anomaly:
+                open_active_alert_if_needed(
+                    db_session, decision.decision_id, decision.entity_id
+                )
             if "simulated_containment_queued" in decision.flags:
                 queue_simulated_containment(
                     db_session, decision.decision_id, decision.entity_id

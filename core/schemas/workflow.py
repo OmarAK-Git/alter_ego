@@ -8,6 +8,7 @@ class AlertStateEnum(str, Enum):
     acknowledged = "acknowledged"
     investigating = "investigating"
     cleared = "cleared"
+    auto_resolved = "auto_resolved"
 
 class AlertWorkflowState(BaseModel):
     decision_id: str

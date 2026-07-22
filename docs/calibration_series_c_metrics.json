@@ -1,0 +1,124 @@
+{
+  "series": "C",
+  "source": "alter_ego_calibrate_series_c.db",
+  "sweep": "BTF-Series-C-2026-07-19-r-interlock",
+  "config_version": "2.2",
+  "generator_seed": 42,
+  "anomaly_threshold": 45.0,
+  "semantics": "R-INTERLOCK (QUIET∧ATTEST + D4) + scenario_5 feeds builder; S2/S3/S5 builder-visible (eval_scenario_2/3/5). Anomaly DecisionRecords auto-open AlertWorkflowState (SPEC §5.5 arming).",
+  "knobs_changed": false,
+  "calibrated": false,
+  "note": "NOT CALIBRATED. Series C is a new baseline under R-INTERLOCK + scenario_5. Cross-series FP/P/R comparisons vs Series A or Series B are INVALID. Do not overwrite calibration_series_b_metrics.json. Do NOT reclaim boil-the-frog from these headlines.",
+  "partition_check": {
+    "attack_partitions": {
+      "eval_scenario_1": 1,
+      "eval_scenario_2": 35,
+      "eval_scenario_3": 45,
+      "eval_scenario_4": 1,
+      "eval_scenario_5": 75
+    },
+    "attack_event_count": 157,
+    "malicious_scenarios_in_labels": [
+      "scenario_1_sharp_misuse",
+      "scenario_2_slow_roll",
+      "scenario_3_subtle",
+      "scenario_4_service_abuse",
+      "scenario_5_patient_cycle"
+    ],
+    "all_partitions_eval_scenario": true
+  },
+  "metrics": {
+    "precision": 0.00030111412225233364,
+    "recall": 0.008547008547008548,
+    "f1": 0.0005817335660267598,
+    "tp": 1,
+    "fp": 3320,
+    "fn": 116,
+    "tn": 16037,
+    "drift_alerts": 19,
+    "active_alert_workflow_rows": 1523,
+    "auto_resolved_count": 1817,
+    "blocked_entity_count": 51,
+    "blocked_entity_days_estimate": 646,
+    "promotion_coverage": {
+      "entities_with_active_promoted_profile": 55,
+      "entities_scored": 55,
+      "fraction": 1.0
+    },
+    "scenarios": {
+      "scenario_1_sharp_misuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0,
+        "drift_necessary_tp_fraction": 0.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.0,
+        "attack_raised_cumulative_drift_max": 4.188645262106258,
+        "caught_before_absorption_proxy": false
+      },
+      "scenario_2_slow_roll": {
+        "recall": 0.0,
+        "tp": 0,
+        "fn": 35,
+        "drift_necessary_tp_fraction": null,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 1.0,
+        "attack_raised_cumulative_drift_max": 24.327846601002314,
+        "caught_before_absorption_proxy": false
+      },
+      "scenario_5_patient_cycle": {
+        "recall": 0.0,
+        "tp": 0,
+        "fn": 35,
+        "drift_necessary_tp_fraction": null,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 1.0,
+        "attack_raised_cumulative_drift_max": 24.817701148278864,
+        "caught_before_absorption_proxy": false
+      },
+      "scenario_3_subtle": {
+        "recall": 0.0,
+        "tp": 0,
+        "fn": 45,
+        "drift_necessary_tp_fraction": null,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 1.0,
+        "attack_raised_cumulative_drift_max": 34.21919157142637,
+        "caught_before_absorption_proxy": false
+      },
+      "scenario_4_service_abuse": {
+        "recall": 0.0,
+        "tp": 0,
+        "fn": 1,
+        "drift_necessary_tp_fraction": null,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 1.0,
+        "attack_raised_cumulative_drift_max": 24.04427436464663,
+        "caught_before_absorption_proxy": false
+      }
+    }
+  },
+  "section_4_7_extras": {
+    "auto_resolved_count": 1817,
+    "blocked_entity_count": 51,
+    "blocked_entity_days_estimate": 646,
+    "promotion_coverage": {
+      "entities_with_active_promoted_profile": 55,
+      "entities_scored": 55,
+      "fraction": 1.0
+    },
+    "active_alert_workflow_rows": 1523
+  },
+  "design1_fixture_invariants": {
+    "scope": "Design 1 fixture only (7x5, clean baseline, no tooling rollout, seed 42, 1 attack + 1 control + 3 padders)",
+    "note": "B4 still scoped license; Series C does not auto-reclaim boil-the-frog. Full-sweep S2/S5 recalls above are not Design-1 generalization claims.",
+    "B4": "pass",
+    "claim_licensed_by_B4": "The drift path fires a pre-absorption, drift-necessary alert on an honest slow roll under Design 1 fixture conditions only. Series C calibrated=false block above shows S2 recall 0 and S5 recall 0 under the five-scenario+tooling+R-INTERLOCK mix — do not extend B4 to Series C headlines."
+  },
+  "harness_paths": {
+    "metrics_scratch": "scratch/series_c_metrics.json",
+    "events": "scratch/series_c_events.jsonl",
+    "labels": "scratch/series_c_ground_truth.jsonl",
+    "database": "alter_ego_calibrate_series_c.db"
+  }
+}
