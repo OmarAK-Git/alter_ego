@@ -318,6 +318,48 @@ These are **open questions**, not solved or recommended changes. Validate with s
 
 **Research:** FP reduction (S6.3) without disabling §5.5; keep B3a/B3b/B4 always-on; investigate fallback storm (1084 flags) and in-window staleness (0.413); do not round fixture B4 or Series D S2 partial recall up to a general “drift catches boil-the-frog” claim.
 
+### H12 — Execution cadence as a drift dimension, not just a point feature
+
+**Observation:** `worker/scorer.py` `compute_periodicity` already computes inter-event interval CoV → `service_account_execution_frequency_deviation` (weight 5.0), but only when `resolved_event.entity_type == "service_account"`, and only as a **point** contribution. `drift_weights` has no cadence dimension — only `login_hour`, `geolocation`, `endpoint_set`, `process_name`, `embedding`.
+
+**Hypothesis:** Mechanical/regular execution-timing shifts (beaconing-style regularity, or 24/7 execution creep) may accumulate gradually across builds before any single point score crosses `anomaly_threshold`, and are invisible to `cumulative_drift` today. Extending cadence CoV into a 6th `drift_weights` dimension — and computing it for human entities too, above a minimum event-count floor — would diversify the drift spanning set beyond `embedding` (see H4 dominance concern).
+
+**Research:** Per-entity cadence CoV series at build time for S2/S3 attack windows vs benign; minimum event-count floor for stable human CoV (sparse human process streams are noisy); sensitivity to weight choice so it doesn't just repeat H4's dominance problem.
+
+**Source:** External review `alter-ego-drift-gap-evaluation.md` DRIFT-R3, adapted from a DNS-beacon CoV/ActiveHoursRatio methodology — method only, no network telemetry implied.
+
+### H13 — Geo-velocity between successive auth successes
+
+**Observation:** `core/schemas/events.py` `geolocation` is a free-text **label** (`entity.geography` in the synthetic generator, e.g. `"RU-Moscow"`), not lat/long. `geolocation_rarity` (weight 2.0 point / 5.0 drift) scores rarity of a single label; it does not compare an entity's **successive** locations or compute implied travel speed.
+
+**Hypothesis:** A single location can be individually plausible (not rare enough to score) while being incompatible with the same entity's immediately preceding location — an impossible-travel pattern distinct from static rarity, and one that may catch session-theft-style misuse without moving process or embedding features at all.
+
+**Research:** Blocked on a static label→centroid (lat/long) lookup table, which does not exist today — this is new reference data, not new telemetry. Needs a minimum paired-success count per entity for a stable per-entity baseline, and a VPN/relay allowlist design to bound the false-positive class before any scoring change.
+
+**Source:** DRIFT-R6, adapted from an impossible-travel detection pattern (ADS-07).
+
+### H14 — Cross-signal-family agreement as a precision gate
+
+**Observation:** §2.1 documents FP=3448 / precision=0.019 @ thr=45, and that under §5.5 arming every FP opens a workflow that blocks that entity's own profile promotion, freezing `cumulative_drift` — point-anomaly precision is already a documented prerequisite for the drift path mattering at all, not a separate concern from it.
+
+**Hypothesis:** Gating containment/escalation priority on agreement across independent signal families (rarity vs. drift vs., once implemented, cadence/volume/geo-velocity) rather than a single fused score may cut FP without costing recall on sharp single-signal attacks — a different lever from raising `anomaly_threshold`, which §2.3 already shows costs 19 extra FN for a 3× FP cut.
+
+**Research:** This changes alert **triage** semantics, not `scoring_config.yaml` weights, and interacts with the intentional "drift alone can trip the alarm at 2.25" asymmetry documented in that file's header comment — needs its own design spec (S6.3-equivalent) before any change. PR-curve replay against the Series D baseline, scored per signal-family combination, is the first research step.
+
+**Source:** DRIFT-R5, adapted from a multi-plane convergence concept (ADS-06) — method only, no ATT&CK technique graph implied or proposed.
+
+### H15 — Staged multi-feature drift ordering
+
+**Observation:** `cumulative_drift` and the point-score aggregate are both order-blind — neither records which drift dimensions crossed soft thresholds, or in what sequence, across builds.
+
+**Hypothesis:** A slow insider progression where individually-weak shifts land in different features in a consistent order (e.g. endpoint novelty → process novelty → embedding drift → volume, once armed) may stay sub-threshold at every single build while the ordered pattern itself is the signal. Related to H5 (half-life vs. attack tempo) but about sequence, not decay rate.
+
+**Research:** The most speculative and calibration-heavy item in this batch — sequence templates risk high FN if over-specific, high FP if over-broad (source doc's own caveat). Treat as backlog research only; do not prioritize ahead of H12–H14.
+
+**Source:** DRIFT-R4, adapted from an export→stage→upload chain concept (ADS-04) — platform-specific connector plumbing explicitly out of scope; only the staged-pattern idea transfers.
+
+**Not new — already tracked:** the source doc's DRIFT-R1 (volume delta as a drift dimension) and DRIFT-R2 (fleet-level coordinated-drift rule) restate existing tracked work rather than surface new gaps: DRIFT-R1 ≡ `DEBT-051`/`DEBT-019` (this doc's H9); DRIFT-R2 ≡ `DEBT-068`/`DEBT-075` (H2, H7). DRIFT-R2's one genuinely useful addition: it proposes keying a new fleet-level `cohort_drift` rule off `cohort_gating_constants.max_changed_fraction`, which — per `AS_BUILT.md` §5.4 — is **already read** by the scorer (for novelty-gate suppression), unlike `min_clean_observation_count` which is unread. Reusing an already-wired knob for this is cheaper than the S5.11 prior-update-gate route and worth folding into that recovery item.
+
 ---
 
 ## 4. Suggested research workflow
