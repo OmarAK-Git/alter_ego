@@ -67,3 +67,29 @@ def test_profile_build_is_repeatable(db_session):
     all_profiles = db_session.query(ProfileArtifactModel).filter(ProfileArtifactModel.entity_id == entity_id).order_by(ProfileArtifactModel.created_at).all()
     assert len(all_profiles) == 2
     assert all_profiles[1].features["total_events"] == 1
+
+
+def test_profile_build_streams_events_across_multiple_chunks(db_session):
+    entity_id = "user_chunked"
+    t0 = datetime(2026, 1, 1, 0, 0, 0)
+
+    for i in range(5):
+        db_session.add(ResolvedEventModel(
+            event_id=f"chunk_evt_{i}", timestamp=t0 + timedelta(hours=i),
+            event_type="login", raw_entity_id=entity_id, entity_id=entity_id,
+            entity_type="user", resolution_confidence=1.0,
+            simulation_partition="production",
+            event_data={"action": "login", "endpoint_id": "ep_a", "process_name": "bash", "geolocation": "US"},
+        ))
+    db_session.commit()
+
+    # chunk_size=2 forces 3 DB round-trips (2+2+1) for 5 rows; every row must
+    # still land in the aggregate — a broken chunked writer would silently
+    # drop rows past the first batch.
+    build_profiles(db_session, as_of=t0 + timedelta(hours=4), chunk_size=2)
+
+    profile = db_session.query(ProfileArtifactModel).filter(
+        ProfileArtifactModel.entity_id == entity_id
+    ).order_by(ProfileArtifactModel.created_at).first()
+    assert profile is not None
+    assert profile.features["total_events"] == 5

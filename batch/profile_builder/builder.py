@@ -405,7 +405,35 @@ def _emit_build_block_supervisor_escalations(
     return escalated
 
 
-def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: datetime | None = None) -> int:
+_BUILD_EXTRACT_CHUNK_SIZE = 5000  # rows per DB round-trip when streaming to temp JSONL (bounds build_profiles memory/disk under volume spikes)
+
+
+def _stream_events_to_jsonl(db_session: Session, stmt, path: Path, chunk_size: int) -> int:
+    """Stream ResolvedEventModel rows straight to a JSONL file in bounded
+    chunks instead of materializing the full result set in Python first."""
+    count = 0
+    result = db_session.execute(stmt.execution_options(yield_per=chunk_size)).scalars()
+    with open(path, "w") as f:
+        for e in result:
+            data = {
+                "event_id": e.event_id,
+                "timestamp": e.timestamp.isoformat(),
+                "entity_id": e.entity_id,
+                "entity_type": e.entity_type,
+                "role": extract_role(e.entity_id, e.entity_type),
+                "action": e.event_data.get("action"),
+                "endpoint_id": e.event_data.get("endpoint_id"),
+                "process_name": e.event_data.get("process_name"),
+                "command_line": e.event_data.get("command_line", ""),
+                "geolocation": e.event_data.get("geolocation"),
+                "hour_of_day": e.timestamp.hour,
+            }
+            f.write(json.dumps(data) + "\n")
+            count += 1
+    return count
+
+
+def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: datetime | None = None, chunk_size: int = _BUILD_EXTRACT_CHUNK_SIZE) -> int:
     if db is None:
         db_session = SessionLocal()
     else:
@@ -468,12 +496,14 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         )
         
         import time
+
+        temp_file_hist = Path(f"temp_events_hist_{uuid.uuid4().hex}.jsonl")
         t0 = time.time()
-        events_hist = db_session.execute(stmt_hist).scalars().all()
-        events_recent = db_session.execute(stmt_recent).scalars().all()
-        logger.info(f"Fetched {len(events_hist)} hist and {len(events_recent)} recent events in {time.time()-t0:.2f}s")
-        
-        if not events_hist:
+        count_hist = _stream_events_to_jsonl(db_session, stmt_hist, temp_file_hist, chunk_size)
+        logger.info(f"Streamed {count_hist} hist events to JSONL in {time.time()-t0:.2f}s")
+
+        if count_hist == 0:
+            temp_file_hist.unlink(missing_ok=True)
             build_timestamp = datetime.utcnow()
             _auto_resolve_quiet_attested_alerts(
                 db_session,
@@ -498,35 +528,14 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
             )
             db_session.commit()
             return 0
-            
-        temp_file_hist = Path(f"temp_events_hist_{uuid.uuid4().hex}.jsonl")
-        temp_file_recent = None
-        if events_recent:
-            temp_file_recent = Path(f"temp_events_recent_{uuid.uuid4().hex}.jsonl")
-        
+
+        temp_file_recent = Path(f"temp_events_recent_{uuid.uuid4().hex}.jsonl")
         t1 = time.time()
-        def write_jsonl(path, evts):
-            with open(path, "w") as f:
-                for e in evts:
-                    data = {
-                        "event_id": e.event_id,
-                        "timestamp": e.timestamp.isoformat(),
-                        "entity_id": e.entity_id,
-                        "entity_type": e.entity_type,
-                        "role": extract_role(e.entity_id, e.entity_type),
-                        "action": e.event_data.get("action"),
-                        "endpoint_id": e.event_data.get("endpoint_id"),
-                        "process_name": e.event_data.get("process_name"),
-                        "command_line": e.event_data.get("command_line", ""),
-                        "geolocation": e.event_data.get("geolocation"),
-                        "hour_of_day": e.timestamp.hour
-                    }
-                    f.write(json.dumps(data) + "\n")
-        
-        write_jsonl(temp_file_hist, events_hist)
-        if events_recent:
-            write_jsonl(temp_file_recent, events_recent)
-        logger.info(f"Wrote temp JSONLs in {time.time()-t1:.2f}s")
+        count_recent = _stream_events_to_jsonl(db_session, stmt_recent, temp_file_recent, chunk_size)
+        logger.info(f"Streamed {count_recent} recent events to JSONL in {time.time()-t1:.2f}s")
+        if count_recent == 0:
+            temp_file_recent.unlink(missing_ok=True)
+            temp_file_recent = None
                 
         con = duckdb.connect()
         
@@ -556,7 +565,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
         result_hist = con.execute(query_hist).fetchall()
         
         # RECENT BEHAVIOR AGGREGATION (for drift)
-        if events_recent:
+        if temp_file_recent:
             query_recent = f"SELECT entity_id, histogram(hour_of_day), histogram(endpoint_id), histogram(process_name), histogram(geolocation), list(command_line) FROM read_json_auto('{temp_file_recent}') GROUP BY entity_id"
             result_recent_rows = con.execute(query_recent).fetchall()
             recent_features_map = {row[0]: row[1:] for row in result_recent_rows}
