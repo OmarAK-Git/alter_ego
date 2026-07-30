@@ -405,7 +405,7 @@ def _emit_build_block_supervisor_escalations(
     return escalated
 
 
-_BUILD_EXTRACT_CHUNK_SIZE = 5000  # rows per DB round-trip when streaming to temp JSONL (bounds build_profiles memory/disk under volume spikes)
+_BUILD_EXTRACT_CHUNK_SIZE: int = 5000  # rows per DB round-trip when streaming to temp JSONL (bounds build_profiles memory/disk under volume spikes)
 
 
 def _stream_events_to_jsonl(db_session: Session, stmt, path: Path, chunk_size: int) -> int:
