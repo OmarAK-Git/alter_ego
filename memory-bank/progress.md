@@ -1,9 +1,9 @@
 # Progress
 
-**Updated:** 2026-07-19  
+**Updated:** 2026-07-30  
 **Plan authority:** Honest merge of `docs/SPEC.md` (Phase 0–4, UI, threat model) + `docs/SPEC_V3.md` (§7 reopen gates, §9 portfolio). Doc revisions v2/v3 ≠ product versions; product scope remains **v1**.
 
-**T3 autopilot (canonical):** `.workflow/2026-07-19-d4-time-axis/` — SD0–SD7 + **SD-EXIT-GATE CLOSED** 2026-07-19 (ACCEPT-WITH-GAPS; pytest 163, ruff clean; in-gate scrub of prohibited C→D framing). Prior drained: Series C, S55, v1 portfolio.
+**T3 autopilot (canonical):** `.workflow/2026-07-30-reverse-spec-rfc-remediation/` — **CLOSED** 2026-07-30 (**ACCEPT-WITH-GAPS**; Grok; pytest **165**, ruff clean). Commits: `5311d3a` (RFC-006), `2aaa4e0` + `019487e` (RFC-005). Accepted gap: Session identity-map retention without `expunge`. Gate standing order now Grok until operator overrides. Prior closed: D4 time-axis / Series D (ACCEPT-WITH-GAPS), Series C, S55, v1 portfolio.
 
 ## Decisions locked (2026-07-12)
 

@@ -1,0 +1,203 @@
+{
+  "goal": "Remediate the two independently-verified RFCs from the 5638f86d reverse-spec review: bounded/streamed Postgres->JSONL extraction in build_profiles (RFC-005) and pytest discovery for the profile-builder test module (RFC-006).",
+  "success_criteria": [
+    "tests/batch/profile_builder/test_builder.py is collected and passes under default pytest discovery (testpaths=[\"tests\"], no python_files override)",
+    "build_profiles no longer calls .scalars().all() for either the historical or the recent window; both stream to temp JSONL in bounded chunks via execution_options(yield_per=chunk_size)",
+    "Zero remaining references to events_recent / events_hist in batch/profile_builder/builder.py",
+    "build_profiles gains a trailing keyword chunk_size: int = _BUILD_EXTRACT_CHUNK_SIZE (5000); all existing positional/keyword call sites remain valid unchanged",
+    "New regression test forces multiple chunks (chunk_size=2 over 5 rows) and asserts every row lands in the aggregate",
+    "Full suite green (pytest -v --tb=short --ignore=tests/live) and ruff clean at the exit gate"
+  ],
+  "constraints": [
+    "No scoring weight or threshold changes in config/scoring_config.yaml (evaluation-first discipline; this is a memory/IO bounding change, not detection logic)",
+    "build_profiles public signature stays backward compatible: any new parameter is a trailing keyword with a default",
+    "Streamed JSONL rows must be byte-for-byte equivalent to the current write_jsonl closure; do not add a per-entity ordering guarantee that does not exist today",
+    "Do not touch evidence/ or unrelated pre-existing untracked artifacts in the repo root (AS_BUILT.md, DEBT_LEDGER.md, *-rfcs.md, *-run_log.md, scratch/*.log)",
+    "RFC-001 is rejected (fabricated premise) and RFC-002/003 KILL dispositions are affirmed: no packet may implement them"
+  ],
+  "risks": [
+    {
+      "risk": "yield_per is incompatible with the eager/subquery loading or the sqlite in-memory test fixture, raising InvalidRequestError",
+      "approval_required": false,
+      "mitigation": "stmt_hist/stmt_recent are plain selects over ResolvedEventModel with no eager loaders; R2 regression test exercises chunk_size=2 on the sqlite fixture and would surface the error immediately"
+    },
+    {
+      "risk": "Empty-recent-window behavior changes: old code skipped creating the recent temp file, new code creates then unlinks it",
+      "approval_required": false,
+      "mitigation": "temp_file_recent set back to None when count_recent == 0, and every later 'if events_recent:' guard rewritten to 'if temp_file_recent:'; existing snapshot/shadow/geo/escalation tests cover the empty-recent path"
+    },
+    {
+      "risk": "Early-return path (no historical events) leaks the just-created hist temp file",
+      "approval_required": false,
+      "mitigation": "Plan mandates temp_file_hist.unlink(missing_ok=True) before the early return; verifier must confirm no stray temp_events_*.jsonl after the suite"
+    },
+    {
+      "risk": "Newly-discovered test_builder.py collides with another test_builder.py or fails once actually executed in CI",
+      "approval_required": false,
+      "mitigation": "R1 Step 1 captures pre-rename collect-only evidence; Step 4 runs the full suite to catch import file mismatch"
+    }
+  ],
+  "max_concurrent_agents": 2,
+  "max_total_agents": 10,
+  "active_sprint": "R",
+  "design_status": "closed",
+  "canonical_projections": {
+    "progress": "memory-bank/progress.md",
+    "tasks": "memory-bank/tasks.md",
+    "active_context": "memory-bank/activeContext.md"
+  },
+  "autopilot": {
+    "style": "uaw-t3-gsd-roles",
+    "agents": {
+      "research": "researcher",
+      "implement": "implementer",
+      "review": "code-reviewer",
+      "test": "test-runner",
+      "verify": "skeptic-verifier"
+    },
+    "implementation_model": "composer-2.5",
+    "verification_model": "cursor-grok-4.5-high",
+    "gate_model": "cursor-grok-4.5-high",
+    "gate_run_mode": "in_session_grok",
+    "researcher_policy": "multi_path_opportunity_cost",
+    "code_review_policy": "frequent_after_implement",
+    "test_runner_policy": "gates_and_major_sections",
+    "rules": [
+      "Update state.json packet status before memory-bank mirrors",
+      "No config/scoring_config.yaml writes",
+      "R2 regression test must go red (TypeError: unexpected keyword argument 'chunk_size') with evidence in results/ before the builder.py fix lands",
+      "Never mark a packet done without skeptic-verifier evidence",
+      "Blocking code-reviewer findings force a retry, not a done"
+    ],
+    "exit_gates": [
+      "R-EXIT-GATE"
+    ]
+  },
+  "source_review": "5638f86d-29ea-4156-b6b6-f65ff9f28f83-rfcs.md",
+  "plan_canonical": "docs/superpowers/plans/2026-07-30-reverse-spec-rfc-remediation.md",
+  "packets": [
+    {
+      "id": "R1",
+      "label": "sprint:R|test|rfc-006-pytest-discovery",
+      "objective": "Rename tests/batch/profile_builder/builder.py to test_builder.py so default pytest discovery collects the profile-builder aggregation test (DEBT-032 hotspot, cc~34, currently zero CI execution).",
+      "files_or_sources": [
+        "tests/batch/profile_builder/builder.py",
+        "tests/batch/profile_builder/test_builder.py",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R1-collect-before.txt",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R1-pytest-after.txt"
+      ],
+      "status": "done",
+      "depends_on": [],
+      "plan_ref": "Task 1 (Steps 1-5)",
+      "research": {
+        "dispatched": false,
+        "reason": "Single viable path: pytest default discovery requires the test_*.py prefix and the plan explicitly forbids a python_files override. No opportunity cost to weigh."
+      },
+      "code_review": {
+        "dispatched": false,
+        "reason": "Diff is a git-recorded R100 rename with identical blobs and zero content delta; there is no logic for a reviewer to read. Skeptic-verifier independently confirmed blob equality (a4f70060), so review would be a no-op."
+      },
+      "verification": {
+        "scope": "task",
+        "commands": [
+          "pytest tests/batch/profile_builder/test_builder.py -v"
+        ],
+        "verdict": "survives",
+        "verifier_model": "cursor-grok-4.5-high"
+      },
+      "evidence": [
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R1-collect-before.txt",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R1-pytest-after.txt",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R1-implementer-result.md",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R1-verifier-result.md"
+      ],
+      "notes": "2026-07-30 DONE: git mv builder.py -> test_builder.py (R100, identical blob a4f70060, 0 insertions/deletions). Collection 0 -> 1 item. Full suite 163 -> 164 passed. pyproject.toml untouched (no python_files shortcut). Commit 5311d3a scoped to the rename; unrelated root untracked files not staged. Skeptic verdict: survives."
+    },
+    {
+      "id": "R2",
+      "label": "sprint:R|fix|rfc-005-bounded-extraction",
+      "objective": "Replace both full .scalars().all() materializations in build_profiles with a chunked _stream_events_to_jsonl helper using execution_options(yield_per=chunk_size), bounding Python-side memory to one chunk regardless of window size.",
+      "files_or_sources": [
+        "batch/profile_builder/builder.py",
+        "tests/batch/test_profile_build_snapshot.py",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R2-regression-red.txt",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R2-regression-green.txt"
+      ],
+      "status": "done",
+      "depends_on": [
+        "R1"
+      ],
+      "plan_ref": "Task 2 (Steps 1-7)",
+      "research": {
+        "dispatched": false,
+        "reason": "Plan supplies the full implementation inline (helper, constant, signature, call sites). Single path, no fork; researcher would add latency without changing the decision."
+      },
+      "code_review": {
+        "dispatched": true,
+        "model": "composer-2.5",
+        "blocking_findings": 0,
+        "non_blocking_findings": 3,
+        "result": ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R2-code-review.md",
+        "disposition": "Note 1 (missing ': int' on _BUILD_EXTRACT_CHUNK_SIZE, a deviation from the plan's stated interface) fixed in follow-up commit 019487e. Notes 2 and 3 accepted as-is: sqlite cannot prove server-side round-trips, and partial-file cleanup on mid-stream exceptions relies on the pre-existing finally block that this diff does not worsen."
+      },
+      "verification": {
+        "scope": "task",
+        "commands": [
+          "pytest tests/batch/test_profile_build_snapshot.py -v",
+          "pytest -v --tb=short --ignore=tests/live",
+          "ruff check ."
+        ],
+        "verdict": "survives",
+        "verifier_model": "cursor-grok-4.5-high"
+      },
+      "commits": [
+        "2aaa4e0",
+        "019487e"
+      ],
+      "evidence": [
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R2-regression-red.txt",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R2-regression-green.txt",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R2-pytest-full.txt",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R2-ruff.txt",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R2-implementer-result.md",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R2-code-review.md",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R2-verifier-result.md"
+      ],
+      "notes": "2026-07-30 DONE: RED captured first (TypeError: unexpected keyword argument 'chunk_size') before any builder.py edit. _BUILD_EXTRACT_CHUNK_SIZE: int = 5000 + _stream_events_to_jsonl with execution_options(yield_per=chunk_size); both .scalars().all() extractions removed; zero events_hist/events_recent references remain; downstream guard now 'if temp_file_recent:'. Row payload byte-equivalent to the deleted write_jsonl closure (verifier diffed against 2aaa4e0^). Suite 164 -> 165 passed, ruff clean, no stray temp_events_*.jsonl. Skeptic disproved test vacuity by inserting a break after the first chunk (failed assert 2 == 5) and restored the tree clean. Verdict: survives."
+    },
+    {
+      "id": "R-EXIT-GATE",
+      "label": "sprint:R|gate",
+      "objective": "Full-suite pytest (--ignore=tests/live) + ruff check, then in-session Grok gate verdict; close the run.",
+      "files_or_sources": [
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/"
+      ],
+      "status": "done",
+      "depends_on": [
+        "R1",
+        "R2"
+      ],
+      "verification": {
+        "scope": "run_exit",
+        "gate_run_mode": "in_session_grok",
+        "gate_model": "cursor-grok-4.5-high",
+        "commands": [
+          "pytest -v --tb=short --ignore=tests/live",
+          "ruff check ."
+        ],
+        "commands_status": "passed",
+        "verdict": "ACCEPT-WITH-GAPS",
+        "verdict_authority": "cursor-grok-4.5-high",
+        "gaps": [
+          "Session identity-map retention: yield_per removes the unbounded Python result list, but without expunge the Session still accumulates every streamed ResolvedEventModel, so peak ORM memory still scales with window size. Remediation is real (list materialization gone; DuckDB does not rematerialize) but the 'one chunk' memory claim is incomplete."
+        ]
+      },
+      "evidence": [
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R-EXIT-GATE-pytest.txt",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R-EXIT-GATE-ruff.txt",
+        ".workflow/2026-07-30-reverse-spec-rfc-remediation/results/R-EXIT-GATE-verdict.md"
+      ],
+      "notes": "2026-07-30 CLOSED ACCEPT-WITH-GAPS (Grok). Fresh pytest 165 / ruff clean. Previously blocked on Opus 5 API limit; operator authorized all future gates on cursor-grok-4.5-high. Accepted gap: Session identity-map retention without expunge. Unrelated working-tree files left alone per operator. RFC-001 rejection affirmed."
+    }
+  ]
+}

@@ -1,32 +1,28 @@
 # Tasks
 
-**Canonical T3 state:** `.workflow/2026-07-19-d4-time-axis/state.json`
+**Canonical T3 state:** `.workflow/2026-07-30-reverse-spec-rfc-remediation/state.json` (CLOSED)
 
 ## Autopilot
 
-**Active sprint:** SD (D4 time-axis + Series D)  
-**Next runnable:** `SD-EXIT-GATE` — **blocked** (operator stop-before-gate)  
-**Stop before:** `SD-EXIT-GATE`  
-**Design status:** executing; SD0–SD7 done
+**Active sprint:** R (reverse-spec RFC remediation) — **drained**  
+**Next runnable:** none  
+**Gate model standing order:** `cursor-grok-4.5-high` (all gates) until operator overrides
 
-## In queue
+## Queue (all done)
 
-- [x] **SD0** — C2 red-first (seam rewrite; no fix)
-- [x] **SD1** — Fix `get_latest_shadow_profile` sim-time axis + audit
-- [x] **SD2** — No silent fallback (WARN + flag)
-- [x] **SD3** — Future-`created_at` regression
-- [x] **SD4** — Dual `promotion_coverage` (N=5) + Series D harness skeleton
-- [x] **SD5-REVIEW-GATE** — items 1–5 STOP — **ready_for_review** (ACCEPT-WITH-GAPS)
-- [x] **SD6** — Series D sweep (DONE_WITH_CONCERNS; Not CALIBRATED)
-- [x] **SD7** — Series D governance
-- [ ] **SD-EXIT-GATE** — (**blocked** — operator stop-before-gate)
+- [x] **R1** — RFC-006 pytest discovery rename — DONE (`5311d3a`)
+- [x] **R2** — RFC-005 chunked streaming extraction — DONE (`2aaa4e0`, `019487e`)
+- [x] **R-EXIT-GATE** — ACCEPT-WITH-GAPS (Grok; pytest 165 / ruff clean)
 
 ## Later (operator / separate)
 
-- [ ] Attestation YAML hygiene S6.3 (zero behavioral diff; out of this packet)
+- [ ] Attestation YAML hygiene S6.3 (zero behavioral diff)
+- [ ] Operator-owned untracked: `AS_BUILT.md`, `DEBT_LEDGER.md`, `alter-ego-drift-gap-evaluation.md`, drift-expansion plan, RFCs — leave alone
+- [ ] Optional follow-up from exit gap: `expunge` streamed rows in `_stream_events_to_jsonl` to fully bound Session identity-map memory
 
 ## Prior drained
 
-- Series C — `.workflow/2026-07-19-series-c/` EXIT ACCEPT-WITH-GAPS; Not CALIBRATED
+- D4 time-axis + Series D — EXIT ACCEPT-WITH-GAPS; Not CALIBRATED
+- Series C — EXIT ACCEPT-WITH-GAPS; Not CALIBRATED
 - S55 R-INTERLOCK — drained
 - V1 portfolio-ready — drained
