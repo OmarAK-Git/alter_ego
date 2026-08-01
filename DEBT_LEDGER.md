@@ -54,7 +54,7 @@ Classic `# TODO` / `# FIXME` / `# HACK` / `# XXX` markers are **absent** from pr
 | DEBT-016 | B constants | `worker/resolver.py` | `LOW_RESOLUTION_THRESHOLD=0.75`, `COLLISION_SPLIT_CONFIDENCE=0.3`, unknown conf `0.5` | S2 | Config or schema |
 | DEBT-017 | B constants | `worker/explainer.py` | Slot max 512; confidence bands 0.2/0.4/0.6/0.8; HTTP timeouts 30/60 | S3 | Document; optional config |
 | DEBT-018 | B constants | `core/attestation.py:11–16` | `QUIET_WINDOW_DAYS=3`, `MIN_DWELL_BUILDS=2`, `ALPHA_PROD=0.02`, `ALPHA_ANCHOR=0.05` — YAML write deferred | S1 | Wire to YAML (S6.3 hygiene) or declare code-permanent SoT |
-| DEBT-019 | B constants | `config/scoring_config.yaml` | Deferred unread: `max_calendar_adjustment`, `age_jitter_hours`, `min_clean_observation_count`, `gap_windows.*`, `total_volume_delta` weight | S1 | Implement Phase 4 **or** remove placeholders |
+| DEBT-019 | B constants | `config/scoring_config.yaml` | `total_volume_delta` implemented shadow-computed (`features.total_volume_delta.enabled: false`); calendar/gap keys still deferred | S1 | **Partial recovery** — Phase 2 (`worker/scorer.py` `compute_volume_rarity`, `builder.py` hourly counts); `enabled: false` pending Series F governance |
 | DEBT-020 | B constants | `builder.py:422–424` | Drift-weight fallbacks all `1.0` / embed `2.0` vs YAML `5/5/5/20/40` | S2 | Align fallbacks |
 | DEBT-021 | C exceptions | `worker/explainer.py:180–181` | ADC discovery: `except Exception: pass` | S2 | Log; don’t silent-fail auth probe |
 | DEBT-022 | C exceptions | `worker/explainer.py:313–314` | StubLLM: `except Exception: return "{}"` | S3 | Remove dead branch |
@@ -86,7 +86,7 @@ Classic `# TODO` / `# FIXME` / `# HACK` / `# XXX` markers are **absent** from pr
 | DEBT-048 | G deps | undeclared imports | `numpy` (vectorizer/scorer/builder), `requests` (explainer/scripts), `google-auth` (Vertex) | S1 | Declare deps / `llm` extra |
 | DEBT-049 | G deps | no `requirements*.txt` | None in repo | INFO | pyproject-only is fine if locked |
 | DEBT-050 | G deps | `pyproject.toml` version | `version = "0.1.0"` | S3 | Bump on release |
-| DEBT-051 | H stubs | `worker/scorer.py:554–558` | `score_vol = 0.0` + `volume_delta_deferred` | S1 | Implement + sweep, or remove slot |
+| DEBT-051 | H stubs | `worker/scorer.py` | `compute_volume_rarity` wired; `score_vol=0` + `volume_delta_deferred` when `enabled: false` (Phase 2, 2026-07-30 plan) | S1 | **Partial recovery** — Phase 2 scorer + builder histogram; close after Series F `enabled` governance flip |
 | DEBT-052 | H stubs | `worker/explainer.py:121–123` | `NotImplementedError` on base `LLMProvider` | INFO | Expected ABC-style base |
 | DEBT-053 | H stubs | `worker/explainer.py:303–314` | `StubLLMProvider` | S3 | Keep test/offline; mark |
 | DEBT-054 | H stubs | `worker/config_store.py:30–37` | “strict for now” + bare `pass` — **does not reject** duplicate hash | S2 | Raise or document allow |
@@ -103,14 +103,14 @@ Classic `# TODO` / `# FIXME` / `# HACK` / `# XXX` markers are **absent** from pr
 | DEBT-065 | K scratch | `scratch/diagnose_d4_engagement.py` | D4 engagement diagnosis | S2 | Archive after governance settled |
 | DEBT-066 | K scratch | `scratch/run_s31_sweep.py`, `s32_refresh_calibration_docs.py` | S3.1/S3.2 tooling | S2 | Prefer `batch/eval` as SoT |
 | DEBT-067 | K scratch | `scratch/analyze_step{1,2,3,4}.py` | Stepwise calibration drivers | S2 | Consolidate or freeze |
-| DEBT-068 | K scratch | `scratch/test_cohort_gate.py` | **Only** reader of `min_clean_observation_count` | S1 | Wire prior-update gate or remove knob |
+| DEBT-068 | K scratch | `scratch/test_cohort_gate.py` | Fleet `COHORT_DRIFT` decision implemented in builder (`fleet_drift_enabled: false`); `min_clean_observation_count` still scratch-only | S1 | **Partial recovery** — Phase 3 fleet `COHORT_DRIFT` in `builder.py`; close after Series G governance + prior-update gate |
 | DEBT-069 | K scratch | `scratch/scenario3_sweep.py`, `debug_fp.py`, `debug_benign.py`, … | Scenario-3 / FP leftovers | S2 | Tie to residual-risk docs or archive |
 | DEBT-070 | K scratch | `scratch/series_c_d4_engagement_run.log` | Untracked run log | S3 | gitignore; don’t commit |
 | DEBT-071 | K scratch | `memory-bank/progress.md` | Living defer inventory + Not CALIBRATED + attestation YAML deferred | S1 | Treat as debt SoT alongside this ledger |
 | DEBT-072 | L deferrals | SPEC / progress S4.3 | Suppressed-decision aging + jitter; `age_jitter_hours` unread | S1 | Implement or delete knob |
 | DEBT-073 | L deferrals | SPEC / progress S4.6 | Calendar dual-score / telemetry gap; `max_calendar_adjustment`, `gap_windows.*` | S1 | Implement or delete knobs |
 | DEBT-074 | L deferrals | SPEC / progress S4.7 | Asset / blast-radius context — no artifacts/API | S2 | Greenfield packet or keep Path B |
-| DEBT-075 | L deferrals | SPEC / progress S5.11 | Cohort prior-update gates + independent cohort artifacts | S1 | See also DEBT-068 |
+| DEBT-075 | L deferrals | SPEC / progress S5.11 | Fleet-level `cohort_drift` parallel detector shipped (`fleet_drift_enabled: false`); independent cohort artifacts + prior-update gates still deferred | S1 | **Partial recovery** — Phase 3 fleet detector (see DEBT-068); S5.11 Path B unchanged; close after Series G governance |
 | DEBT-076 | L deferrals | SPEC / progress S2.7 | Profile lifecycle states — no `lifecycle_state` | S2 | Spec-aligned ship or keep Path B |
 | DEBT-077 | L deferrals | SPEC / progress S5.2 | K8s / Terraform deferred; compose-as-IaC | S3 | Optional portfolio IaC |
 

@@ -27,6 +27,8 @@ class DecisionRecord(BaseModel):
     flags: List[str]
     embedding_model_version: str = "unknown"
     replay_run_id: Optional[str] = None
+    signal_family_agreement_count: int = 0
+    precision_gate_version: Optional[str] = None
 
 
 class ConfidenceLabel(str, Enum):

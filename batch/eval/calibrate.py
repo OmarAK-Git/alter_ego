@@ -76,7 +76,7 @@ def calibrate():
         logger.error("No events found. Run generator first.")
         return
 
-    db = run_pipeline(events_path, labels_path)
+    db, _has_more, _ = run_pipeline(events_path, labels_path)
     if not db:
         return
     

@@ -328,6 +328,8 @@ These are **open questions**, not solved or recommended changes. Validate with s
 
 **Source:** External review `alter-ego-drift-gap-evaluation.md` DRIFT-R3, adapted from a DNS-beacon CoV/ActiveHoursRatio methodology — method only, no network telemetry implied.
 
+**Status (2026-07-30):** Implemented shadow-computed (`drift_weights.cadence`, `enabled: false`); `ot_polling` synthetic archetype added. Pending Series F governance sign-off before any `enabled` flip — see `docs/superpowers/plans/2026-07-30-drift-detection-capability-expansion.md`.
+
 ### H13 — Geo-velocity between successive auth successes
 
 **Observation:** `core/schemas/events.py` `geolocation` is a free-text **label** (`entity.geography` in the synthetic generator, e.g. `"RU-Moscow"`), not lat/long. `geolocation_rarity` (weight 2.0 point / 5.0 drift) scores rarity of a single label; it does not compare an entity's **successive** locations or compute implied travel speed.
@@ -337,6 +339,8 @@ These are **open questions**, not solved or recommended changes. Validate with s
 **Research:** Blocked on a static label→centroid (lat/long) lookup table, which does not exist today — this is new reference data, not new telemetry. Needs a minimum paired-success count per entity for a stable per-entity baseline, and a VPN/relay allowlist design to bound the false-positive class before any scoring change.
 
 **Source:** DRIFT-R6, adapted from an impossible-travel detection pattern (ADS-07).
+
+**Status (2026-07-30):** Implemented shadow-computed (`drift_weights.geo_velocity`, `core/geo_centroids.py`, `enabled: false`). Pending Series G governance sign-off — see drift-capability-expansion plan.
 
 ### H14 — Cross-signal-family agreement as a precision gate
 
@@ -348,6 +352,8 @@ These are **open questions**, not solved or recommended changes. Validate with s
 
 **Source:** DRIFT-R5, adapted from a multi-plane convergence concept (ADS-06) — method only, no ATT&CK technique graph implied or proposed.
 
+**Status (2026-07-30):** Stage A implemented (`signal_family_agreement_count`, `precision_gate.enabled: false`). Stage B explicitly not built. Pending Series H benign-vs-TP agreement distribution — see drift-capability-expansion plan.
+
 ### H15 — Staged multi-feature drift ordering
 
 **Observation:** `cumulative_drift` and the point-score aggregate are both order-blind — neither records which drift dimensions crossed soft thresholds, or in what sequence, across builds.
@@ -357,6 +363,8 @@ These are **open questions**, not solved or recommended changes. Validate with s
 **Research:** The most speculative and calibration-heavy item in this batch — sequence templates risk high FN if over-specific, high FP if over-broad (source doc's own caveat). Treat as backlog research only; do not prioritize ahead of H12–H14.
 
 **Source:** DRIFT-R4, adapted from an export→stage→upload chain concept (ADS-04) — platform-specific connector plumbing explicitly out of scope; only the staged-pattern idea transfers.
+
+**Status (2026-07-30):** Implemented shadow-computed (`staged_drift.enabled: false`, crossing log + template match). Pending Series H governance sign-off — see drift-capability-expansion plan.
 
 **Not new — already tracked:** the source doc's DRIFT-R1 (volume delta as a drift dimension) and DRIFT-R2 (fleet-level coordinated-drift rule) restate existing tracked work rather than surface new gaps: DRIFT-R1 ≡ `DEBT-051`/`DEBT-019` (this doc's H9); DRIFT-R2 ≡ `DEBT-068`/`DEBT-075` (H2, H7). DRIFT-R2's one genuinely useful addition: it proposes keying a new fleet-level `cohort_drift` rule off `cohort_gating_constants.max_changed_fraction`, which — per `AS_BUILT.md` §5.4 — is **already read** by the scorer (for novelty-gate suppression), unlike `min_clean_observation_count` which is unread. Reusing an already-wired knob for this is cheaper than the S5.11 prior-update-gate route and worth folding into that recovery item.
 

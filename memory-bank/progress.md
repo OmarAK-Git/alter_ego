@@ -1,6 +1,30 @@
 # Progress
 
-**Updated:** 2026-07-30  
+**Updated:** 2026-07-31  
+
+## DC drift-capability expansion (active T3)
+
+**Workflow:** `.workflow/2026-07-30-drift-capability-expansion/`  
+**Report:** `.workflow/2026-07-30-drift-capability-expansion/results/SPRINT-PROGRESS-REPORT.md`
+
+| Packet | Status | Notes |
+|---|---|---|
+| P0-1–P0-2, P0-GATE | done | Shadow baseline Phase 0 |
+| P0-3 Series E | in_progress | chunk ~11/22; PID 63516; no metrics |
+| P1–P2, P2-GATE | done | Cadence + volume delta |
+| P2-3 Series F | in_progress | parallel with E |
+| P3–P4, P4-GATE | done | Fleet cohort + geo velocity |
+| P4-3 Series G | pending | after F |
+| P5–P6, P5-GATE | done | Precision gate Stage A + staged sequences |
+| P5-4 Series H | pending | after G |
+| FINAL-DOCS | pending | needs E+F+G+H |
+| DC-EXIT-GATE | pending | prior REJECT |
+
+Committed YAML: all new `enabled` flags **false**. No production flip without governance.
+
+---
+
+**Updated (portfolio baseline):** 2026-07-30  
 **Plan authority:** Honest merge of `docs/SPEC.md` (Phase 0–4, UI, threat model) + `docs/SPEC_V3.md` (§7 reopen gates, §9 portfolio). Doc revisions v2/v3 ≠ product versions; product scope remains **v1**.
 
 **T3 autopilot (canonical):** `.workflow/2026-07-30-reverse-spec-rfc-remediation/` — **CLOSED** 2026-07-30 (**ACCEPT-WITH-GAPS**; Grok; pytest **165**, ruff clean). Commits: `5311d3a` (RFC-006), `2aaa4e0` + `019487e` (RFC-005). Accepted gap: Session identity-map retention without `expunge`. Gate standing order now Grok until operator overrides. Prior closed: D4 time-axis / Series D (ACCEPT-WITH-GAPS), Series C, S55, v1 portfolio.
