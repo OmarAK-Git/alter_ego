@@ -1,63 +1,63 @@
-{
-  "goal": "Ship seven drift-detection capability phases (Phase 0 shadow-baseline fix, H12 cadence, volume delta, fleet cohort drift, geo-velocity, H14 precision gate Stage A, H15 staged sequences) as zero-behavioral-diff-on-ship code behind enabled flags.",
-  "success_criteria": [
-    "Phase 0: point-rarity/embedding follow shadow profile under block; single shadow lookup shared with drift",
-    "Phases 1-2: cadence CoV + volume delta shadow-computed; enabled false by default",
-    "Phases 3-4: fleet COHORT_DRIFT decision + geo_velocity_delta; enabled false by default",
-    "Phases 5-6: signal_family_agreement_count + precision_gate_version on every decision; staged_drift crossing log",
-    "Series E/F/G/H sweeps complete with governance docs; no enabled flag flips in committed YAML",
-    "Full suite green: pytest -v --tb=short --ignore=tests/live; ruff clean"
-  ],
-  "constraints": [
-    "No scoring_config.yaml enabled flips to true without Series governance sign-off",
-    "Do not modify core/schemas/config.py (DEBT-028)",
-    "Preserve unrelated working-tree artifacts",
-    "No git commits unless operator requests"
-  ],
-  "active_sprint": "DC",
-  "design_status": "closed",
-  "plan_canonical": "docs/superpowers/plans/2026-07-30-drift-detection-capability-expansion.md",
-  "design_canonical": "docs/superpowers/specs/2026-07-30-drift-detection-capability-expansion-design.md",
-  "canonical_projections": {
-    "progress": "memory-bank/progress.md",
-    "tasks": "memory-bank/tasks.md",
-    "active_context": "memory-bank/activeContext.md"
-  },
-  "autopilot": {
-    "style": "uaw-t3-gsd-roles",
-    "queue_file": ".workflow/autopilot-queue.json",
-    "implementation_model": "composer-2.5",
-    "verification_model": "cursor-grok-4.5-high",
-    "gate_model": "cursor-grok-4.5-high",
-    "gate_run_mode": "in_session_grok",
-    "researcher_policy": "multi_path_opportunity_cost",
-    "code_review_policy": "frequent_after_implement",
-    "test_runner_policy": "gates_and_major_sections"
-  },
-  "packets": [
-    {"id": "P0-1", "status": "done", "notes": "worker/scorer.py _resolve_effective_profile; tests/worker/test_shadow_baseline_under_block.py"},
-    {"id": "P0-2", "status": "done", "notes": "Deduped drift shadow lookup; dual drift_shadow_fallback flag for compat"},
-    {"id": "P0-GATE", "status": "done", "evidence": ["results/P0-GATE-pytest.txt", "results/P0-GATE-ruff.txt"]},
-    {"id": "P0-3", "status": "in_progress", "notes": "2026-08-01T00:21Z poll: chunk 11/22 (~45min in, long chunk); 11 CHUNK_EXIT; checkpoint 2026-01-12; PID 63516 595MB CPU=2372s; log 5.50MB; metrics NOT ready"},
-    {"id": "P1-1", "status": "done", "notes": "batch/synthetic/generator.py ot_polling + it_automation jitter"},
-    {"id": "P1-2", "status": "done", "notes": "compute_build_window_cadence_cov; config_override on build_profiles"},
-    {"id": "P2-1", "status": "done", "notes": "compute_volume_rarity in worker/scorer.py"},
-    {"id": "P2-2", "status": "done", "notes": "hourly_event_counts in builder features"},
-    {"id": "P2-GATE", "status": "done"},
-    {"id": "P2-3", "status": "in_progress", "notes": "2026-07-31T23:45Z: parallel with E; chunked sweep starting"},
-    {"id": "P3-1", "status": "done", "notes": "COHORT_DRIFT DecisionRecord when fleet_drift_enabled"},
-    {"id": "P4-1", "status": "done", "notes": "core/geo_centroids.py"},
-    {"id": "P4-2", "status": "done", "notes": "compute_geo_velocity_delta in builder"},
-    {"id": "P4-GATE", "status": "done"},
-    {"id": "P4-3", "status": "pending"},
-    {"id": "P5-1", "status": "done", "notes": "alembic i8j9k0l1m2n3"},
-    {"id": "P5-2", "status": "done"},
-    {"id": "P5-3", "status": "done"},
-    {"id": "P6-1", "status": "done"},
-    {"id": "P6-2", "status": "done"},
-    {"id": "P5-GATE", "status": "done"},
-    {"id": "P5-4", "status": "pending"},
-    {"id": "FINAL-DOCS", "status": "pending"},
-    {"id": "DC-EXIT-GATE", "status": "pending"}
-  ]
-}
+{
+  "goal": "Ship seven drift-detection capability phases (Phase 0 shadow-baseline fix, H12 cadence, volume delta, fleet cohort drift, geo-velocity, H14 precision gate Stage A, H15 staged sequences) as zero-behavioral-diff-on-ship code behind enabled flags.",
+  "success_criteria": [
+    "Phase 0: point-rarity/embedding follow shadow profile under block; single shadow lookup shared with drift",
+    "Phases 1-2: cadence CoV + volume delta shadow-computed; enabled false by default",
+    "Phases 3-4: fleet COHORT_DRIFT decision + geo_velocity_delta; enabled false by default",
+    "Phases 5-6: signal_family_agreement_count + precision_gate_version on every decision; staged_drift crossing log",
+    "Series E/F/G/H sweeps complete with governance docs; no enabled flag flips in committed YAML",
+    "Full suite green: pytest -v --tb=short --ignore=tests/live; ruff clean"
+  ],
+  "constraints": [
+    "No scoring_config.yaml enabled flips to true without Series governance sign-off",
+    "Do not modify core/schemas/config.py (DEBT-028)",
+    "Preserve unrelated working-tree artifacts",
+    "No git commits unless operator requests"
+  ],
+  "active_sprint": "DC",
+  "design_status": "closed",
+  "plan_canonical": "docs/superpowers/plans/2026-07-30-drift-detection-capability-expansion.md",
+  "design_canonical": "docs/superpowers/specs/2026-07-30-drift-detection-capability-expansion-design.md",
+  "canonical_projections": {
+    "progress": "memory-bank/progress.md",
+    "tasks": "memory-bank/tasks.md",
+    "active_context": "memory-bank/activeContext.md"
+  },
+  "autopilot": {
+    "style": "uaw-t3-gsd-roles",
+    "queue_file": ".workflow/autopilot-queue.json",
+    "implementation_model": "composer-2.5",
+    "verification_model": "cursor-grok-4.5-high",
+    "gate_model": "cursor-grok-4.5-high",
+    "gate_run_mode": "in_session_grok",
+    "researcher_policy": "multi_path_opportunity_cost",
+    "code_review_policy": "frequent_after_implement",
+    "test_runner_policy": "gates_and_major_sections"
+  },
+  "packets": [
+    {"id": "P0-1", "status": "done", "notes": "worker/scorer.py _resolve_effective_profile; tests/worker/test_shadow_baseline_under_block.py"},
+    {"id": "P0-2", "status": "done", "notes": "Deduped drift shadow lookup; dual drift_shadow_fallback flag for compat"},
+    {"id": "P0-GATE", "status": "done", "evidence": ["results/P0-GATE-pytest.txt", "results/P0-GATE-ruff.txt"]},
+    {"id": "P0-3", "status": "done", "notes": "Cloud commit 8989f15. Governance: docs/scoring-config-governance-series-e.md. Metrics: results/series_e_metrics.json + scratch/series_e_metrics.json. Phase 0: blocked_entity_count=53, point_baseline_shadow_engaged_count=13526, active_alert_workflow_rows=6270. Scenario recall S1=1.0 S2=0.74 S3=0.11 S4=1.0 S5=0.60. enabled flags NOT flipped."},
+    {"id": "P1-1", "status": "done", "notes": "batch/synthetic/generator.py ot_polling + it_automation jitter"},
+    {"id": "P1-2", "status": "done", "notes": "compute_build_window_cadence_cov; config_override on build_profiles"},
+    {"id": "P2-1", "status": "done", "notes": "compute_volume_rarity in worker/scorer.py"},
+    {"id": "P2-2", "status": "done", "notes": "hourly_event_counts in builder features"},
+    {"id": "P2-GATE", "status": "done"},
+    {"id": "P2-3", "status": "done", "notes": "Cloud commit a916d13 (bc-20a38b02). Governance: docs/scoring-config-governance-series-f.md. Metrics: results/series_f_metrics.json + scratch/series_f_metrics.json. Scenario recall S1=1.0 S2=0.74 S3=0.11 S4=1.0 S5=0.60. Cadence dominance: mean 0.288 vs embedding 0.019 (ratio 14.9x). enabled flags restored false."},
+    {"id": "P3-1", "status": "done", "notes": "COHORT_DRIFT DecisionRecord when fleet_drift_enabled"},
+    {"id": "P4-1", "status": "done", "notes": "core/geo_centroids.py"},
+    {"id": "P4-2", "status": "done", "notes": "compute_geo_velocity_delta in builder"},
+    {"id": "P4-GATE", "status": "done"},
+    {"id": "P4-3", "status": "done", "notes": "Cloud commit b63884c (bc-ec99cada). Governance: docs/scoring-config-governance-series-g.md. Metrics: results/series_g_metrics.json + scratch/series_g_metrics.json. S3 recall=0.111 (Series D archival 0.444 informational). S1 recall=1.0 geo-velocity check."},
+    {"id": "P5-1", "status": "done", "notes": "alembic i8j9k0l1m2n3"},
+    {"id": "P5-2", "status": "done"},
+    {"id": "P5-3", "status": "done"},
+    {"id": "P6-1", "status": "done"},
+    {"id": "P6-2", "status": "done"},
+    {"id": "P5-GATE", "status": "done"},
+    {"id": "P5-4", "status": "done", "notes": "Cloud commit 1cc2e3e (bc-9fa3d834, merged via PR #1). Governance: docs/scoring-config-governance-series-h.md. Metrics: results/series_h_metrics.json + scratch/series_h_metrics.json. Benign FP agreement mean=0.841; TP agreement=1.0. S3 recall=0.111."},
+    {"id": "FINAL-DOCS", "status": "done", "notes": "DEBT_LEDGER.md + docs/residual-risk-drift-hypotheses.md updated with commit range fc8f530..03e5af6 and Series E-H governance cross-refs."},
+    {"id": "DC-EXIT-GATE", "status": "done", "evidence": ["results/DC-EXIT-GATE-pytest.txt", "results/DC-EXIT-GATE-ruff.txt", "results/DC-EXIT-GATE-verdict.md"], "notes": "204 passed, ruff clean, gate PASS (cursor-grok-4.5-high, 2026-08-02)"}
+  ]
+}

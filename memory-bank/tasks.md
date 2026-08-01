@@ -1,25 +1,35 @@
-# Tasks
-
-**Canonical T3 state:** `.workflow/2026-07-30-drift-capability-expansion/state.json`
-
-## Autopilot
-
-**Active sprint:** DC (drift capability expansion) — **in progress**  
-**Queue SoT:** `.workflow/autopilot-queue.json`  
-**Gate model:** `cursor-grok-4.5-high` (all gates, in_session_grok)
-
-## Queue status (2026-07-31)
-
-| Status | Count | Items |
-|---|---:|---|
-| done | 18 | P0-1, P0-2, P0-GATE, P1-1, P1-2, P2-1, P2-2, P2-GATE, P3-1, P4-1, P4-2, P4-GATE, P5-1..P6-2, P5-GATE |
-| in_progress | 1 | P0-3 (Series E–H chunked sweeps restarting) |
-| pending | 5 | P2-3, P4-3, P5-4, FINAL-DOCS, DC-EXIT-GATE |
-
-## Implementation landed (uncommitted)
-
-Phases 0–6 code + tests: **204 pytest passed**, ruff clean. All new signals `enabled: false`.
-
-## Blockers
-
-Series E–H full sweeps (~hours each) must complete before governance docs + exit gate.
+# Tasks
+
+**Canonical T3 state:** `.workflow/2026-07-30-drift-capability-expansion/state.json`
+
+## Autopilot
+
+**Active sprint:** DC (drift capability expansion) — **COMPLETE**  
+**Queue SoT:** `.workflow/autopilot-queue.json`  
+**Gate model:** `cursor-grok-4.5-high` (all gates, in_session_grok)
+
+## Queue status (2026-08-02)
+
+| Status | Count | Items |
+|---|---:|---|
+| **done** | **24** | All packets P0-1 through DC-EXIT-GATE |
+| in_progress | 0 | — |
+| pending | 0 | — |
+
+## Exit gate
+
+- **Verdict:** PASS (2026-08-02, cursor-grok-4.5-high)
+- **pytest:** 204 passed (`results/DC-EXIT-GATE-pytest.txt`)
+- **ruff:** clean (`results/DC-EXIT-GATE-ruff.txt`)
+- **Verdict doc:** `results/DC-EXIT-GATE-verdict.md`
+
+## Series sweeps (cloud complete)
+
+| Series | Commit | Governance |
+|---|---|---|
+| E | `8989f15` | `docs/scoring-config-governance-series-e.md` |
+| F | `a916d13` | `docs/scoring-config-governance-series-f.md` |
+| G | `b63884c` | `docs/scoring-config-governance-series-g.md` |
+| H | `1cc2e3e` | `docs/scoring-config-governance-series-h.md` |
+
+All `enabled` flags in committed `config/scoring_config.yaml` remain **false**.
