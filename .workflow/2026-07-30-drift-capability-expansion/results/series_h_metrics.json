@@ -1,0 +1,132 @@
+{
+  "series": "H",
+  "anomaly_threshold": 45.0,
+  "config_version": "2.2",
+  "database": "/workspace/alter_ego_calibrate_series_h.db",
+  "events_path": "/workspace/scratch/series_h_events.jsonl",
+  "labels_path": "/workspace/scratch/series_h_ground_truth.jsonl",
+  "generator_seed": 42,
+  "calibrated": false,
+  "enabled_flags": {
+    "precision_gate.enabled": true,
+    "staged_drift.enabled": true
+  },
+  "note": "NOT CALIBRATED. Series H harness output (Phases 5\u20136: precision gate Stage A + staged drift enabled). Benign-vs-TP agreement histograms are the evidence base for any future Stage-B threshold proposal. Do not compare headline FP/P/R to Series A/B/C/D/E/F/G.",
+  "partition_check": {
+    "attack_partitions": {
+      "eval_scenario_1": 1,
+      "eval_scenario_2": 35,
+      "eval_scenario_3": 45,
+      "eval_scenario_4": 1,
+      "eval_scenario_5": 75
+    },
+    "attack_event_count": 157,
+    "malicious_scenarios_in_labels": [
+      "scenario_1_sharp_misuse",
+      "scenario_2_slow_roll",
+      "scenario_3_subtle",
+      "scenario_4_service_abuse",
+      "scenario_5_patient_cycle"
+    ],
+    "all_partitions_eval_scenario": true
+  },
+  "metrics": {
+    "precision": 0.006708907938874394,
+    "recall": 0.46153846153846156,
+    "f1": 0.01322556943423953,
+    "tp": 54,
+    "fp": 7995,
+    "fn": 63,
+    "tn": 300070,
+    "drift_alerts": 31,
+    "scenarios": {
+      "scenario_1_sharp_misuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0,
+        "drift_necessary_tp_fraction": 0.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.0,
+        "attack_raised_cumulative_drift_max": 2.6790437589044758,
+        "caught_before_absorption_proxy": false
+      },
+      "scenario_2_slow_roll": {
+        "recall": 0.7428571428571429,
+        "tp": 26,
+        "fn": 9,
+        "drift_necessary_tp_fraction": 1.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.2571428571428571,
+        "attack_raised_cumulative_drift_max": 10.120372889698643,
+        "caught_before_absorption_proxy": true
+      },
+      "scenario_5_patient_cycle": {
+        "recall": 0.6,
+        "tp": 21,
+        "fn": 14,
+        "drift_necessary_tp_fraction": 1.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.4,
+        "attack_raised_cumulative_drift_max": 33.24890006400618,
+        "caught_before_absorption_proxy": true
+      },
+      "scenario_3_subtle": {
+        "recall": 0.1111111111111111,
+        "tp": 5,
+        "fn": 40,
+        "drift_necessary_tp_fraction": 1.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.8888888888888888,
+        "attack_raised_cumulative_drift_max": 25.615321287150923,
+        "caught_before_absorption_proxy": true
+      },
+      "scenario_4_service_abuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0,
+        "drift_necessary_tp_fraction": 0.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.0,
+        "attack_raised_cumulative_drift_max": 6.178718489512886,
+        "caught_before_absorption_proxy": false
+      }
+    },
+    "active_alert_workflow_rows": 6270,
+    "auto_resolved_count": 1810,
+    "blocked_entity_count": 53,
+    "blocked_entity_days_estimate": 715,
+    "promotion_coverage_ever": {
+      "entities_with_active_promoted_profile": 65,
+      "entities_scored": 65,
+      "fraction": 1.0
+    },
+    "promotion_coverage_in_window": {
+      "entities_scored": 65,
+      "scored_entity_days": 1072,
+      "in_window_entity_days": 521,
+      "stale_entity_days": 551,
+      "serving_profile_missing_days": 0,
+      "n_days": 5,
+      "fraction": 0.45361990950226244
+    },
+    "signal_family_agreement_distribution": {
+      "benign_fp_agreement_distribution": {
+        "n": 8026,
+        "histogram": {
+          "0": 1273,
+          "1": 6753
+        },
+        "mean": 0.8413904809369549
+      },
+      "tp_agreement_distribution": {
+        "n": 54,
+        "histogram": {
+          "1": 54
+        },
+        "mean": 1.0
+      },
+      "anomaly_threshold": 45.0
+    },
+    "s3_recall": 0.1111111111111111
+  }
+}
