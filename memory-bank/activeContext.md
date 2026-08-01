@@ -14,7 +14,8 @@
 - **Parallel sweeps:** F/G/H start without waiting for E (separate calibrate DBs).
 - **Queue deps:** P2-3 does **not** depend on P0-3; P4-3 needs P2-3; P5-4 needs P4-3.
 - **Leave local E running** (PID 63516, chunk ~11/22) unless cloud-E confirms takeover.
-- **Cloud E branch:** eature/drift-capability-expansion pushed to origin for cloud Series E (2026-07-31).\n- **FINAL-DOCS / DC-EXIT-GATE** wait for E+F+G+H metrics + governance.
+- **Cloud E branch:** `feature/drift-capability-expansion` pushed to `origin` for cloud Series E (2026-07-31).
+- **FINAL-DOCS / DC-EXIT-GATE** wait for E+F+G+H metrics + governance.
 
 ## What landed (implementation)
 
