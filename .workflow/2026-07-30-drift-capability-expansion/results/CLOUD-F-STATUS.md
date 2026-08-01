@@ -49,3 +49,5 @@ Series F calibration sweep completed successfully in cloud (~2h 42m wall time).
 - **2026-08-01T21:46:00Z** — Chunk 13 complete; ~8–9 min/chunk.
 - **2026-08-01T22:26:00Z** — Chunk 16 complete; ~10 min/chunk.
 - **2026-08-01T23:08:34Z** — **COMPLETE.** Metrics written; governance doc generated.
+- **2026-08-01T20:57:00Z** — Cloud agent F relaunch; STARTED heartbeat pushed (`f89c738`).
+- **2026-08-01T23:37:00Z** — Relaunch sweep complete (20 chunks, ~2h 40m); metrics identical to prior run; `scratch/series_f_metrics.json` verified.
