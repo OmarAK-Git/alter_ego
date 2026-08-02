@@ -4,7 +4,7 @@
   "status": "in_progress",
   "started_at": "2026-08-02T04:23:00Z",
   "phase": "A_weight_search",
-  "current_step": "cadence_w2",
+  "current_step": "ws_cadence_2",
   "accepted_flags": {},
   "rejected_flags": {},
   "weight_winners": {},
@@ -40,5 +40,6 @@
     "fold_07_staged_drift"
   ],
   "calibrated": false,
-  "merge_recommendation": null
+  "merge_recommendation": null,
+  "updated_at": "2026-08-02T04:25:42Z"
 }
