@@ -24,11 +24,11 @@ RESULTS_MD = WF / "RESULTS.md"
 CONFIG_PATH = REPO_ROOT / "config" / "scoring_config.yaml"
 SWEEP_SCRIPT = REPO_ROOT / "scratch" / "run_series_i_sweep.py"
 
-# ~8h overnight budget from start; leave 20 min for docs/commit at end.
+# ~8h overnight budget from start; leave 15 min for docs/commit at end.
 BUDGET_SECONDS = 8 * 3600
-RESERVE_SECONDS = 20 * 60
-# Estimate ~2.5h/sweep from Series F cloud; stop scheduling if remaining < this.
-MIN_SWEEP_SECONDS = 2.0 * 3600
+RESERVE_SECONDS = 15 * 60
+# Local quiet-log sweeps target ~45–90 min; stop scheduling if remaining < this.
+MIN_SWEEP_SECONDS = 40 * 60
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)

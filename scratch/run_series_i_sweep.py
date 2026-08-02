@@ -20,7 +20,7 @@ import shutil
 import sys
 import time
 from collections import Counter, defaultdict
-from datetime import date, datetime, time as dtime, timedelta
+from datetime import date, datetime, time as dtime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -45,6 +45,16 @@ ACTIVE_ALERT_STATES = frozenset({"new", "acknowledged", "investigating"})
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
+# Quiet hot-path loggers — per-entity INFO floods dominate wall time on long sweeps.
+for _noisy in (
+    "batch.profile_builder.builder",
+    "worker.scorer",
+    "worker.ingest",
+    "worker.resolver",
+    "worker.recorder",
+    "batch.eval.runner",
+):
+    logging.getLogger(_noisy).setLevel(logging.WARNING)
 
 
 def _parse_set_arg(raw: str) -> tuple[tuple[str, ...], Any]:
@@ -477,7 +487,7 @@ def run_sweep(step: str, overrides: list[tuple[tuple[str, ...], Any]]) -> int:
     file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
     logging.getLogger().addHandler(file_handler)
 
-    started = datetime.utcnow().isoformat() + "Z"
+    started = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     logger.info("=== Series I step=%s started %s ===", step, started)
     logger.info("Overrides: %s", [( ".".join(k), v) for k, v in overrides])
     logger.info("DB: %s", db_path)
