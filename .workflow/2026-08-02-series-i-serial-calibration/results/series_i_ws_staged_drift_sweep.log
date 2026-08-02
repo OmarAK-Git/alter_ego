@@ -38,3 +38,541 @@ Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_w
 sing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
 2026-08-02 09:11:12,044 [INFO] Clearing database tables...
 2026-08-02 09:11:44,196 [INFO] Processed window ending 2026-01-02
+=== cloud probe ws_staged_drift started 2026-08-02T19:55:31Z ===
+bash: python: command not found
+=== sweep finished exit=0 2026-08-02T19:55:31Z ===
+=== cloud probe ws_staged_drift restart 2026-08-02T19:56:06Z ===
+2026-08-02 19:56:06,601 [INFO] === Series I step=ws_staged_drift started 2026-08-02T19:56:06Z ===
+2026-08-02 19:56:06,601 [INFO] === Series I step=ws_staged_drift started 2026-08-02T19:56:06Z ===
+2026-08-02 19:56:06,601 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 19:56:06,601 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 19:56:06,601 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 19:56:06,601 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 19:56:06,602 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:56:06,602 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:56:11,232 [INFO] Generated 323996 events and 117 labels (S2 victim=user_engineer_8 excluded from S5)
+2026-08-02 19:56:11,232 [INFO] Generated 323996 events and 117 labels (S2 victim=user_engineer_8 excluded from S5)
+2026-08-02 19:56:11,366 [INFO] Clearing database tables...
+2026-08-02 19:56:11,366 [INFO] Clearing database tables...
+2026-08-02 19:56:24,711 [INFO] Processed window ending 2026-01-02
+2026-08-02 19:56:24,711 [INFO] Processed window ending 2026-01-02
+2026-08-02 19:56:25,045 [INFO] Chunked sweep: checkpointed resume_from=2026-01-02 00:00:00 (exit 2)
+2026-08-02 19:56:25,045 [INFO] Chunked sweep: checkpointed resume_from=2026-01-02 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T19:56:25Z
+2026-08-02 19:56:25,530 [INFO] === Series I step=ws_staged_drift started 2026-08-02T19:56:25Z ===
+2026-08-02 19:56:25,530 [INFO] === Series I step=ws_staged_drift started 2026-08-02T19:56:25Z ===
+2026-08-02 19:56:25,530 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 19:56:25,530 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 19:56:25,530 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 19:56:25,530 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 19:56:25,530 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:56:25,530 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:56:25,530 [INFO] Chunked resume from 2026-01-02 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 19:56:25,530 [INFO] Chunked resume from 2026-01-02 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 19:56:25,530 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 19:56:25,530 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 19:58:58,013 [INFO] Processed window ending 2026-01-03
+2026-08-02 19:58:58,013 [INFO] Processed window ending 2026-01-03
+2026-08-02 19:58:58,261 [INFO] Chunked sweep: checkpointed resume_from=2026-01-03 00:00:00 (exit 2)
+2026-08-02 19:58:58,261 [INFO] Chunked sweep: checkpointed resume_from=2026-01-03 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T19:58:58Z
+2026-08-02 19:58:58,738 [INFO] === Series I step=ws_staged_drift started 2026-08-02T19:58:58Z ===
+2026-08-02 19:58:58,738 [INFO] === Series I step=ws_staged_drift started 2026-08-02T19:58:58Z ===
+2026-08-02 19:58:58,738 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 19:58:58,738 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 19:58:58,738 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 19:58:58,738 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 19:58:58,738 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:58:58,738 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:58:58,739 [INFO] Chunked resume from 2026-01-03 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 19:58:58,739 [INFO] Chunked resume from 2026-01-03 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 19:58:58,739 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 19:58:58,739 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:01:51,700 [INFO] Processed window ending 2026-01-04
+2026-08-02 20:01:51,700 [INFO] Processed window ending 2026-01-04
+2026-08-02 20:01:52,026 [INFO] Chunked sweep: checkpointed resume_from=2026-01-04 00:00:00 (exit 2)
+2026-08-02 20:01:52,026 [INFO] Chunked sweep: checkpointed resume_from=2026-01-04 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T20:01:52Z
+2026-08-02 20:01:52,499 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:01:52Z ===
+2026-08-02 20:01:52,499 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:01:52Z ===
+2026-08-02 20:01:52,499 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:01:52,499 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:01:52,499 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:01:52,499 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:01:52,499 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:01:52,499 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:01:52,499 [INFO] Chunked resume from 2026-01-04 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:01:52,499 [INFO] Chunked resume from 2026-01-04 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:01:52,499 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:01:52,499 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:05:14,628 [INFO] Processed window ending 2026-01-05
+2026-08-02 20:05:14,628 [INFO] Processed window ending 2026-01-05
+2026-08-02 20:05:15,024 [INFO] Chunked sweep: checkpointed resume_from=2026-01-05 00:00:00 (exit 2)
+2026-08-02 20:05:15,024 [INFO] Chunked sweep: checkpointed resume_from=2026-01-05 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T20:05:15Z
+2026-08-02 20:05:15,515 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:05:15Z ===
+2026-08-02 20:05:15,515 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:05:15Z ===
+2026-08-02 20:05:15,515 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:05:15,515 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:05:15,515 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:05:15,515 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:05:15,515 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:05:15,515 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:05:15,515 [INFO] Chunked resume from 2026-01-05 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:05:15,515 [INFO] Chunked resume from 2026-01-05 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:05:15,516 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:05:15,516 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:09:19,652 [INFO] Processed window ending 2026-01-06
+2026-08-02 20:09:19,652 [INFO] Processed window ending 2026-01-06
+2026-08-02 20:09:19,984 [INFO] Chunked sweep: checkpointed resume_from=2026-01-06 00:00:00 (exit 2)
+2026-08-02 20:09:19,984 [INFO] Chunked sweep: checkpointed resume_from=2026-01-06 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T20:09:20Z
+2026-08-02 20:09:20,470 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:09:20Z ===
+2026-08-02 20:09:20,470 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:09:20Z ===
+2026-08-02 20:09:20,470 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:09:20,470 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:09:20,470 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:09:20,470 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:09:20,470 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:09:20,470 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:09:20,471 [INFO] Chunked resume from 2026-01-06 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:09:20,471 [INFO] Chunked resume from 2026-01-06 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:09:20,471 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:09:20,471 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:14:05,007 [INFO] Processed window ending 2026-01-07
+2026-08-02 20:14:05,007 [INFO] Processed window ending 2026-01-07
+2026-08-02 20:14:05,178 [INFO] Chunked sweep: checkpointed resume_from=2026-01-07 00:00:00 (exit 2)
+2026-08-02 20:14:05,178 [INFO] Chunked sweep: checkpointed resume_from=2026-01-07 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T20:14:05Z
+2026-08-02 20:14:05,643 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:14:05Z ===
+2026-08-02 20:14:05,643 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:14:05Z ===
+2026-08-02 20:14:05,643 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:14:05,643 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:14:05,644 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:14:05,644 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:14:05,644 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:14:05,644 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:14:05,644 [INFO] Chunked resume from 2026-01-07 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:14:05,644 [INFO] Chunked resume from 2026-01-07 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:14:05,644 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:14:05,644 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:19:24,499 [INFO] Processed window ending 2026-01-08
+2026-08-02 20:19:24,499 [INFO] Processed window ending 2026-01-08
+2026-08-02 20:19:24,820 [INFO] Chunked sweep: checkpointed resume_from=2026-01-08 00:00:00 (exit 2)
+2026-08-02 20:19:24,820 [INFO] Chunked sweep: checkpointed resume_from=2026-01-08 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T20:19:24Z
+2026-08-02 20:19:25,294 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:19:25Z ===
+2026-08-02 20:19:25,294 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:19:25Z ===
+2026-08-02 20:19:25,294 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:19:25,294 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:19:25,294 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:19:25,294 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:19:25,294 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:19:25,294 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:19:25,294 [INFO] Chunked resume from 2026-01-08 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:19:25,294 [INFO] Chunked resume from 2026-01-08 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:19:25,294 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:19:25,294 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:25:23,233 [INFO] Processed window ending 2026-01-09
+2026-08-02 20:25:23,233 [INFO] Processed window ending 2026-01-09
+2026-08-02 20:25:23,445 [INFO] Chunked sweep: checkpointed resume_from=2026-01-09 00:00:00 (exit 2)
+2026-08-02 20:25:23,445 [INFO] Chunked sweep: checkpointed resume_from=2026-01-09 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T20:25:23Z
+2026-08-02 20:25:23,904 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:25:23Z ===
+2026-08-02 20:25:23,904 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:25:23Z ===
+2026-08-02 20:25:23,904 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:25:23,904 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:25:23,904 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:25:23,904 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:25:23,904 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:25:23,904 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:25:23,904 [INFO] Chunked resume from 2026-01-09 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:25:23,904 [INFO] Chunked resume from 2026-01-09 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:25:23,904 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:25:23,904 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:32:06,099 [INFO] Processed window ending 2026-01-10
+2026-08-02 20:32:06,099 [INFO] Processed window ending 2026-01-10
+2026-08-02 20:32:06,429 [INFO] Chunked sweep: checkpointed resume_from=2026-01-10 00:00:00 (exit 2)
+2026-08-02 20:32:06,429 [INFO] Chunked sweep: checkpointed resume_from=2026-01-10 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T20:32:06Z
+2026-08-02 20:32:06,910 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:32:06Z ===
+2026-08-02 20:32:06,910 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:32:06Z ===
+2026-08-02 20:32:06,910 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:32:06,910 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:32:06,910 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:32:06,910 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:32:06,910 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:32:06,910 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:32:06,911 [INFO] Chunked resume from 2026-01-10 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:32:06,911 [INFO] Chunked resume from 2026-01-10 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:32:06,911 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:32:06,911 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:39:11,663 [INFO] Processed window ending 2026-01-11
+2026-08-02 20:39:11,663 [INFO] Processed window ending 2026-01-11
+2026-08-02 20:39:11,844 [INFO] Chunked sweep: checkpointed resume_from=2026-01-11 00:00:00 (exit 2)
+2026-08-02 20:39:11,844 [INFO] Chunked sweep: checkpointed resume_from=2026-01-11 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T20:39:11Z
+2026-08-02 20:39:12,314 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:39:12Z ===
+2026-08-02 20:39:12,314 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:39:12Z ===
+2026-08-02 20:39:12,314 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:39:12,314 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:39:12,314 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:39:12,314 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:39:12,314 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:39:12,314 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:39:12,314 [INFO] Chunked resume from 2026-01-11 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:39:12,314 [INFO] Chunked resume from 2026-01-11 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:39:12,314 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:39:12,314 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:46:51,009 [INFO] Processed window ending 2026-01-12
+2026-08-02 20:46:51,009 [INFO] Processed window ending 2026-01-12
+2026-08-02 20:46:51,344 [INFO] Chunked sweep: checkpointed resume_from=2026-01-12 00:00:00 (exit 2)
+2026-08-02 20:46:51,344 [INFO] Chunked sweep: checkpointed resume_from=2026-01-12 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T20:46:51Z
+2026-08-02 20:46:51,838 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:46:51Z ===
+2026-08-02 20:46:51,838 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:46:51Z ===
+2026-08-02 20:46:51,838 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:46:51,838 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:46:51,838 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:46:51,838 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:46:51,838 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:46:51,838 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:46:51,838 [INFO] Chunked resume from 2026-01-12 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:46:51,838 [INFO] Chunked resume from 2026-01-12 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:46:51,838 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:46:51,838 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:55:13,346 [INFO] Processed window ending 2026-01-13
+2026-08-02 20:55:13,346 [INFO] Processed window ending 2026-01-13
+2026-08-02 20:55:13,521 [INFO] Chunked sweep: checkpointed resume_from=2026-01-13 00:00:00 (exit 2)
+2026-08-02 20:55:13,521 [INFO] Chunked sweep: checkpointed resume_from=2026-01-13 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T20:55:13Z
+2026-08-02 20:55:13,988 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:55:13Z ===
+2026-08-02 20:55:13,988 [INFO] === Series I step=ws_staged_drift started 2026-08-02T20:55:13Z ===
+2026-08-02 20:55:13,989 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:55:13,989 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 20:55:13,989 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:55:13,989 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 20:55:13,989 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:55:13,989 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:55:13,989 [INFO] Chunked resume from 2026-01-13 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:55:13,989 [INFO] Chunked resume from 2026-01-13 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 20:55:13,989 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:55:13,989 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:04:22,452 [INFO] Processed window ending 2026-01-14
+2026-08-02 21:04:22,452 [INFO] Processed window ending 2026-01-14
+2026-08-02 21:04:22,624 [INFO] Chunked sweep: checkpointed resume_from=2026-01-14 00:00:00 (exit 2)
+2026-08-02 21:04:22,624 [INFO] Chunked sweep: checkpointed resume_from=2026-01-14 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T21:04:22Z
+2026-08-02 21:04:23,087 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:04:23Z ===
+2026-08-02 21:04:23,087 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:04:23Z ===
+2026-08-02 21:04:23,087 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:04:23,087 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:04:23,087 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:04:23,087 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:04:23,087 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:04:23,087 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:04:23,087 [INFO] Chunked resume from 2026-01-14 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:04:23,087 [INFO] Chunked resume from 2026-01-14 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:04:23,087 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:04:23,087 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:14:05,677 [INFO] Processed window ending 2026-01-15
+2026-08-02 21:14:05,677 [INFO] Processed window ending 2026-01-15
+2026-08-02 21:14:06,006 [INFO] Chunked sweep: checkpointed resume_from=2026-01-15 00:00:00 (exit 2)
+2026-08-02 21:14:06,006 [INFO] Chunked sweep: checkpointed resume_from=2026-01-15 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T21:14:06Z
+2026-08-02 21:14:06,482 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:14:06Z ===
+2026-08-02 21:14:06,482 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:14:06Z ===
+2026-08-02 21:14:06,482 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:14:06,482 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:14:06,483 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:14:06,483 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:14:06,483 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:14:06,483 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:14:06,483 [INFO] Chunked resume from 2026-01-15 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:14:06,483 [INFO] Chunked resume from 2026-01-15 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:14:06,483 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:14:06,483 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:24:31,534 [INFO] Processed window ending 2026-01-16
+2026-08-02 21:24:31,534 [INFO] Processed window ending 2026-01-16
+2026-08-02 21:24:31,724 [INFO] Chunked sweep: checkpointed resume_from=2026-01-16 00:00:00 (exit 2)
+2026-08-02 21:24:31,724 [INFO] Chunked sweep: checkpointed resume_from=2026-01-16 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T21:24:31Z
+2026-08-02 21:24:32,207 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:24:32Z ===
+2026-08-02 21:24:32,207 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:24:32Z ===
+2026-08-02 21:24:32,207 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:24:32,207 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:24:32,207 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:24:32,207 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:24:32,207 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:24:32,207 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:24:32,208 [INFO] Chunked resume from 2026-01-16 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:24:32,208 [INFO] Chunked resume from 2026-01-16 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:24:32,208 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:24:32,208 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:35:45,006 [INFO] Processed window ending 2026-01-17
+2026-08-02 21:35:45,006 [INFO] Processed window ending 2026-01-17
+2026-08-02 21:35:45,232 [INFO] Chunked sweep: checkpointed resume_from=2026-01-17 00:00:00 (exit 2)
+2026-08-02 21:35:45,232 [INFO] Chunked sweep: checkpointed resume_from=2026-01-17 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T21:35:45Z
+2026-08-02 21:35:45,699 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:35:45Z ===
+2026-08-02 21:35:45,699 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:35:45Z ===
+2026-08-02 21:35:45,699 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:35:45,699 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:35:45,700 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:35:45,700 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:35:45,700 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:35:45,700 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:35:45,700 [INFO] Chunked resume from 2026-01-17 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:35:45,700 [INFO] Chunked resume from 2026-01-17 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:35:45,700 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:35:45,700 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:47:11,567 [INFO] Processed window ending 2026-01-18
+2026-08-02 21:47:11,567 [INFO] Processed window ending 2026-01-18
+2026-08-02 21:47:11,907 [INFO] Chunked sweep: checkpointed resume_from=2026-01-18 00:00:00 (exit 2)
+2026-08-02 21:47:11,907 [INFO] Chunked sweep: checkpointed resume_from=2026-01-18 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T21:47:12Z
+2026-08-02 21:47:12,384 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:47:12Z ===
+2026-08-02 21:47:12,384 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:47:12Z ===
+2026-08-02 21:47:12,384 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:47:12,384 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:47:12,384 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:47:12,384 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:47:12,384 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:47:12,384 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:47:12,384 [INFO] Chunked resume from 2026-01-18 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:47:12,384 [INFO] Chunked resume from 2026-01-18 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:47:12,384 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:47:12,384 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:59:16,826 [INFO] Processed window ending 2026-01-19
+2026-08-02 21:59:16,826 [INFO] Processed window ending 2026-01-19
+2026-08-02 21:59:17,006 [INFO] Chunked sweep: checkpointed resume_from=2026-01-19 00:00:00 (exit 2)
+2026-08-02 21:59:17,006 [INFO] Chunked sweep: checkpointed resume_from=2026-01-19 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T21:59:17Z
+2026-08-02 21:59:17,477 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:59:17Z ===
+2026-08-02 21:59:17,477 [INFO] === Series I step=ws_staged_drift started 2026-08-02T21:59:17Z ===
+2026-08-02 21:59:17,477 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:59:17,477 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 21:59:17,477 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:59:17,477 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 21:59:17,477 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:59:17,477 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:59:17,478 [INFO] Chunked resume from 2026-01-19 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:59:17,478 [INFO] Chunked resume from 2026-01-19 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 21:59:17,478 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:59:17,478 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:12:07,290 [INFO] Processed window ending 2026-01-20
+2026-08-02 22:12:07,290 [INFO] Processed window ending 2026-01-20
+2026-08-02 22:12:07,468 [INFO] Chunked sweep: checkpointed resume_from=2026-01-20 00:00:00 (exit 2)
+2026-08-02 22:12:07,468 [INFO] Chunked sweep: checkpointed resume_from=2026-01-20 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T22:12:07Z
+2026-08-02 22:12:07,931 [INFO] === Series I step=ws_staged_drift started 2026-08-02T22:12:07Z ===
+2026-08-02 22:12:07,931 [INFO] === Series I step=ws_staged_drift started 2026-08-02T22:12:07Z ===
+2026-08-02 22:12:07,931 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 22:12:07,931 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 22:12:07,931 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 22:12:07,931 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 22:12:07,931 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:12:07,931 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:12:07,931 [INFO] Chunked resume from 2026-01-20 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 22:12:07,931 [INFO] Chunked resume from 2026-01-20 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 22:12:07,931 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:12:07,931 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:25:48,008 [INFO] Processed window ending 2026-01-21
+2026-08-02 22:25:48,008 [INFO] Processed window ending 2026-01-21
+2026-08-02 22:25:48,370 [INFO] Chunked sweep: checkpointed resume_from=2026-01-21 00:00:00 (exit 2)
+2026-08-02 22:25:48,370 [INFO] Chunked sweep: checkpointed resume_from=2026-01-21 00:00:00 (exit 2)
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+chunk exit rc=2 2026-08-02T22:25:48Z
+2026-08-02 22:25:48,848 [INFO] === Series I step=ws_staged_drift started 2026-08-02T22:25:48Z ===
+2026-08-02 22:25:48,848 [INFO] === Series I step=ws_staged_drift started 2026-08-02T22:25:48Z ===
+2026-08-02 22:25:48,848 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 22:25:48,848 [INFO] Overrides: [('staged_drift.enabled', True)]
+2026-08-02 22:25:48,848 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 22:25:48,848 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+2026-08-02 22:25:48,848 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:25:48,848 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:25:48,848 [INFO] Chunked resume from 2026-01-21 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 22:25:48,848 [INFO] Chunked resume from 2026-01-21 00:00:00 (checkpoint /workspace/scratch/series_i_ws_staged_drift_checkpoint.json)
+2026-08-02 22:25:48,849 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:25:48,849 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:40:15,937 [INFO] Processed window ending 2026-01-22
+2026-08-02 22:40:15,937 [INFO] Processed window ending 2026-01-22
+2026-08-02 22:40:42,329 [INFO] DONE step=ws_staged_drift elapsed=893.5s F1=0.013481462988390962 R=0.46153846153846156 FP=7840 S1=1.0 S4=1.0
+2026-08-02 22:40:42,329 [INFO] DONE step=ws_staged_drift elapsed=893.5s F1=0.013481462988390962 R=0.46153846153846156 FP=7840 S1=1.0 S4=1.0
+Connecting to: sqlite:////workspace/alter_ego_calibrate_series_i_ws_staged_drift.db
+{
+  "series": "I",
+  "step": "ws_staged_drift",
+  "anomaly_threshold": 45.0,
+  "config_version": "2.2",
+  "database": "/workspace/alter_ego_calibrate_series_i_ws_staged_drift.db",
+  "events_path": "/workspace/scratch/series_i_events.jsonl",
+  "labels_path": "/workspace/scratch/series_i_ground_truth.jsonl",
+  "generator_seed": 42,
+  "calibrated": false,
+  "enabled_flags_and_weights": {
+    "staged_drift.enabled": true
+  },
+  "started_at": "2026-08-02T22:25:48Z",
+  "elapsed_seconds": 893.5,
+  "note": "NOT CALIBRATED. Series I serial calibration campaign harness output. Do not claim CALIBRATED. Compare against Series E\u2013H baseline and prior Series I accepted branch baseline only.",
+  "partition_check": {
+    "attack_partitions": {
+      "eval_scenario_1": 1,
+      "eval_scenario_2": 35,
+      "eval_scenario_3": 45,
+      "eval_scenario_4": 1,
+      "eval_scenario_5": 75
+    },
+    "attack_event_count": 157,
+    "malicious_scenarios_in_labels": [
+      "scenario_1_sharp_misuse",
+      "scenario_2_slow_roll",
+      "scenario_3_subtle",
+      "scenario_4_service_abuse",
+      "scenario_5_patient_cycle"
+    ],
+    "all_partitions_eval_scenario": true
+  },
+  "headline": {
+    "precision": 0.006840638459589561,
+    "recall": 0.46153846153846156,
+    "f1": 0.013481462988390962,
+    "tp": 54,
+    "fp": 7840,
+    "fn": 63,
+    "s1": 1.0,
+    "s2": 0.7428571428571429,
+    "s3": 0.1111111111111111,
+    "s4": 1.0,
+    "s5": 0.6
+  },
+  "metrics": {
+    "precision": 0.006840638459589561,
+    "recall": 0.46153846153846156,
+    "f1": 0.013481462988390962,
+    "tp": 54,
+    "fp": 7840,
+    "fn": 63,
+    "tn": 300225,
+    "drift_alerts": 31,
+    "scenarios": {
+      "scenario_1_sharp_misuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0,
+        "drift_necessary_tp_fraction": 0.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.0,
+        "attack_raised_cumulative_drift_max": 2.679043758904476,
+        "caught_before_absorption_proxy": false
+      },
+      "scenario_2_slow_roll": {
+        "recall": 0.7428571428571429,
+        "tp": 26,
+        "fn": 9,
+        "drift_necessary_tp_fraction": 1.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.2571428571428571,
+        "attack_raised_cumulative_drift_max": 10.12037288969864,
+        "caught_before_absorption_proxy": true
+      },
+      "scenario_5_patient_cycle": {
+        "recall": 0.6,
+        "tp": 21,
+        "fn": 14,
+        "drift_necessary_tp_fraction": 1.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.4,
+        "attack_raised_cumulative_drift_max": 33.24890006400618,
+        "caught_before_absorption_proxy": true
+      },
+      "scenario_3_subtle": {
+        "recall": 0.1111111111111111,
+        "tp": 5,
+        "fn": 40,
+        "drift_necessary_tp_fraction": 1.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.8888888888888888,
+        "attack_raised_cumulative_drift_max": 25.615320634341423,
+        "caught_before_absorption_proxy": true
+      },
+      "scenario_4_service_abuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0,
+        "drift_necessary_tp_fraction": 0.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.0,
+        "attack_raised_cumulative_drift_max": 6.178718489512885,
+        "caught_before_absorption_proxy": false
+      }
+    },
+    "active_alert_workflow_rows": 6170,
+    "auto_resolved_count": 1755,
+    "blocked_entity_count": 53,
+    "blocked_entity_days_estimate": 714,
+    "promotion_coverage_ever": {
+      "entities_with_active_promoted_profile": 65,
+      "entities_scored": 65,
+      "fraction": 1.0
+    },
+    "promotion_coverage_in_window": {
+      "entities_scored": 65,
+      "scored_entity_days": 1072,
+      "in_window_entity_days": 522,
+      "stale_entity_days": 550,
+      "serving_profile_missing_days": 0,
+      "n_days": 5,
+      "fraction": 0.45435251023486317
+    },
+    "per_dimension_drift_decomposition": {
+      "login_hour": {
+        "mean": 0.09624564887229647,
+        "max": 1.1811693994656662,
+        "n": 1300
+      },
+      "geolocation": {
+        "mean": 0.1561574945167996,
+        "max": 2.3285746614607747,
+        "n": 1300
+      },
+      "endpoint_set": {
+        "mean": 0.0,
+        "max": 0.0,
+        "n": 1300
+      },
+      "process_name": {
+        "mean": 0.08731085193064725,
+        "max": 0.6824446645803686,
+        "n": 1300
+      },
+      "embedding": {
+        "mean": 0.019287126241248845,
+        "max": 0.1636601220715191,
+        "n": 1300
+      }
+    }
+  }
+}
+chunk exit rc=0 2026-08-02T22:40:42Z
+=== sweep finished exit=0 2026-08-02T22:40:42Z ===
