@@ -38,3 +38,171 @@ Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_w
  existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
 2026-08-02 09:11:11,963 [INFO] Clearing database tables...
 2026-08-02 09:11:43,656 [INFO] Processed window ending 2026-01-02
+2026-08-02 19:56:22,897 [INFO] === Series I step=ws_volume_1 started 2026-08-02T19:56:22Z ===
+2026-08-02 19:56:22,897 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 19:56:22,897 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 19:56:22,897 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:56:27,799 [INFO] Generated 323996 events and 117 labels (S2 victim=user_engineer_8 excluded from S5)
+2026-08-02 19:56:27,949 [INFO] Clearing database tables...
+2026-08-02 19:56:41,688 [INFO] Processed window ending 2026-01-02
+2026-08-02 19:56:41,832 [INFO] Chunked sweep: checkpointed resume_from=2026-01-02 00:00:00 (exit 2)
+2026-08-02 19:56:42,282 [INFO] === Series I step=ws_volume_1 started 2026-08-02T19:56:42Z ===
+2026-08-02 19:56:42,282 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 19:56:42,283 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 19:56:42,283 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:56:42,283 [INFO] Chunked resume from 2026-01-02 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 19:56:42,283 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 19:59:21,839 [INFO] Processed window ending 2026-01-03
+2026-08-02 19:59:22,000 [INFO] Chunked sweep: checkpointed resume_from=2026-01-03 00:00:00 (exit 2)
+2026-08-02 19:59:22,467 [INFO] === Series I step=ws_volume_1 started 2026-08-02T19:59:22Z ===
+2026-08-02 19:59:22,468 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 19:59:22,468 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 19:59:22,468 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:59:22,468 [INFO] Chunked resume from 2026-01-03 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 19:59:22,468 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:02:43,741 [INFO] Processed window ending 2026-01-04
+2026-08-02 20:02:43,903 [INFO] Chunked sweep: checkpointed resume_from=2026-01-04 00:00:00 (exit 2)
+2026-08-02 20:02:44,358 [INFO] === Series I step=ws_volume_1 started 2026-08-02T20:02:44Z ===
+2026-08-02 20:02:44,358 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 20:02:44,358 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 20:02:44,358 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:02:44,358 [INFO] Chunked resume from 2026-01-04 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 20:02:44,358 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:06:57,495 [INFO] Processed window ending 2026-01-05
+2026-08-02 20:06:57,786 [INFO] Chunked sweep: checkpointed resume_from=2026-01-05 00:00:00 (exit 2)
+2026-08-02 20:06:58,301 [INFO] === Series I step=ws_volume_1 started 2026-08-02T20:06:58Z ===
+2026-08-02 20:06:58,301 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 20:06:58,301 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 20:06:58,301 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:06:58,301 [INFO] Chunked resume from 2026-01-05 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 20:06:58,301 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:12:12,209 [INFO] Processed window ending 2026-01-06
+2026-08-02 20:12:12,378 [INFO] Chunked sweep: checkpointed resume_from=2026-01-06 00:00:00 (exit 2)
+2026-08-02 20:12:12,883 [INFO] === Series I step=ws_volume_1 started 2026-08-02T20:12:12Z ===
+2026-08-02 20:12:12,883 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 20:12:12,883 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 20:12:12,883 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:12:12,884 [INFO] Chunked resume from 2026-01-06 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 20:12:12,884 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:18:27,372 [INFO] Processed window ending 2026-01-07
+2026-08-02 20:18:27,577 [INFO] Chunked sweep: checkpointed resume_from=2026-01-07 00:00:00 (exit 2)
+2026-08-02 20:18:28,057 [INFO] === Series I step=ws_volume_1 started 2026-08-02T20:18:28Z ===
+2026-08-02 20:18:28,057 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 20:18:28,057 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 20:18:28,057 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:18:28,057 [INFO] Chunked resume from 2026-01-07 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 20:18:28,057 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:25:31,852 [INFO] Processed window ending 2026-01-08
+2026-08-02 20:25:32,017 [INFO] Chunked sweep: checkpointed resume_from=2026-01-08 00:00:00 (exit 2)
+2026-08-02 20:25:32,505 [INFO] === Series I step=ws_volume_1 started 2026-08-02T20:25:32Z ===
+2026-08-02 20:25:32,506 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 20:25:32,506 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 20:25:32,506 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:25:32,506 [INFO] Chunked resume from 2026-01-08 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 20:25:32,506 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:33:35,716 [INFO] Processed window ending 2026-01-09
+2026-08-02 20:33:35,991 [INFO] Chunked sweep: checkpointed resume_from=2026-01-09 00:00:00 (exit 2)
+2026-08-02 20:33:36,552 [INFO] === Series I step=ws_volume_1 started 2026-08-02T20:33:36Z ===
+2026-08-02 20:33:36,552 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 20:33:36,552 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 20:33:36,552 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:33:36,552 [INFO] Chunked resume from 2026-01-09 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 20:33:36,552 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:42:37,882 [INFO] Processed window ending 2026-01-10
+2026-08-02 20:42:38,215 [INFO] Chunked sweep: checkpointed resume_from=2026-01-10 00:00:00 (exit 2)
+2026-08-02 20:42:38,723 [INFO] === Series I step=ws_volume_1 started 2026-08-02T20:42:38Z ===
+2026-08-02 20:42:38,724 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 20:42:38,724 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 20:42:38,724 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:42:38,724 [INFO] Chunked resume from 2026-01-10 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 20:42:38,724 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:52:32,005 [INFO] Processed window ending 2026-01-11
+2026-08-02 20:52:32,324 [INFO] Chunked sweep: checkpointed resume_from=2026-01-11 00:00:00 (exit 2)
+2026-08-02 20:52:32,850 [INFO] === Series I step=ws_volume_1 started 2026-08-02T20:52:32Z ===
+2026-08-02 20:52:32,850 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 20:52:32,850 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 20:52:32,850 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:52:32,850 [INFO] Chunked resume from 2026-01-11 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 20:52:32,850 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:03:24,127 [INFO] Processed window ending 2026-01-12
+2026-08-02 21:03:24,312 [INFO] Chunked sweep: checkpointed resume_from=2026-01-12 00:00:00 (exit 2)
+2026-08-02 21:03:24,793 [INFO] === Series I step=ws_volume_1 started 2026-08-02T21:03:24Z ===
+2026-08-02 21:03:24,793 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 21:03:24,793 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 21:03:24,793 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:03:24,793 [INFO] Chunked resume from 2026-01-12 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 21:03:24,793 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:15:05,384 [INFO] Processed window ending 2026-01-13
+2026-08-02 21:15:05,688 [INFO] Chunked sweep: checkpointed resume_from=2026-01-13 00:00:00 (exit 2)
+2026-08-02 21:15:06,173 [INFO] === Series I step=ws_volume_1 started 2026-08-02T21:15:06Z ===
+2026-08-02 21:15:06,173 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 21:15:06,173 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 21:15:06,173 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:15:06,173 [INFO] Chunked resume from 2026-01-13 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 21:15:06,173 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:27:24,775 [INFO] Processed window ending 2026-01-14
+2026-08-02 21:27:25,090 [INFO] Chunked sweep: checkpointed resume_from=2026-01-14 00:00:00 (exit 2)
+2026-08-02 21:27:25,571 [INFO] === Series I step=ws_volume_1 started 2026-08-02T21:27:25Z ===
+2026-08-02 21:27:25,571 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 21:27:25,571 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 21:27:25,572 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:27:25,572 [INFO] Chunked resume from 2026-01-14 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 21:27:25,572 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:40:37,916 [INFO] Processed window ending 2026-01-15
+2026-08-02 21:40:38,129 [INFO] Chunked sweep: checkpointed resume_from=2026-01-15 00:00:00 (exit 2)
+2026-08-02 21:40:38,598 [INFO] === Series I step=ws_volume_1 started 2026-08-02T21:40:38Z ===
+2026-08-02 21:40:38,598 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 21:40:38,598 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 21:40:38,598 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:40:38,598 [INFO] Chunked resume from 2026-01-15 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 21:40:38,598 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:54:57,608 [INFO] Processed window ending 2026-01-16
+2026-08-02 21:54:57,923 [INFO] Chunked sweep: checkpointed resume_from=2026-01-16 00:00:00 (exit 2)
+2026-08-02 21:54:58,404 [INFO] === Series I step=ws_volume_1 started 2026-08-02T21:54:58Z ===
+2026-08-02 21:54:58,405 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 21:54:58,405 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 21:54:58,405 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:54:58,405 [INFO] Chunked resume from 2026-01-16 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 21:54:58,405 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:10:31,536 [INFO] Processed window ending 2026-01-17
+2026-08-02 22:10:31,701 [INFO] Chunked sweep: checkpointed resume_from=2026-01-17 00:00:00 (exit 2)
+2026-08-02 22:10:32,182 [INFO] === Series I step=ws_volume_1 started 2026-08-02T22:10:32Z ===
+2026-08-02 22:10:32,182 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 22:10:32,182 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 22:10:32,182 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:10:32,182 [INFO] Chunked resume from 2026-01-17 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 22:10:32,182 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:27:06,041 [INFO] Processed window ending 2026-01-18
+2026-08-02 22:27:06,356 [INFO] Chunked sweep: checkpointed resume_from=2026-01-18 00:00:00 (exit 2)
+2026-08-02 22:27:06,838 [INFO] === Series I step=ws_volume_1 started 2026-08-02T22:27:06Z ===
+2026-08-02 22:27:06,838 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 22:27:06,838 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 22:27:06,838 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:27:06,838 [INFO] Chunked resume from 2026-01-18 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 22:27:06,838 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:44:24,417 [INFO] Processed window ending 2026-01-19
+2026-08-02 22:44:24,733 [INFO] Chunked sweep: checkpointed resume_from=2026-01-19 00:00:00 (exit 2)
+2026-08-02 22:44:25,219 [INFO] === Series I step=ws_volume_1 started 2026-08-02T22:44:25Z ===
+2026-08-02 22:44:25,219 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 22:44:25,219 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 22:44:25,219 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:44:25,219 [INFO] Chunked resume from 2026-01-19 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 22:44:25,220 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 23:02:33,537 [INFO] Processed window ending 2026-01-20
+2026-08-02 23:02:33,828 [INFO] Chunked sweep: checkpointed resume_from=2026-01-20 00:00:00 (exit 2)
+2026-08-02 23:02:34,308 [INFO] === Series I step=ws_volume_1 started 2026-08-02T23:02:34Z ===
+2026-08-02 23:02:34,308 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 23:02:34,308 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 23:02:34,308 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 23:02:34,308 [INFO] Chunked resume from 2026-01-20 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 23:02:34,308 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 23:21:50,966 [INFO] Processed window ending 2026-01-21
+2026-08-02 23:21:51,293 [INFO] Chunked sweep: checkpointed resume_from=2026-01-21 00:00:00 (exit 2)
+2026-08-02 23:21:51,780 [INFO] === Series I step=ws_volume_1 started 2026-08-02T23:21:51Z ===
+2026-08-02 23:21:51,780 [INFO] Overrides: [('drift_weights.total_volume_delta.enabled', True), ('drift_weights.total_volume_delta.weight', 1.0)]
+2026-08-02 23:21:51,780 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_volume_1.db
+2026-08-02 23:21:51,780 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_volume_1.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 23:21:51,780 [INFO] Chunked resume from 2026-01-21 00:00:00 (checkpoint /workspace/scratch/series_i_ws_volume_1_checkpoint.json)
+2026-08-02 23:21:51,780 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 23:41:56,487 [INFO] Processed window ending 2026-01-22
+2026-08-02 23:42:17,220 [INFO] DONE step=ws_volume_1 elapsed=1225.4s F1=0.013431165277950503 R=0.46153846153846156 FP=7870 S1=1.0 S4=1.0
