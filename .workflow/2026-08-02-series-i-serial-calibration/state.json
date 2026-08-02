@@ -147,7 +147,7 @@
     "volume/geo weight solos + weightless flag solos (feat_volume/fleet/precision_gate/staged_drift)",
     "run via isolated ALTER_EGO_SCORING_CONFIG YAML copies; additive folds stay serial after weight decisions."
   ],
-  "updated_at": "2026-08-02T13:12:59Z",
+  "updated_at": "2026-08-02T13:13:30Z",
   "orchestrator_pids": {
     "cadence_ws_cadence_2": 77784,
     "parallel_launcher": 46556,
