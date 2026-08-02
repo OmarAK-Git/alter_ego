@@ -3,8 +3,8 @@
   "branch": "series-i-serial-calibration",
   "status": "in_progress",
   "started_at": "2026-08-02T04:23:00Z",
-  "phase": "A_weight_search_split",
-  "current_step": "cloud_probes_dispatched",
+  "phase": "B_additive_folds",
+  "current_step": "fold_02_feature_volume",
   "parallel_weight_mode": false,
   "local_max_writers": 2,
   "accepted_flags": {},
@@ -12,6 +12,30 @@
   "weight_winners": {},
   "solo_flag_candidates": {},
   "solo_flag_rejects": {},
+  "weight_search_policy": {
+    "new_work": "deferred_until_flag_folds_complete",
+    "in_flight": "preserve_finish_do_not_kill",
+    "role": "archival_evidence_not_gate",
+    "note": "Cloud ws_volume_1/5/15, ws_fleet, ws_staged_drift and local ws_feat_volume/ws_precision_gate continue running. DBs/logs/metrics retained for post-fold review. Do NOT cancel these lanes."
+  },
+  "fold_chain": {
+    "started_at": "2026-08-02T23:00:00Z",
+    "host_preference": "cloud",
+    "order": [
+      "fold_02_feature_volume",
+      "fold_06_precision_gate",
+      "fold_05_fleet",
+      "fold_07_staged_drift",
+      "fold_03_drift_volume"
+    ],
+    "skipped": [
+      "fold_01_cadence",
+      "fold_04_geo"
+    ],
+    "prev_headline_source": "baseline_ref",
+    "volume_drift_fold": "deferred_last_provisional_w5",
+    "note": "Folds are main campaign. Started without waiting for weight grids. Flag folds first; volume-drift fold last with provisional w=5.0 unless cloud ws_volume_* metrics confirm winner."
+  },
   "aborted_lanes": {
     "ws_geo_5": {
       "reason": "geo_velocity_delta_last_build 100% zero in partial Series I DB (n=585); consistent with Series G mean=0",
@@ -66,19 +90,20 @@
   },
   "sweeps_completed": [],
   "sweeps_queued": [
+    "fold_02_feature_volume",
+    "fold_06_precision_gate",
+    "fold_05_fleet",
+    "fold_07_staged_drift",
+    "fold_03_drift_volume"
+  ],
+  "sweeps_archival_background": [
     "ws_volume_1",
     "ws_volume_5",
     "ws_volume_15",
     "ws_feat_volume",
     "ws_fleet",
     "ws_precision_gate",
-    "ws_staged_drift",
-    "fold_02_feature_volume",
-    "fold_03_drift_volume",
-    "fold_04_geo",
-    "fold_05_fleet",
-    "fold_06_precision_gate",
-    "fold_07_staged_drift"
+    "ws_staged_drift"
   ],
   "lanes": {
     "ws_cadence_2": {
@@ -88,42 +113,45 @@
       "pid_killed_at": "2026-08-02T22:30:00Z",
       "progress": "~day 6/21 (killed mid-run)",
       "db": "alter_ego_calibrate_series_i_ws_cadence_2.db",
-      "abort_reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires two-part code fix (not implemented): (1) per-entity delta — CoV(recent window)−CoV(baseline profile) inside prev_profiles loop, not absolute regularity computed once outside it; (2) timescale-appropriate divisor — max(0, 1−cv/0.3) tuned for scorer.compute_periodicity 60-minute lookback but applied unchanged to 60–1440-minute build windows in compute_build_window_cadence_cov; re-derive or parameterize DEBT-012 floor for build-window timescales."
+      "abort_reason": "dimension cohort-constant as implemented"
     },
     "ws_cadence_5": {
       "host": null,
       "status": "skipped",
-      "abort_reason": "skipped — same cohort-constant inertness as ws_cadence_2; sweep uninformative; see DEBT-078"
+      "abort_reason": "skipped — same cohort-constant inertness as ws_cadence_2; see DEBT-078"
     },
     "ws_cadence_10": {
       "host": null,
       "status": "skipped",
-      "abort_reason": "skipped — same cohort-constant inertness as ws_cadence_2; sweep uninformative; see DEBT-078"
+      "abort_reason": "skipped — same cohort-constant inertness as ws_cadence_2; see DEBT-078"
     },
     "ws_volume_1": {
       "host": "cloud",
       "status": "running",
+      "role": "archival_weight_probe",
       "cloud_agent_id": "bc-6d94a41a-4ffe-46f0-9e8f-870b10ca4e04",
       "launched_at": "2026-08-02T20:54:00Z",
-      "local_stopped_reason": "migrated to cloud",
+      "preserve": true,
       "checkpoint": "scratch/series_i_ws_volume_1_checkpoint.json",
       "resume_from": "2026-01-11T00:00:00"
     },
     "ws_volume_5": {
       "host": "cloud",
       "status": "running",
+      "role": "archival_weight_probe",
       "cloud_agent_id": "bc-78440d47-1af6-4161-91cf-e6f8d4ab0122",
       "launched_at": "2026-08-02T20:54:00Z",
-      "local_stopped_reason": "migrated to cloud",
+      "preserve": true,
       "checkpoint": "scratch/series_i_ws_volume_5_checkpoint.json",
       "resume_from": "2026-01-11T00:00:00"
     },
     "ws_volume_15": {
       "host": "cloud",
       "status": "running",
+      "role": "archival_weight_probe",
       "cloud_agent_id": "bc-32e5935d-b0eb-4aa1-a3f6-cc5f838361e5",
       "launched_at": "2026-08-02T20:54:00Z",
-      "local_stopped_reason": "migrated to cloud",
+      "preserve": true,
       "checkpoint": "scratch/series_i_ws_volume_15_checkpoint.json",
       "resume_from": "2026-01-11T00:00:00"
     },
@@ -135,32 +163,49 @@
     "ws_feat_volume": {
       "host": "local",
       "status": "running",
+      "role": "archival_solo_screen",
+      "preserve": true,
       "pid": 64496,
-      "progress": "~day 10/21"
+      "progress": "~day 13/21"
     },
     "ws_precision_gate": {
       "host": "local",
       "status": "running",
+      "role": "archival_solo_screen",
+      "preserve": true,
       "pid": 89136,
-      "progress": "~day 10/21"
+      "progress": "~day 13/21"
     },
     "ws_fleet": {
       "host": "cloud",
       "status": "running",
+      "role": "archival_solo_screen",
       "cloud_agent_id": "bc-edff5f1d-62e3-467b-9d87-9c09db060039",
       "launched_at": "2026-08-02T20:54:00Z",
-      "local_stopped_reason": "migrated to cloud",
+      "preserve": true,
       "checkpoint": "scratch/series_i_ws_fleet_checkpoint.json",
       "resume_from": "2026-01-11T00:00:00"
     },
     "ws_staged_drift": {
       "host": "cloud",
       "status": "running",
+      "role": "archival_solo_screen",
       "cloud_agent_id": "bc-bbc337d7-bcac-45aa-a3a3-c331df1ce76b",
       "launched_at": "2026-08-02T20:54:00Z",
-      "local_stopped_reason": "migrated to cloud",
+      "preserve": true,
       "checkpoint": "scratch/series_i_ws_staged_drift_checkpoint.json",
       "resume_from": "2026-01-11T00:00:00"
+    },
+    "fold_02_feature_volume": {
+      "host": "cloud",
+      "status": "running",
+      "role": "additive_fold",
+      "fold_index": 1,
+      "cloud_agent_id": "bc-29a79b5f-14e2-47a2-ba14-629b42724baa",
+      "overrides": [
+        "features.total_volume_delta.enabled=true"
+      ],
+      "launched_at": "2026-08-02T23:00:00Z"
     }
   },
   "calibrated": false,
@@ -168,7 +213,8 @@
   "resume_capability": {
     "batch_eval_runner": "yes — resume_from + windows_per_invocation + clear_first=False",
     "run_series_i_sweep": "yes — --chunked added 2026-08-02 (per-step checkpoint in scratch/)",
-    "run_series_i_campaign": "no — serial orchestrator does not chunk/resume"
+    "run_series_i_campaign": "no — serial orchestrator does not chunk/resume",
+    "series_i_fold_chain": "yes — scratch/series_i_fold_chain.py --watch"
   },
   "av_exclusions": {
     "status": "pending_operator_admin",
@@ -181,9 +227,11 @@
   },
   "notes": [
     "2026-08-02 T2: stopped 8-9 local parallel writers; 3 local max (cadence + precision_gate + feat_volume).",
-    "Cloud lanes dispatched 2026-08-02T20:54Z — 5 cloud agents running (see lanes.*.cloud_agent_id).",
-    "Cadence lanes aborted 2026-08-02T22:30Z — dimension cohort-constant; sweep uninformative; two-part code fix required (DEBT-078: per-entity CoV delta + timescale-appropriate divisor). PID 77784 killed.",
-    "scoring_config.yaml: cadence enabled=false, weight=0.0 — no weight decision owed."
+    "Cloud weight/solo lanes dispatched 2026-08-02T20:54Z — PRESERVE in-flight (preserve:true). Archival evidence only; NOT gates for folds.",
+    "Cadence lanes aborted 2026-08-02T22:30Z — DEBT-078. PID 77784 killed. Geo skipped.",
+    "2026-08-02T23:00Z: Phase B additive folds UNBLOCKED. Folds are main campaign. No new weight-search launches; in-flight ws_* lanes continue to completion.",
+    "Fold order: feat_volume → precision_gate → fleet → staged → volume_drift (provisional w=5.0 last). See CLOUD-I-FOLDS.md.",
+    "scoring_config.yaml: cadence/geo disabled. calibrated: false."
   ],
-  "updated_at": "2026-08-02T22:30:00Z"
+  "updated_at": "2026-08-02T23:00:00Z"
 }

@@ -1,50 +1,41 @@
 # Active Context
 
-**Updated:** 2026-08-02T22:30Z — cadence lanes aborted
+**Updated:** 2026-08-02T23:00Z — Phase B additive folds launched
 
 ## Current focus
 
-**T2:** Finish Series I campaign via cloud/local split (not individual dimension proofs)
+**T2:** Phase B additive flag folds on cloud (main campaign)
 **Workflow:** `.workflow/2026-08-02-series-i-serial-calibration/`
-**Branch:** `series-i-serial-calibration` (pushed to origin)
+**Branch:** `series-i-serial-calibration`
 **Calibrated:** false
 
 ## Phase
 
-`A_weight_search_split` — recall-side weight probes on cloud; flag-only solos local (max 2 writers).
+`B_additive_folds` — serial additive flag promotions on cloud. Folds unblocked; weight grids are NOT gates.
 
-## Cadence Step 2 decision
+## Fold chain (running)
 
-**ABORTED** — dimension cohort-constant as implemented. `cadence_cov` saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative. PID 77784 killed. `ws_cadence_5/10` skipped. **Two-part code fix required** (DEBT-078, not implemented; cross-ref DEBT-012): (1) per-entity delta — CoV(recent window) vs CoV(baseline profile), not absolute regularity outside `prev_profiles` loop; (2) timescale-appropriate divisor — `max(0, 1−cv/0.3)` tuned for 60-minute point lookback, applied unchanged to 60–1440-minute build windows. No weight decision owed. YAML: `enabled: false`, weight `0.0`.
+| # | Step | Cloud agent | Status |
+|---|---|---|---|
+| 1 | `fold_02_feature_volume` | bc-29a79b5f-14e2-47a2-ba14-629b42724baa | **running** |
+| 2–4 | precision_gate → fleet → staged | — | queued serial |
+| 5 | `fold_03_drift_volume` | — | deferred last (provisional w=5.0) |
 
-## Local lanes (max 2)
+See `CLOUD-I-FOLDS.md`.
 
-| Lane | Status |
-|---|---|
-| `ws_precision_gate` | running (~day 10/21) |
-| `ws_feat_volume` | running (~day 10/21) |
+## Archival probes — PRESERVE (do not kill)
 
-## Cloud lanes (running — dispatched 2026-08-02T20:54Z)
+In-flight weight/solo lanes continue in background for post-fold evidence review:
 
-| Lane | Cloud agent |
-|---|---|
-| `ws_volume_1` | bc-6d94a41a-4ffe-46f0-9e8f-870b10ca4e04 |
-| `ws_volume_5` | bc-78440d47-1af6-4161-91cf-e6f8d4ab0122 |
-| `ws_volume_15` | bc-32e5935d-b0eb-4aa1-a3f6-cc5f838361e5 |
-| `ws_staged_drift` | bc-bbc337d7-bcac-45aa-a3a3-c331df1ce76b |
-| `ws_fleet` | bc-edff5f1d-62e3-467b-9d87-9c09db060039 |
+- Cloud: `ws_volume_1/5/15`, `ws_fleet`, `ws_staged_drift`
+- Local: `ws_feat_volume` (64496), `ws_precision_gate` (89136)
 
-See `CLOUD-I-LAUNCH.md`; partial DBs + checkpoints at sim-day 2026-01-11.
+No new weight-search launches until flag folds complete.
 
-## Aborted / skipped
+## Aborted (unchanged)
 
-| Lane | Reason |
-|---|---|
-| `ws_geo_5` | `geo_velocity_delta_last_build` 100% zero in partial DB (n=585); Series G mean=0 |
-| `ws_cadence_2` | cohort-constant dimension; sweep uninformative; PID 77784 killed |
-| `ws_cadence_5` | skipped — same inertness; DEBT-078 |
-| `ws_cadence_10` | skipped — same inertness; DEBT-078 |
+Cadence (DEBT-078), geo (100% zero deltas).
 
 ## Standing order
 
-All gates on Grok Fast; do **not** merge Series I to main. Never claim CALIBRATED.
+Do **not** merge Series I to main. Never claim CALIBRATED.

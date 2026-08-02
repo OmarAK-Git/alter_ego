@@ -1,73 +1,55 @@
-# Series I — STATUS (T2 restructure)
+# Series I — STATUS (Phase B additive folds)
 
-**Updated:** 2026-08-02T22:30Z
+**Updated:** 2026-08-02T23:00Z
 **Branch:** `series-i-serial-calibration` (pushed to `origin`)
 **Calibrated:** false
 
-## Step 1 — Hygiene
+## Phase B — Additive folds (MAIN CAMPAIGN)
 
-| Item | Status |
-|---|---|
-| Defender exclusions | **Pending operator (admin)** — run commands in `state.json` → `av_exclusions.commands` |
-| Resume | **Partial yes** — `batch/eval/runner.py` supports chunked resume; `run_series_i_sweep.py --chunked` added; campaign orchestrator does not resume |
-| Local fanout | **2 writers** — precision_gate + feat_volume (cadence killed) |
+**Folds unblocked.** Cadence kill does not gate folds. Weight grids do not gate folds.
 
-## Step 2 — Cadence inertness (cohort-constant)
+| # | Step | Host | Agent | Status |
+|---|---|---|---|---|
+| 1 | `fold_02_feature_volume` | cloud | [bc-29a79b5f](bc-29a79b5f-14e2-47a2-ba14-629b42724baa) | **running** |
+| 2 | `fold_06_precision_gate` | cloud | — | queued (after fold 1 metrics) |
+| 3 | `fold_05_fleet` | cloud | — | queued |
+| 4 | `fold_07_staged_drift` | cloud | — | queued |
+| 5 | `fold_03_drift_volume` | cloud | — | deferred last (provisional w=5.0) |
 
-**Decision: ABORT cadence lanes** — dimension cohort-constant as implemented.
+Skipped: `fold_01_cadence`, `fold_04_geo`.
 
-| Metric | Value |
-|---|---:|
-| n (Series I cadence_2 partial DB) | 1365 profiles / 65 entities |
-| `cadence_cov` SA median | 1.000 (~95% saturate at ≈1.0) |
-| `cadence_cov` humans (hr/engineer/finance) | 0.0 (n=315 each) |
-| standalone precision / recall | 0.050 / 0.143 (base rate 0.108) |
-| w=2/5/10 equivalence | arithmetically equivalent to control arm |
+See [`CLOUD-I-FOLDS.md`](CLOUD-I-FOLDS.md).
 
-**Abort reason:** dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires **two-part code fix** (not implemented): (1) per-entity delta — CoV(recent window)−CoV(baseline profile) inside the `prev_profiles` loop, not absolute regularity computed once outside it; (2) timescale-appropriate divisor — `max(0, 1−cv/0.3)` tuned for `scorer.compute_periodicity`'s 60-minute lookback but applied unchanged to 60–1440-minute build windows in `compute_build_window_cadence_cov`; re-derive or parameterize DEBT-012 floor for build-window timescales.
+## Weight/solo probes — PRESERVE (archival, not gates)
 
-Code facts:
-- `builder.py:489` — `max(0.0, 1.0 - cv/0.3)` floors at 0 when cv≥0.3 (DEBT-012); divisor calibrated for point-feature 60-minute lookback, reused on 60–1440m build windows
-- `builder.py:748–777` — `cadence_cov` computed once; appended as absolute value per prev profile (not Δ vs baseline)
-- `builder.py:868` — `norm_drift = raw_drift - cohort_median(role)` cancels cohort-constant dimension
-- `builder.py:810,914` — `cadence_cov` persisted unconditionally
+**Policy:** Defer **new** weight work. **Do not kill** in-flight lanes. Let finish; keep DBs/logs/metrics for post-fold review.
 
-DEBT-078 updated (cohort-constant evidence + two-part code-fix requirement; cross-ref DEBT-012). No weight decision owed. `drift_weights.cadence.enabled: false`, weight `0.0`.
+### Cloud (background — keep running)
 
-## Step 3 — Lane split
-
-### Local (running)
-
-| Lane | Progress |
-|---|---|
-| `ws_precision_gate` | ~day 10/21 |
-| `ws_feat_volume` | ~day 10/21 |
-
-### Cloud (running — dispatched 2026-08-02T20:54Z)
-
-See [`CLOUD-I-LAUNCH.md`](CLOUD-I-LAUNCH.md). Partial progress through sim-day 2026-01-10; checkpoints at 2026-01-11.
-
-| Lane | Cloud agent | Status |
+| Lane | Agent | Role |
 |---|---|---|
-| `ws_volume_1` | [bc-6d94a41a](bc-6d94a41a-4ffe-46f0-9e8f-870b10ca4e04) | running |
-| `ws_volume_5` | [bc-78440d47](bc-78440d47-1af6-4161-91cf-e6f8d4ab0122) | running |
-| `ws_volume_15` | [bc-32e5935d](bc-32e5935d-b0eb-4aa1-a3f6-cc5f838361e5) | running |
-| `ws_staged_drift` | [bc-bbc337d7](bc-bbc337d7-bcac-45aa-a3a3-c331df1ce76b) | running |
-| `ws_fleet` | [bc-edff5f1d](bc-edff5f1d-62e3-467b-9d87-9c09db060039) | running |
+| `ws_volume_1` | bc-6d94a41a | archival weight probe |
+| `ws_volume_5` | bc-78440d47 | archival weight probe |
+| `ws_volume_15` | bc-32e5935d | archival weight probe |
+| `ws_fleet` | bc-edff5f1d | archival solo screen |
+| `ws_staged_drift` | bc-bbc337d7 | archival solo screen |
 
-### Aborted / skipped
+### Local (background — keep running)
+
+| Lane | PID | Progress |
+|---|---|---|
+| `ws_feat_volume` | 64496 | ~day 13/21 |
+| `ws_precision_gate` | 89136 | ~day 13/21 |
+
+## Aborted / skipped
 
 | Lane | Reason |
 |---|---|
-| `ws_geo_5` | `geo_velocity_delta_last_build` 100% zero in partial DB (n=585); Series G mean=0 |
-| `ws_cadence_2` | cohort-constant dimension; sweep uninformative; PID 77784 killed; see Step 2 |
-| `ws_cadence_5` | skipped — same inertness as cadence_2; DEBT-078 |
-| `ws_cadence_10` | skipped — same inertness as cadence_2; DEBT-078 |
+| `ws_geo_5` / `fold_04_geo` | geo_velocity 100% zero deltas |
+| `ws_cadence_*` / `fold_01_cadence` | cohort-constant dimension (DEBT-078) |
 
 ## Next
 
-1. Operator: run Defender exclusions (admin PowerShell).
-2. ~~Dispatch 5 cloud probes per `CLOUD-I-LAUNCH.md`.~~ **Done** — 5 cloud agents running.
-3. Let local precision_gate + feat_volume finish; collect metrics JSON before marking done.
-4. Cloud agents: await metrics JSON in `results/series_i_<step>_metrics.json` before marking lanes done.
-5. Cadence: **no re-sweep until DEBT-078 two-part code fix** (per-entity CoV delta + timescale-appropriate divisor).
+1. Await `series_i_fold_02_feature_volume_metrics.json` from cloud agent bc-29a79b5f.
+2. Governance accept/reject → dispatch fold 2 (`fold_06_precision_gate`) on cloud.
+3. Let archival ws_* lanes finish independently; collect metrics after flag folds.
