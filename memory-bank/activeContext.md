@@ -16,4 +16,4 @@ P≈0.0067 R≈0.4615 F1≈0.0132 TP=54 FP=7995; S1=1 S2≈0.74 S3≈0.11 S4=1 S
 
 ## Standing order
 
-All gates on Grok until operator overrides. Do **not** merge Series I to main without operator review. Never claim CALIBRATED.
+All gates on Grok Fast (`cursor-grok-4.5-high-fast`); implement via `composer-2.5-fast` until operator overrides. Do **not** merge Series I to main without operator review. Never claim CALIBRATED.
