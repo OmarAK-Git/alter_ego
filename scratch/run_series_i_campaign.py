@@ -523,9 +523,30 @@ def main() -> int:
             f"Series I: cadence weight probe {step} (w={weight})",
             [str(RESULTS), str(STATE_PATH)],
         )
+        # Short-circuit: if lowest/current weight fails rank vs baseline, higher
+        # weights in an ascending grid will not help — skip the rest.
+        if not better_than_baseline(h) and not is_inert_vs_baseline(h):
+            for skip_w, skip_step in cadence_grid:
+                if skip_w <= weight:
+                    continue
+                if skip_step in state.get("sweeps_queued", []):
+                    state["sweeps_queued"].remove(skip_step)
+                state.setdefault("sweeps_completed", []).append(f"{skip_step}_SKIPPED")
+            state.setdefault("weight_winners", {})["cadence_short_circuit"] = {
+                "at_weight": weight,
+                "reason": (
+                    f"Short-circuit after {step}: non-inert but does not beat baseline "
+                    f"(F1={h.get('f1')} FP={h.get('fp')} R={h.get('recall')}); "
+                    "higher cadence weights skipped"
+                ),
+            }
+            save_state(state)
+            logger.info("Cadence grid short-circuited after %s", step)
+            break
 
     cw, creason = pick_weight_winner(
-        "cadence", [(s, w) for w, s in cadence_grid]
+        "cadence",
+        [(s, w) for w, s in cadence_grid if (RESULTS / f"series_i_{s}_metrics.json").exists()],
     )
     state.setdefault("weight_winners", {})["cadence"] = {
         "weight": cw,
@@ -575,9 +596,27 @@ def main() -> int:
             f"Series I: volume weight probe {step} (w={weight})",
             [str(RESULTS), str(STATE_PATH)],
         )
+        if not better_than_baseline(h) and not is_inert_vs_baseline(h):
+            for skip_w, skip_step in volume_grid:
+                if skip_w <= weight:
+                    continue
+                if skip_step in state.get("sweeps_queued", []):
+                    state["sweeps_queued"].remove(skip_step)
+                state.setdefault("sweeps_completed", []).append(f"{skip_step}_SKIPPED")
+            state.setdefault("weight_winners", {})["volume_short_circuit"] = {
+                "at_weight": weight,
+                "reason": (
+                    f"Short-circuit after {step}: non-inert but does not beat baseline; "
+                    "higher volume-drift weights skipped"
+                ),
+            }
+            save_state(state)
+            logger.info("Volume grid short-circuited after %s", step)
+            break
 
     vw, vreason = pick_weight_winner(
-        "total_volume_delta", [(s, w) for w, s in volume_grid]
+        "total_volume_delta",
+        [(s, w) for w, s in volume_grid if (RESULTS / f"series_i_{s}_metrics.json").exists()],
     )
     state.setdefault("weight_winners", {})["total_volume_delta"] = {
         "weight": vw,

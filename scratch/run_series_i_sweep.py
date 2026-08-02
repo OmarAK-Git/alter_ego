@@ -46,15 +46,16 @@ ACTIVE_ALERT_STATES = frozenset({"new", "acknowledged", "investigating"})
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 # Quiet hot-path loggers — per-entity INFO floods dominate wall time on long sweeps.
+# Keep batch.eval.runner at INFO so "Processed window" progress remains visible.
 for _noisy in (
     "batch.profile_builder.builder",
     "worker.scorer",
     "worker.ingest",
     "worker.resolver",
     "worker.recorder",
-    "batch.eval.runner",
+    "worker.profile_store",
 ):
-    logging.getLogger(_noisy).setLevel(logging.WARNING)
+    logging.getLogger(_noisy).setLevel(logging.ERROR)
 
 
 def _parse_set_arg(raw: str) -> tuple[tuple[str, ...], Any]:
