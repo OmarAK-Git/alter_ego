@@ -18,7 +18,7 @@
       "aborted_at": "2026-08-02T20:00:00Z"
     },
     "ws_cadence_2": {
-      "reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires code fix: compute_build_window_cadence_cov must become CoV(recent)−CoV(baseline) per entity (delta vs baseline profile), not absolute regularity computed once outside prev_profiles loop. Related: DEBT-012.",
+      "reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires two-part code fix (not implemented): (1) per-entity delta — CoV(recent window)−CoV(baseline profile) inside prev_profiles loop, not absolute regularity computed once outside it; (2) timescale-appropriate divisor — max(0, 1−cv/0.3) tuned for scorer.compute_periodicity 60-minute lookback but applied unchanged to 60–1440-minute build windows in compute_build_window_cadence_cov; re-derive or parameterize DEBT-012 floor for build-window timescales.",
       "aborted_at": "2026-08-02T22:30:00Z",
       "evidence": {
         "db": "alter_ego_calibrate_series_i_ws_cadence_2.db",
@@ -43,7 +43,7 @@
   },
   "cadence_kill_decision": {
     "killed": true,
-    "reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires code fix before re-sweep",
+    "reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires two-part code fix (not implemented): per-entity CoV delta + timescale-appropriate divisor (see DEBT-078)",
     "queried_at": "2026-08-02T22:30:00Z",
     "sources": [
       "alter_ego_calibrate_series_i_ws_cadence_2.db"
@@ -88,7 +88,7 @@
       "pid_killed_at": "2026-08-02T22:30:00Z",
       "progress": "~day 6/21 (killed mid-run)",
       "db": "alter_ego_calibrate_series_i_ws_cadence_2.db",
-      "abort_reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires code fix: compute_build_window_cadence_cov must become CoV(recent)−CoV(baseline) per entity (delta vs baseline profile), not absolute regularity computed once outside prev_profiles loop. Related: DEBT-012."
+      "abort_reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires two-part code fix (not implemented): (1) per-entity delta — CoV(recent window)−CoV(baseline profile) inside prev_profiles loop, not absolute regularity computed once outside it; (2) timescale-appropriate divisor — max(0, 1−cv/0.3) tuned for scorer.compute_periodicity 60-minute lookback but applied unchanged to 60–1440-minute build windows in compute_build_window_cadence_cov; re-derive or parameterize DEBT-012 floor for build-window timescales."
     },
     "ws_cadence_5": {
       "host": null,
@@ -182,7 +182,7 @@
   "notes": [
     "2026-08-02 T2: stopped 8-9 local parallel writers; 3 local max (cadence + precision_gate + feat_volume).",
     "Cloud lanes dispatched 2026-08-02T20:54Z — 5 cloud agents running (see lanes.*.cloud_agent_id).",
-    "Cadence lanes aborted 2026-08-02T22:30Z — dimension cohort-constant; sweep uninformative; code fix required (DEBT-078). PID 77784 killed.",
+    "Cadence lanes aborted 2026-08-02T22:30Z — dimension cohort-constant; sweep uninformative; two-part code fix required (DEBT-078: per-entity CoV delta + timescale-appropriate divisor). PID 77784 killed.",
     "scoring_config.yaml: cadence enabled=false, weight=0.0 — no weight decision owed."
   ],
   "updated_at": "2026-08-02T22:30:00Z"

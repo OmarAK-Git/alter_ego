@@ -15,7 +15,7 @@
 
 ## Cadence Step 2 decision
 
-**ABORTED** — dimension cohort-constant as implemented. `cadence_cov` saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative. PID 77784 killed. `ws_cadence_5/10` skipped. Code fix required (DEBT-078, cross-ref DEBT-012). No weight decision owed. YAML: `enabled: false`, weight `0.0`.
+**ABORTED** — dimension cohort-constant as implemented. `cadence_cov` saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative. PID 77784 killed. `ws_cadence_5/10` skipped. **Two-part code fix required** (DEBT-078, not implemented; cross-ref DEBT-012): (1) per-entity delta — CoV(recent window) vs CoV(baseline profile), not absolute regularity outside `prev_profiles` loop; (2) timescale-appropriate divisor — `max(0, 1−cv/0.3)` tuned for 60-minute point lookback, applied unchanged to 60–1440-minute build windows. No weight decision owed. YAML: `enabled: false`, weight `0.0`.
 
 ## Local lanes (max 2)
 

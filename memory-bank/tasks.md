@@ -11,7 +11,7 @@
 | Phase B serial folds | pending weight decisions |
 | Cloud probe dispatch (5 lanes) | **running** — dispatched 2026-08-02T20:54Z |
 | `ws_cadence_2` | **aborted** — cohort-constant dimension; PID 77784 killed |
-| `ws_cadence_5/10` | **skipped** — same inertness; DEBT-078 code fix required |
+| `ws_cadence_5/10` | **skipped** — same inertness; DEBT-078 two-part code fix required |
 
 ### Lane table (authoritative snapshot)
 

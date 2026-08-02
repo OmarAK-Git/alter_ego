@@ -347,7 +347,7 @@ Real SIEM integration · multi-tenant SaaS · production IAM disablement · live
 - Local (2): `ws_precision_gate`, `ws_feat_volume`
 - Cloud running (5): volume 1/5/15, fleet, staged_drift — `CLOUD-I-LAUNCH.md`
 - Aborted: `ws_geo_5` (geo_velocity null), `ws_cadence_2` (cohort-constant dimension; PID 77784 killed)
-- Skipped: `ws_cadence_5`, `ws_cadence_10` (same inertness; DEBT-078 code fix required before re-sweep)
+- Skipped: `ws_cadence_5`, `ws_cadence_10` (same inertness; DEBT-078 two-part code fix required before re-sweep — per-entity CoV delta + timescale-appropriate divisor)
 - Cadence: dimension cohort-constant — SA≈1, humans=0; cohort_median norm cancels any weight; no weight decision owed
 - YAML: `drift_weights.cadence.enabled: false`, weight `0.0`
 - Harness: `run_series_i_sweep.py --chunked` for resume

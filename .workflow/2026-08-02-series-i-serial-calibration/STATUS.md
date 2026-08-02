@@ -24,15 +24,15 @@
 | standalone precision / recall | 0.050 / 0.143 (base rate 0.108) |
 | w=2/5/10 equivalence | arithmetically equivalent to control arm |
 
-**Abort reason:** dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires code fix: `compute_build_window_cadence_cov` must become CoV(recent)−CoV(baseline) per entity (delta vs baseline profile), not absolute regularity computed once outside prev_profiles loop. Related: DEBT-012.
+**Abort reason:** dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires **two-part code fix** (not implemented): (1) per-entity delta — CoV(recent window)−CoV(baseline profile) inside the `prev_profiles` loop, not absolute regularity computed once outside it; (2) timescale-appropriate divisor — `max(0, 1−cv/0.3)` tuned for `scorer.compute_periodicity`'s 60-minute lookback but applied unchanged to 60–1440-minute build windows in `compute_build_window_cadence_cov`; re-derive or parameterize DEBT-012 floor for build-window timescales.
 
 Code facts:
-- `builder.py:489` — `max(0.0, 1.0 - cv/0.3)` floors at 0 when cv≥0.3 (DEBT-012)
+- `builder.py:489` — `max(0.0, 1.0 - cv/0.3)` floors at 0 when cv≥0.3 (DEBT-012); divisor calibrated for point-feature 60-minute lookback, reused on 60–1440m build windows
 - `builder.py:748–777` — `cadence_cov` computed once; appended as absolute value per prev profile (not Δ vs baseline)
 - `builder.py:868` — `norm_drift = raw_drift - cohort_median(role)` cancels cohort-constant dimension
 - `builder.py:810,914` — `cadence_cov` persisted unconditionally
 
-DEBT-078 updated (cohort-constant evidence + code-fix requirement; cross-ref DEBT-012). No weight decision owed. `drift_weights.cadence.enabled: false`, weight `0.0`.
+DEBT-078 updated (cohort-constant evidence + two-part code-fix requirement; cross-ref DEBT-012). No weight decision owed. `drift_weights.cadence.enabled: false`, weight `0.0`.
 
 ## Step 3 — Lane split
 
@@ -70,4 +70,4 @@ See [`CLOUD-I-LAUNCH.md`](CLOUD-I-LAUNCH.md). Partial progress through sim-day 2
 2. ~~Dispatch 5 cloud probes per `CLOUD-I-LAUNCH.md`.~~ **Done** — 5 cloud agents running.
 3. Let local precision_gate + feat_volume finish; collect metrics JSON before marking done.
 4. Cloud agents: await metrics JSON in `results/series_i_<step>_metrics.json` before marking lanes done.
-5. Cadence: **no re-sweep until DEBT-078 code fix** (delta CoV vs baseline per entity).
+5. Cadence: **no re-sweep until DEBT-078 two-part code fix** (per-entity CoV delta + timescale-appropriate divisor).
