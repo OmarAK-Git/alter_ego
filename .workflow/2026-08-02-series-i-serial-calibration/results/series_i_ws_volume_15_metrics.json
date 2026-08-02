@@ -1,0 +1,161 @@
+{
+  "series": "I",
+  "step": "ws_volume_15",
+  "anomaly_threshold": 45.0,
+  "config_version": "2.2",
+  "database": "/workspace/alter_ego_calibrate_series_i_ws_volume_15.db",
+  "events_path": "/workspace/scratch/series_i_events.jsonl",
+  "labels_path": "/workspace/scratch/series_i_ground_truth.jsonl",
+  "generator_seed": 42,
+  "calibrated": false,
+  "enabled_flags_and_weights": {
+    "drift_weights.total_volume_delta.enabled": true,
+    "drift_weights.total_volume_delta.weight": 15.0
+  },
+  "started_at": "2026-08-02T22:24:58Z",
+  "elapsed_seconds": 875.5,
+  "note": "NOT CALIBRATED. Series I serial calibration campaign harness output. Do not claim CALIBRATED. Compare against Series E\u2013H baseline and prior Series I accepted branch baseline only.",
+  "partition_check": {
+    "attack_partitions": {
+      "eval_scenario_1": 1,
+      "eval_scenario_2": 35,
+      "eval_scenario_3": 45,
+      "eval_scenario_4": 1,
+      "eval_scenario_5": 75
+    },
+    "attack_event_count": 157,
+    "malicious_scenarios_in_labels": [
+      "scenario_1_sharp_misuse",
+      "scenario_2_slow_roll",
+      "scenario_3_subtle",
+      "scenario_4_service_abuse",
+      "scenario_5_patient_cycle"
+    ],
+    "all_partitions_eval_scenario": true
+  },
+  "headline": {
+    "precision": 0.006696428571428571,
+    "recall": 0.46153846153846156,
+    "f1": 0.013201320132013201,
+    "tp": 54,
+    "fp": 8010,
+    "fn": 63,
+    "s1": 1.0,
+    "s2": 0.7428571428571429,
+    "s3": 0.1111111111111111,
+    "s4": 1.0,
+    "s5": 0.6
+  },
+  "metrics": {
+    "precision": 0.006696428571428571,
+    "recall": 0.46153846153846156,
+    "f1": 0.013201320132013201,
+    "tp": 54,
+    "fp": 8010,
+    "fn": 63,
+    "tn": 300055,
+    "drift_alerts": 32,
+    "scenarios": {
+      "scenario_1_sharp_misuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0,
+        "drift_necessary_tp_fraction": 0.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.0,
+        "attack_raised_cumulative_drift_max": 3.029879109991162,
+        "caught_before_absorption_proxy": false
+      },
+      "scenario_2_slow_roll": {
+        "recall": 0.7428571428571429,
+        "tp": 26,
+        "fn": 9,
+        "drift_necessary_tp_fraction": 1.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.2571428571428571,
+        "attack_raised_cumulative_drift_max": 13.432455719196648,
+        "caught_before_absorption_proxy": true
+      },
+      "scenario_5_patient_cycle": {
+        "recall": 0.6,
+        "tp": 21,
+        "fn": 14,
+        "drift_necessary_tp_fraction": 1.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.4,
+        "attack_raised_cumulative_drift_max": 35.297808654604765,
+        "caught_before_absorption_proxy": true
+      },
+      "scenario_3_subtle": {
+        "recall": 0.1111111111111111,
+        "tp": 5,
+        "fn": 40,
+        "drift_necessary_tp_fraction": 1.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.8888888888888888,
+        "attack_raised_cumulative_drift_max": 27.376472827019455,
+        "caught_before_absorption_proxy": true
+      },
+      "scenario_4_service_abuse": {
+        "recall": 1.0,
+        "tp": 1,
+        "fn": 0,
+        "drift_necessary_tp_fraction": 0.0,
+        "pre_absorption_tp_fraction": null,
+        "early_below_threshold_fraction": 0.0,
+        "attack_raised_cumulative_drift_max": 6.223416053347553,
+        "caught_before_absorption_proxy": false
+      }
+    },
+    "active_alert_workflow_rows": 6392,
+    "auto_resolved_count": 1704,
+    "blocked_entity_count": 54,
+    "blocked_entity_days_estimate": 729,
+    "promotion_coverage_ever": {
+      "entities_with_active_promoted_profile": 65,
+      "entities_scored": 65,
+      "fraction": 1.0
+    },
+    "promotion_coverage_in_window": {
+      "entities_scored": 65,
+      "scored_entity_days": 1073,
+      "in_window_entity_days": 520,
+      "stale_entity_days": 553,
+      "serving_profile_missing_days": 0,
+      "n_days": 5,
+      "fraction": 0.45222796811032107
+    },
+    "per_dimension_drift_decomposition": {
+      "login_hour": {
+        "mean": 0.09612397055830971,
+        "max": 1.090763836813577,
+        "n": 1300
+      },
+      "geolocation": {
+        "mean": 0.1561574945167996,
+        "max": 2.3285746614607747,
+        "n": 1300
+      },
+      "endpoint_set": {
+        "mean": 0.0,
+        "max": 0.0,
+        "n": 1300
+      },
+      "process_name": {
+        "mean": 0.08743795068794827,
+        "max": 0.6824446645803685,
+        "n": 1300
+      },
+      "embedding": {
+        "mean": 0.019297900258222644,
+        "max": 0.1636601220715191,
+        "n": 1300
+      },
+      "total_volume_delta": {
+        "mean": 0.041134444109837395,
+        "max": 0.2644640753123387,
+        "n": 1300
+      }
+    }
+  }
+}
