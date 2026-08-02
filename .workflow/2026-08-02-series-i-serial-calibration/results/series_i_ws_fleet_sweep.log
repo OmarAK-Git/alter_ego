@@ -38,3 +38,173 @@ Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_w
 isting events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
 2026-08-02 09:11:12,020 [INFO] Clearing database tables...
 2026-08-02 09:11:43,487 [INFO] Processed window ending 2026-01-02
+2026-08-02 19:55:32,086 [INFO] === Series I step=ws_fleet started 2026-08-02T19:55:32Z ===
+2026-08-02 19:55:32,086 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 19:55:32,086 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 19:55:32,086 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:55:36,334 [INFO] Generated 323996 events and 117 labels (S2 victim=user_engineer_8 excluded from S5)
+2026-08-02 19:55:36,463 [INFO] Clearing database tables...
+2026-08-02 19:55:49,652 [INFO] Processed window ending 2026-01-02
+2026-08-02 19:55:49,802 [INFO] Chunked sweep: checkpointed resume_from=2026-01-02 00:00:00 (exit 2)
+=== ws_fleet cloud sweep started 2026-08-02T19:55:59Z ===
+2026-08-02 19:56:00,200 [INFO] === Series I step=ws_fleet started 2026-08-02T19:56:00Z ===
+2026-08-02 19:56:00,200 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 19:56:00,201 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 19:56:00,201 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:56:00,201 [INFO] Chunked resume from 2026-01-02 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 19:56:00,201 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 19:58:40,666 [INFO] Processed window ending 2026-01-03
+2026-08-02 19:58:40,908 [INFO] Chunked sweep: checkpointed resume_from=2026-01-03 00:00:00 (exit 2)
+2026-08-02 19:58:41,380 [INFO] === Series I step=ws_fleet started 2026-08-02T19:58:41Z ===
+2026-08-02 19:58:41,380 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 19:58:41,380 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 19:58:41,380 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 19:58:41,380 [INFO] Chunked resume from 2026-01-03 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 19:58:41,380 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:02:01,736 [INFO] Processed window ending 2026-01-04
+2026-08-02 20:02:01,987 [INFO] Chunked sweep: checkpointed resume_from=2026-01-04 00:00:00 (exit 2)
+2026-08-02 20:02:02,466 [INFO] === Series I step=ws_fleet started 2026-08-02T20:02:02Z ===
+2026-08-02 20:02:02,466 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 20:02:02,466 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 20:02:02,466 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:02:02,467 [INFO] Chunked resume from 2026-01-04 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 20:02:02,467 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:06:12,636 [INFO] Processed window ending 2026-01-05
+2026-08-02 20:06:12,832 [INFO] Chunked sweep: checkpointed resume_from=2026-01-05 00:00:00 (exit 2)
+2026-08-02 20:06:13,310 [INFO] === Series I step=ws_fleet started 2026-08-02T20:06:13Z ===
+2026-08-02 20:06:13,310 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 20:06:13,310 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 20:06:13,311 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:06:13,311 [INFO] Chunked resume from 2026-01-05 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 20:06:13,311 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:11:26,287 [INFO] Processed window ending 2026-01-06
+2026-08-02 20:11:26,609 [INFO] Chunked sweep: checkpointed resume_from=2026-01-06 00:00:00 (exit 2)
+2026-08-02 20:11:27,106 [INFO] === Series I step=ws_fleet started 2026-08-02T20:11:27Z ===
+2026-08-02 20:11:27,106 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 20:11:27,106 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 20:11:27,106 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:11:27,106 [INFO] Chunked resume from 2026-01-06 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 20:11:27,106 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:17:39,695 [INFO] Processed window ending 2026-01-07
+2026-08-02 20:17:40,027 [INFO] Chunked sweep: checkpointed resume_from=2026-01-07 00:00:00 (exit 2)
+2026-08-02 20:17:40,512 [INFO] === Series I step=ws_fleet started 2026-08-02T20:17:40Z ===
+2026-08-02 20:17:40,512 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 20:17:40,512 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 20:17:40,512 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:17:40,512 [INFO] Chunked resume from 2026-01-07 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 20:17:40,512 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:24:45,204 [INFO] Processed window ending 2026-01-08
+2026-08-02 20:24:45,446 [INFO] Chunked sweep: checkpointed resume_from=2026-01-08 00:00:00 (exit 2)
+2026-08-02 20:24:45,987 [INFO] === Series I step=ws_fleet started 2026-08-02T20:24:45Z ===
+2026-08-02 20:24:45,987 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 20:24:45,987 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 20:24:45,987 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:24:45,987 [INFO] Chunked resume from 2026-01-08 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 20:24:45,987 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:32:53,463 [INFO] Processed window ending 2026-01-09
+2026-08-02 20:32:53,628 [INFO] Chunked sweep: checkpointed resume_from=2026-01-09 00:00:00 (exit 2)
+2026-08-02 20:32:54,092 [INFO] === Series I step=ws_fleet started 2026-08-02T20:32:54Z ===
+2026-08-02 20:32:54,092 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 20:32:54,092 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 20:32:54,092 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:32:54,092 [INFO] Chunked resume from 2026-01-09 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 20:32:54,092 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:41:52,031 [INFO] Processed window ending 2026-01-10
+2026-08-02 20:41:52,250 [INFO] Chunked sweep: checkpointed resume_from=2026-01-10 00:00:00 (exit 2)
+2026-08-02 20:41:52,728 [INFO] === Series I step=ws_fleet started 2026-08-02T20:41:52Z ===
+2026-08-02 20:41:52,728 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 20:41:52,728 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 20:41:52,728 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:41:52,728 [INFO] Chunked resume from 2026-01-10 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 20:41:52,728 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 20:51:31,586 [INFO] Processed window ending 2026-01-11
+2026-08-02 20:51:31,906 [INFO] Chunked sweep: checkpointed resume_from=2026-01-11 00:00:00 (exit 2)
+2026-08-02 20:51:32,384 [INFO] === Series I step=ws_fleet started 2026-08-02T20:51:32Z ===
+2026-08-02 20:51:32,384 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 20:51:32,384 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 20:51:32,384 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 20:51:32,384 [INFO] Chunked resume from 2026-01-11 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 20:51:32,385 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:02:19,279 [INFO] Processed window ending 2026-01-12
+2026-08-02 21:02:19,608 [INFO] Chunked sweep: checkpointed resume_from=2026-01-12 00:00:00 (exit 2)
+2026-08-02 21:02:20,099 [INFO] === Series I step=ws_fleet started 2026-08-02T21:02:20Z ===
+2026-08-02 21:02:20,099 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 21:02:20,099 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 21:02:20,099 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:02:20,099 [INFO] Chunked resume from 2026-01-12 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 21:02:20,099 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:13:44,715 [INFO] Processed window ending 2026-01-13
+2026-08-02 21:13:44,932 [INFO] Chunked sweep: checkpointed resume_from=2026-01-13 00:00:00 (exit 2)
+2026-08-02 21:13:45,459 [INFO] === Series I step=ws_fleet started 2026-08-02T21:13:45Z ===
+2026-08-02 21:13:45,459 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 21:13:45,459 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 21:13:45,459 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:13:45,459 [INFO] Chunked resume from 2026-01-13 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 21:13:45,459 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:25:49,319 [INFO] Processed window ending 2026-01-14
+2026-08-02 21:25:49,645 [INFO] Chunked sweep: checkpointed resume_from=2026-01-14 00:00:00 (exit 2)
+2026-08-02 21:25:50,118 [INFO] === Series I step=ws_fleet started 2026-08-02T21:25:50Z ===
+2026-08-02 21:25:50,118 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 21:25:50,119 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 21:25:50,119 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:25:50,119 [INFO] Chunked resume from 2026-01-14 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 21:25:50,119 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:38:46,771 [INFO] Processed window ending 2026-01-15
+2026-08-02 21:38:46,945 [INFO] Chunked sweep: checkpointed resume_from=2026-01-15 00:00:00 (exit 2)
+2026-08-02 21:38:47,413 [INFO] === Series I step=ws_fleet started 2026-08-02T21:38:47Z ===
+2026-08-02 21:38:47,413 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 21:38:47,413 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 21:38:47,413 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:38:47,413 [INFO] Chunked resume from 2026-01-15 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 21:38:47,413 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 21:52:54,554 [INFO] Processed window ending 2026-01-16
+2026-08-02 21:52:54,819 [INFO] Chunked sweep: checkpointed resume_from=2026-01-16 00:00:00 (exit 2)
+2026-08-02 21:52:55,294 [INFO] === Series I step=ws_fleet started 2026-08-02T21:52:55Z ===
+2026-08-02 21:52:55,294 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 21:52:55,294 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 21:52:55,294 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:52:55,294 [INFO] Chunked resume from 2026-01-16 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 21:52:55,294 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:08:05,738 [INFO] Processed window ending 2026-01-17
+2026-08-02 22:08:05,913 [INFO] Chunked sweep: checkpointed resume_from=2026-01-17 00:00:00 (exit 2)
+2026-08-02 22:08:06,378 [INFO] === Series I step=ws_fleet started 2026-08-02T22:08:06Z ===
+2026-08-02 22:08:06,378 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 22:08:06,378 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 22:08:06,379 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:08:06,379 [INFO] Chunked resume from 2026-01-17 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 22:08:06,379 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:23:44,738 [INFO] Processed window ending 2026-01-18
+2026-08-02 22:23:45,067 [INFO] Chunked sweep: checkpointed resume_from=2026-01-18 00:00:00 (exit 2)
+2026-08-02 22:23:45,606 [INFO] === Series I step=ws_fleet started 2026-08-02T22:23:45Z ===
+2026-08-02 22:23:45,606 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 22:23:45,607 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 22:23:45,607 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:23:45,607 [INFO] Chunked resume from 2026-01-18 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 22:23:45,607 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:40:22,918 [INFO] Processed window ending 2026-01-19
+2026-08-02 22:40:23,096 [INFO] Chunked sweep: checkpointed resume_from=2026-01-19 00:00:00 (exit 2)
+2026-08-02 22:40:23,561 [INFO] === Series I step=ws_fleet started 2026-08-02T22:40:23Z ===
+2026-08-02 22:40:23,561 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 22:40:23,561 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 22:40:23,561 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:40:23,561 [INFO] Chunked resume from 2026-01-19 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 22:40:23,561 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:58:18,726 [INFO] Processed window ending 2026-01-20
+2026-08-02 22:58:18,903 [INFO] Chunked sweep: checkpointed resume_from=2026-01-20 00:00:00 (exit 2)
+2026-08-02 22:58:19,370 [INFO] === Series I step=ws_fleet started 2026-08-02T22:58:19Z ===
+2026-08-02 22:58:19,370 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 22:58:19,370 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 22:58:19,370 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:58:19,370 [INFO] Chunked resume from 2026-01-20 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 22:58:19,370 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 23:17:00,957 [INFO] Processed window ending 2026-01-21
+2026-08-02 23:17:01,290 [INFO] Chunked sweep: checkpointed resume_from=2026-01-21 00:00:00 (exit 2)
+2026-08-02 23:17:01,768 [INFO] === Series I step=ws_fleet started 2026-08-02T23:17:01Z ===
+2026-08-02 23:17:01,768 [INFO] Overrides: [('cohort_gating_constants.fleet_drift_enabled', True)]
+2026-08-02 23:17:01,768 [INFO] DB: /workspace/alter_ego_calibrate_series_i_ws_fleet.db
+2026-08-02 23:17:01,768 [INFO] Isolated config: /workspace/config/scoring_config.series_i_ws_fleet.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 23:17:01,768 [INFO] Chunked resume from 2026-01-21 00:00:00 (checkpoint /workspace/scratch/series_i_ws_fleet_checkpoint.json)
+2026-08-02 23:17:01,769 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 23:36:38,015 [INFO] Processed window ending 2026-01-22
+2026-08-02 23:36:59,385 [INFO] DONE step=ws_fleet elapsed=1197.6s F1=0.013481462988390962 R=0.46153846153846156 FP=7840 S1=1.0 S4=1.0
+FINAL_EXIT=0
