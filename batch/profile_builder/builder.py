@@ -1,6 +1,7 @@
 import json
 import logging
 import math
+import os
 import re
 import uuid
 from datetime import datetime, timedelta
@@ -551,7 +552,9 @@ def build_profiles(
     if config_override is not None:
         config = config_override
     else:
-        config_path = Path("config/scoring_config.yaml")
+        # ALTER_EGO_SCORING_CONFIG: per-process YAML for parallel calibration probes.
+        override = os.environ.get("ALTER_EGO_SCORING_CONFIG", "").strip()
+        config_path = Path(override) if override else Path("config/scoring_config.yaml")
         with open(config_path, "r") as f:
             config = yaml.safe_load(f)
 

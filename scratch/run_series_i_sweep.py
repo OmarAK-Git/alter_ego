@@ -80,8 +80,64 @@ def _parse_set_arg(raw: str) -> tuple[tuple[str, ...], Any]:
     return path, coerced
 
 
+def _apply_overrides(config: dict, overrides: list[tuple[tuple[str, ...], Any]]) -> dict:
+    for key_path, value in overrides:
+        node = config
+        for key in key_path[:-1]:
+            if key not in node or not isinstance(node[key], dict):
+                node[key] = {}
+            node = node[key]
+        node[key_path[-1]] = value
+    return config
+
+
+def resolve_baseline_config_path() -> Path:
+    """Prefer clean baseline YAML (cadence backup) over live shared file."""
+    backup = REPO_ROOT / "config" / "scoring_config.yaml.series_i_ws_cadence_2_backup"
+    if backup.exists():
+        return backup
+    return CONFIG_PATH
+
+
+def with_isolated_config(
+    overrides: list[tuple[tuple[str, ...], Any]],
+    step_config_path: Path,
+    *,
+    base_path: Path | None = None,
+):
+    """Write a per-step YAML copy and point ALTER_EGO_SCORING_CONFIG at it.
+
+    Does **not** mutate shared ``config/scoring_config.yaml``, so parallel
+    weight probes can run alongside an in-flight cadence sweep.
+    """
+
+    @contextlib.contextmanager
+    def _ctx():
+        source = base_path or resolve_baseline_config_path()
+        with open(source, encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+        _apply_overrides(config, overrides)
+        step_config_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(step_config_path, "w", encoding="utf-8") as f:
+            yaml.safe_dump(config, f, default_flow_style=False, sort_keys=False)
+        prev = os.environ.get("ALTER_EGO_SCORING_CONFIG")
+        os.environ["ALTER_EGO_SCORING_CONFIG"] = str(step_config_path)
+        try:
+            yield
+        finally:
+            if prev is None:
+                os.environ.pop("ALTER_EGO_SCORING_CONFIG", None)
+            else:
+                os.environ["ALTER_EGO_SCORING_CONFIG"] = prev
+
+    return _ctx()
+
+
 def with_config_overrides(overrides: list[tuple[tuple[str, ...], Any]], backup_path: Path):
-    """Temporarily patch scoring_config.yaml; restore after."""
+    """Legacy: temporarily patch scoring_config.yaml; restore after.
+
+    Prefer ``with_isolated_config`` for any new / parallel Series I work.
+    """
 
     @contextlib.contextmanager
     def _ctx():
@@ -89,13 +145,7 @@ def with_config_overrides(overrides: list[tuple[tuple[str, ...], Any]], backup_p
         try:
             with open(CONFIG_PATH, encoding="utf-8") as f:
                 config = yaml.safe_load(f)
-            for key_path, value in overrides:
-                node = config
-                for key in key_path[:-1]:
-                    if key not in node or not isinstance(node[key], dict):
-                        node[key] = {}
-                    node = node[key]
-                node[key_path[-1]] = value
+            _apply_overrides(config, overrides)
             with open(CONFIG_PATH, "w", encoding="utf-8") as f:
                 yaml.safe_dump(config, f, default_flow_style=False, sort_keys=False)
             yield
@@ -471,6 +521,7 @@ def _scenario_recalls(metrics: dict) -> dict[str, float | None]:
 def run_sweep(step: str, overrides: list[tuple[tuple[str, ...], Any]]) -> int:
     db_path = REPO_ROOT / f"alter_ego_calibrate_series_i_{step}.db"
     backup_path = REPO_ROOT / f"config/scoring_config.yaml.series_i_{step}_backup"
+    step_config_path = REPO_ROOT / "config" / f"scoring_config.series_i_{step}.yaml"
     metrics_scratch = SCRATCH_DIR / f"series_i_{step}_metrics.json"
     metrics_workflow = RESULTS_DIR / f"series_i_{step}_metrics.json"
     log_path = RESULTS_DIR / f"series_i_{step}_sweep.log"
@@ -492,6 +543,7 @@ def run_sweep(step: str, overrides: list[tuple[tuple[str, ...], Any]]) -> int:
     logger.info("=== Series I step=%s started %s ===", step, started)
     logger.info("Overrides: %s", [( ".".join(k), v) for k, v in overrides])
     logger.info("DB: %s", db_path)
+    logger.info("Isolated config: %s (base=%s)", step_config_path, resolve_baseline_config_path())
 
     _reset_calibration_db(db_path, engine)
     if not EVENTS_PATH.exists() or not LABELS_PATH.exists():
@@ -500,7 +552,10 @@ def run_sweep(step: str, overrides: list[tuple[tuple[str, ...], Any]]) -> int:
         logger.info("Reusing existing events/labels at %s", EVENTS_PATH)
 
     t0 = time.time()
-    with with_config_overrides(overrides, backup_path):
+    # Isolated YAML + ALTER_EGO_SCORING_CONFIG — never touch shared scoring_config.yaml.
+    # (Legacy with_config_overrides kept for emergency use; unused here.)
+    _ = backup_path  # retained path naming for ops familiarity
+    with with_isolated_config(overrides, step_config_path):
         db, _, _ = run_pipeline(EVENTS_PATH, LABELS_PATH, window_delta_days=1)
 
     if db is None:

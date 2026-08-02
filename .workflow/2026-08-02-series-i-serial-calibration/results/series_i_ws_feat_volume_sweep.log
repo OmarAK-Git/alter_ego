@@ -1,0 +1,40 @@
+
+=== parallel launch 2026-08-02T13:10:12Z ===
+Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_ws_feat_volume.db
+2026-08-02 09:10:14,913 [INFO] === Series I step=ws_feat_volume started 2026-08-02T13:10:14Z ===
+2026-08-02 09:10:14,913 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 09:10:14,913 [INFO] DB: C:\Users\oalan\alter_ego\alter_ego_calibrate_series_i_ws_feat_volume.db
+2026-08-02 09:10:14,913 [INFO] Isolated config: C:\Users\oalan\alter_ego\config\scoring_config.series_i_ws_feat_volume.yaml (base=C:\Users\oalan\alter_ego\config\scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 09:10:14,914 [INFO] Reusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:10:15,202 [INFO] Clearing database tables...
+Traceback (most recent call last):
+  File "C:\Users\oalan\alter_ego\scratch\run_series_i_sweep.py", line 668, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "C:\Users\oalan\alter_ego\scratch\run_series_i_sweep.py", line 664, in main
+    return run_sweep(args.step, args.sets)
+  File "C:\Users\oalan\alter_ego\scratch\run_series_i_sweep.py", line 559, in run_sweep
+    db, _, _ = run_pipeline(EVENTS_PATH, LABELS_PATH, window_delta_days=1)
+               ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\oalan\alter_ego\batch\eval\runner.py", line 164, in run_pipeline
+    raise e
+  File "C:\Users\oalan\alter_ego\batch\eval\runner.py", line 149, in run_pipeline
+    temp_events.unlink()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\oalan\scoop\apps\miniconda3\current\Lib\pathlib\_local.py", line 746, in unlink
+    os.unlink(self)
+    ~~~~~~~~~^^^^^^
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'temp_window_20260101.jsonl'
+
+=== parallel launch 2026-08-02T13:11:10Z ===
+Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_ws_feat_volume.db
+2026-08-02 09:11:11,740 [INFO] === Series I step=ws_feat_volume started 2026-08-02T13:11:11Z ===
+2026-08-02 09:11:11,740 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 09:11:11,740 [INFO] DB: C:\Users\oalan\alter_ego\alter_ego_calibrate_series_i_ws_feat_volume.db
+2026-08-02 09:11:11,740 [INFO] Isolated config: C:\Users\oalan\alter_ego\config\scoring_config.series_i_ws_feat_volume.yaml (base=C:\Users\oalan\alter_ego\config\scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 09:11:11,742 [INFO] Reusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:11:12,020 [INFO] Clearing database tables...
+2026-08-02 09:11:43,325 [INFO] Processed window ending 2026-01-02
+ing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:11:12,020 [INFO] Clearing database tables...
+2026-08-02 09:11:43,325 [INFO] Processed window ending 2026-01-02

@@ -1,6 +1,7 @@
 import hashlib
 import math
 import json
+import os
 import time
 import logging
 from dataclasses import dataclass
@@ -340,7 +341,14 @@ def get_active_alert_decision_ids(db: Session, entity_id: str) -> list[str]:
 
 
 def load_scoring_config() -> dict:
-    config_path = Path(__file__).parent.parent / "config" / "scoring_config.yaml"
+    # ALTER_EGO_SCORING_CONFIG lets parallel Series I probes use per-step YAML
+    # copies without fighting over config/scoring_config.yaml.
+    override = os.environ.get("ALTER_EGO_SCORING_CONFIG", "").strip()
+    config_path = (
+        Path(override)
+        if override
+        else Path(__file__).parent.parent / "config" / "scoring_config.yaml"
+    )
     if not config_path.exists():
         return {"anomaly_threshold": 45.0, "version": "2.1", "features": {}}
     with open(config_path, "r") as f:

@@ -1,0 +1,72 @@
+version: '2.2'
+anomaly_threshold: 45.0
+drift_threshold: 5.0
+max_profile_staleness_days: 14
+drift_comparison_history_count: 5
+drift_half_life_days: 7
+confidence_floor: 0.6
+confidence_k: 10.0
+containment_threshold: 85.0
+contribution_scale_max: 50.0
+explainer_queue_depth: 8
+laplace_alpha: 1.0
+max_calendar_adjustment: 0.3
+max_replay_window_days: 30
+max_profile_build_block_days: 30
+recent_drift_window_days: 3
+cohort_gate_window_days: 7
+age_jitter_hours: 4
+cohort_gating_constants:
+  min_cohort_size: 10
+  min_clean_observation_count: 5
+  max_changed_fraction: 0.2
+  fleet_drift_enabled: false
+gap_windows:
+  gap_correlation_window: 60
+  investigation_context_window: 14
+features:
+  login_hour_rarity:
+    weight: 1.0
+  geolocation_rarity:
+    weight: 2.0
+  endpoint_set_rarity:
+    weight: 2.0
+  process_name_rarity:
+    weight: 3.0
+  command_line_embedding_similarity:
+    weight: 2.0
+  drift_alert:
+    weight: 100.0
+  service_account_execution_frequency_deviation:
+    weight: 5.0
+  total_volume_delta:
+    weight: 1.0
+    enabled: false
+drift_weights:
+  login_hour: 5.0
+  geolocation: 5.0
+  endpoint_set: 5.0
+  process_name: 20.0
+  embedding: 40.0
+  cadence:
+    weight: 0.0
+    enabled: false
+  total_volume_delta:
+    weight: 5.0
+    enabled: true
+  geo_velocity:
+    weight: 0.0
+    enabled: false
+    vpn_allowlist: []
+precision_gate:
+  enabled: false
+  version: stage_a_v1
+  family_floor_fraction: 0.1
+  containment_min_agreement: 2
+staged_drift:
+  enabled: false
+  soft_crossing_fraction: 0.5
+  templates:
+  - - endpoint_set
+    - process_name
+    - embedding

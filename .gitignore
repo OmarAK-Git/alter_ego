@@ -48,6 +48,9 @@ logs/
 *.jsonl
 temp.json
 temp_window.jsonl
+temp_window_*.jsonl
+alter_ego_calibrate_series_i_*.db
+alter_ego_calibrate_series_i_*.db-*
 scratch/**/*.json
 scratch/**/*.jsonl
 

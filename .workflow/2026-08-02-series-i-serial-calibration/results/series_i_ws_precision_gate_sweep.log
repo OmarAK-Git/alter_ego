@@ -1,0 +1,26 @@
+
+=== parallel launch 2026-08-02T13:10:13Z ===
+Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_ws_precision_gate.db
+2026-08-02 09:10:14,911 [INFO] === Series I step=ws_precision_gate started 2026-08-02T13:10:14Z ===
+2026-08-02 09:10:14,912 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-02 09:10:14,912 [INFO] DB: C:\Users\oalan\alter_ego\alter_ego_calibrate_series_i_ws_precision_gate.db
+2026-08-02 09:10:14,912 [INFO] Isolated config: C:\Users\oalan\alter_ego\config\scoring_config.series_i_ws_precision_gate.yaml (base=C:\Users\oalan\alter_ego\config\scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 09:10:14,913 [INFO] Reusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:10:15,201 [INFO] Clearing database tables...
+2026-08-02 09:10:48,126 [INFO] Processed window ending 2026-01-02
+eusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:10:15,201 [INFO] Clearing database tables...
+2026-08-02 09:10:48,126 [INFO] Processed window ending 2026-01-02
+
+=== parallel launch 2026-08-02T13:11:10Z ===
+Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_ws_precision_gate.db
+2026-08-02 09:11:11,753 [INFO] === Series I step=ws_precision_gate started 2026-08-02T13:11:11Z ===
+2026-08-02 09:11:11,753 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-02 09:11:11,753 [INFO] DB: C:\Users\oalan\alter_ego\alter_ego_calibrate_series_i_ws_precision_gate.db
+2026-08-02 09:11:11,753 [INFO] Isolated config: C:\Users\oalan\alter_ego\config\scoring_config.series_i_ws_precision_gate.yaml (base=C:\Users\oalan\alter_ego\config\scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 09:11:11,756 [INFO] Reusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:11:12,037 [INFO] Clearing database tables...
+2026-08-02 09:11:43,580 [INFO] Processed window ending 2026-01-02
+eusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:11:12,037 [INFO] Clearing database tables...
+2026-08-02 09:11:43,580 [INFO] Processed window ending 2026-01-02

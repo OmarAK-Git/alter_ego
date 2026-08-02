@@ -1,4 +1,5 @@
 import sys
+import os
 import json
 import logging
 from pathlib import Path
@@ -139,14 +140,22 @@ def run_pipeline(
             ]
 
             if window_events:
-                temp_events = Path(f"temp_window_{current_window_start.strftime('%Y%m%d')}.jsonl")
+                # Include PID so parallel Series I probes don't clobber each other
+                # (and don't fight an in-flight cadence sweep on the same day file).
+                temp_events = Path(
+                    f"temp_window_{os.getpid()}_{current_window_start.strftime('%Y%m%d')}.jsonl"
+                )
                 with open(temp_events, "w") as f:
                     for e in window_events:
                         f.write(json.dumps(e) + "\n")
 
                 ingest_events(temp_events, db)
                 if temp_events.exists():
-                    temp_events.unlink()
+                    try:
+                        temp_events.unlink()
+                    except OSError:
+                        # Best-effort cleanup; leftover temps are harmless.
+                        logger.warning("Could not unlink %s", temp_events)
                 process_unresolved_events(db)
                 build_profiles(db, as_of=current_window_end)
                 process_unscored_events(db)
