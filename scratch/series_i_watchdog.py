@@ -53,6 +53,8 @@ def main() -> int:
             queued.remove(s)
     # Mark higher cadence probes skipped; winner selection happens in campaign
     for s in ("ws_cadence_5", "ws_cadence_10"):
+        if s not in completed:
+            completed.append(s)
         skip = f"{s}_SKIPPED"
         if skip not in completed:
             completed.append(skip)
