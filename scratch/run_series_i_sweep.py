@@ -518,13 +518,14 @@ def _scenario_recalls(metrics: dict) -> dict[str, float | None]:
     return out
 
 
-def run_sweep(step: str, overrides: list[tuple[tuple[str, ...], Any]]) -> int:
+def run_sweep(step: str, overrides: list[tuple[tuple[str, ...], Any]], *, chunked: bool = False) -> int:
     db_path = REPO_ROOT / f"alter_ego_calibrate_series_i_{step}.db"
     backup_path = REPO_ROOT / f"config/scoring_config.yaml.series_i_{step}_backup"
     step_config_path = REPO_ROOT / "config" / f"scoring_config.series_i_{step}.yaml"
     metrics_scratch = SCRATCH_DIR / f"series_i_{step}_metrics.json"
     metrics_workflow = RESULTS_DIR / f"series_i_{step}_metrics.json"
     log_path = RESULTS_DIR / f"series_i_{step}_sweep.log"
+    checkpoint_path = SCRATCH_DIR / f"series_i_{step}_checkpoint.json"
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     SCRATCH_DIR.mkdir(parents=True, exist_ok=True)
@@ -545,7 +546,22 @@ def run_sweep(step: str, overrides: list[tuple[tuple[str, ...], Any]]) -> int:
     logger.info("DB: %s", db_path)
     logger.info("Isolated config: %s (base=%s)", step_config_path, resolve_baseline_config_path())
 
-    _reset_calibration_db(db_path, engine)
+    resume_from = None
+    clear_first = True
+    if chunked:
+        if checkpoint_path.exists():
+            cp = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+            resume_from = datetime.fromisoformat(cp["resume_from"])
+            clear_first = False
+            logger.info("Chunked resume from %s (checkpoint %s)", resume_from, checkpoint_path)
+        elif db_path.exists() and db_path.stat().st_size > 0:
+            clear_first = False
+            logger.info("Chunked mode: reusing existing DB %s (no checkpoint)", db_path)
+        else:
+            _reset_calibration_db(db_path, engine)
+    else:
+        _reset_calibration_db(db_path, engine)
+
     if not EVENTS_PATH.exists() or not LABELS_PATH.exists():
         generate_series_i_mix()
     else:
@@ -556,7 +572,28 @@ def run_sweep(step: str, overrides: list[tuple[tuple[str, ...], Any]]) -> int:
     # (Legacy with_config_overrides kept for emergency use; unused here.)
     _ = backup_path  # retained path naming for ops familiarity
     with with_isolated_config(overrides, step_config_path):
-        db, _, _ = run_pipeline(EVENTS_PATH, LABELS_PATH, window_delta_days=1)
+        db, has_more, next_start = run_pipeline(
+            EVENTS_PATH,
+            LABELS_PATH,
+            window_delta_days=1,
+            clear_first=clear_first,
+            resume_from=resume_from,
+            windows_per_invocation=1 if chunked else None,
+        )
+
+    if chunked and has_more and next_start is not None:
+        checkpoint_path.write_text(
+            json.dumps({"resume_from": next_start.isoformat()}), encoding="utf-8"
+        )
+        logger.info("Chunked sweep: checkpointed resume_from=%s (exit 2)", next_start)
+        if db is not None:
+            db.close()
+        engine.dispose()
+        logging.getLogger().removeHandler(file_handler)
+        file_handler.close()
+        return 2
+    if chunked:
+        checkpoint_path.unlink(missing_ok=True)
 
     if db is None:
         logger.error("Pipeline returned no session")
@@ -652,6 +689,11 @@ def main() -> int:
         action="store_true",
         help="Only generate events/labels, then exit",
     )
+    parser.add_argument(
+        "--chunked",
+        action="store_true",
+        help="Process one day-window per invocation; exit 2 if more remain",
+    )
     args = parser.parse_args()
 
     if args.generate_only:
@@ -661,7 +703,7 @@ def main() -> int:
     if not args.sets:
         logger.warning("No --set overrides; running with committed YAML as-is (baseline)")
 
-    return run_sweep(args.step, args.sets)
+    return run_sweep(args.step, args.sets, chunked=args.chunked)
 
 
 if __name__ == "__main__":

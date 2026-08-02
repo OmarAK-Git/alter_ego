@@ -1,64 +1,70 @@
-# Series I ? Overnight STATUS
+# Series I — STATUS (T2 restructure)
 
-**Updated:** 2026-08-02T13:12Z (local ~09:12)
-**Branch:** `series-i-serial-calibration`
+**Updated:** 2026-08-02T20:00Z
+**Branch:** `series-i-serial-calibration` (pushed to `origin`)
 **Calibrated:** false
 
-## Parallel plan (active)
+## Step 1 — Hygiene
 
-Cadence monopolized overnight budget; operator authorized parallel **solo screens** (not additive folds):
+| Item | Status |
+|---|---|
+| Defender exclusions | **Pending operator (admin)** — run commands in `state.json` → `av_exclusions.commands` |
+| Resume | **Partial yes** — `batch/eval/runner.py` supports chunked resume; `run_series_i_sweep.py --chunked` added; campaign orchestrator does not resume |
+| Local fanout | **3 writers** — cadence + precision_gate + feat_volume (was 8–9) |
 
-| Lane | Steps | Isolation |
-|---|---|---|
-| Cadence (in-flight) | `ws_cadence_2` | Live shared YAML patch ? **do not touch** |
-| Volume weights | `ws_volume_1/5/15` | `ALTER_EGO_SCORING_CONFIG` + own sqlite |
-| Geo weight | `ws_geo_5` | same |
-| Weightless flag solos | `ws_feat_volume`, `ws_fleet`, `ws_precision_gate`, `ws_staged_drift` | same |
+## Step 2 — Cadence inertness query
 
-**NOT started:** additive fold chain `fold_01`?`fold_07` (waits for weight decisions).
+**Decision: do NOT kill cadence** (operator wait if threshold disputed).
 
-## Running now (PIDs)
+| Metric | Value |
+|---|---:|
+| n (combined E/F/G/I cadence_2 profiles) | 4160 |
+| frac exactly 0.0 | 0.713 |
+| frac < 0.05 | 0.713 |
+| mean | 0.280 |
+| max | 1.0 |
+| by entity_type | human only (n=4160) |
 
-| Role | PID | Notes |
-|---|---:|---|
-| Cadence `ws_cadence_2` | **77784** | Undisturbed; DB ~700MB+, day ~14/21 |
-| Parallel launcher | 46556 | `series_i_parallel_weights.py` |
-| Parallel collector | 28776 | governance on completion |
-| Watchdog | 82920 | kills **campaign only**; spares parallel sweeps |
-| `ws_volume_1` | 59924 | |
-| `ws_volume_5` | 73336 | |
-| `ws_volume_15` | 93860 | |
-| `ws_geo_5` | 55172 | |
-| `ws_feat_volume` | 22968 | `features.total_volume_delta.enabled` |
-| `ws_fleet` | 44840 | `fleet_drift_enabled` |
-| `ws_precision_gate` | 67800 | |
-| `ws_staged_drift` | 80516 | |
+Series F `per_dimension_drift_decomposition.cadence.mean` = **0.288** when cadence enabled — dimension is not wholly inert.
 
-Campaign orchestrator **stopped** so it cannot serially grab volume after cadence; watchdog resumes it after cadence metrics + parallel solos finish.
+Code facts confirmed:
+- `builder.py:489` — `max(0.0, 1.0 - cv/0.3)` floors at 0 when cv≥0.3
+- `builder.py:748–777` — `cadence_cov` computed once; appended as absolute value per prev profile (not Δ vs baseline)
+- `builder.py:868` — `norm_drift = raw_drift - cohort_median(role)`
+- `builder.py:810,914` — `cadence_cov` persisted unconditionally
 
-## Isolation mechanism
+DEBT-078 added (absolute vs delta cadence; cross-ref DEBT-012).
 
-- `ALTER_EGO_SCORING_CONFIG` honored by `worker/scorer.py` + `batch/profile_builder/builder.py`
-- Sweep writes `config/scoring_config.series_i_<step>.yaml` from cadence **backup** baseline (new drift dims off)
-- Shared `config/scoring_config.yaml` remains cadence-enabled for PID 77784
-- Eval runner temp windows are PID-scoped (`temp_window_<pid>_YYYYMMDD.jsonl`) to avoid WinError 32 clashes
+## Step 3 — Lane split
 
-## Cadence interim (directional)
+### Local (running)
 
-Partial thr=45 earlier: cadence w=2 hurts recall; floors OK ? expect **reject + short-circuit** `{5,10}` after metrics land.
+| Lane | Progress |
+|---|---|
+| `ws_cadence_2` | ~day 6/21 logged; day 7 in progress (PID 77784) |
+| `ws_precision_gate` | ~day 10/21 |
+| `ws_feat_volume` | ~day 10/21 |
 
-## First-launch note
+### Cloud (pending launch)
 
-Initial parallel wave failed on shared `temp_window_20260101.jsonl` locks; fixed in `batch/eval/runner.py` and relaunched ~09:11. Probes confirmed past `Processed window ending 2026-01-02`.
+See [`CLOUD-I-LAUNCH.md`](CLOUD-I-LAUNCH.md). Partial progress through sim-day 2026-01-10; checkpoints at 2026-01-11.
 
-## ETA
+| Lane | Status |
+|---|---|
+| `ws_volume_1` | pending_launch (local stopped → migrated) |
+| `ws_volume_5` | pending_launch |
+| `ws_volume_15` | pending_launch |
+| `ws_staged_drift` | pending_launch |
+| `ws_fleet` | pending_launch |
 
-- Weightless / volume / geo solos: roughly cadence-like wall time if non-zero weights storm; enable-only flags may finish closer to Series F/H (~2?4h) ? unknown until day-curve observed
-- Cadence remaining: ~7?8 day-windows left; historically 40?60 min/day under weight storm ? **~5?8h** more
+### Aborted
+
+| Lane | Reason |
+|---|---|
+| `ws_geo_5` | `geo_velocity_delta_last_build` 100% zero in partial DB (n=585); Series G mean=0 |
 
 ## Next
 
-1. Collect metrics + governance per solo (accept/reject that dim/flag only)
-2. Cadence metrics ? short-circuit higher cadence weights
-3. Phase B additive folds only after weight winners known
-4. No merge to main; no CALIBRATED claim
+1. Operator: run Defender exclusions (admin PowerShell).
+2. Dispatch 5 cloud probes per `CLOUD-I-LAUNCH.md`.
+3. Let local cadence + flag solos finish; collect metrics JSON before marking done.

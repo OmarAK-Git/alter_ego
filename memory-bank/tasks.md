@@ -1,35 +1,36 @@
 # Tasks
 
-**Canonical T3 state:** `.workflow/2026-07-30-drift-capability-expansion/state.json`
+**Updated:** 2026-08-02 — Series I T2 campaign
 
-## Autopilot
+## Active: Series I serial calibration
 
-**Active sprint:** DC (drift capability expansion) — **COMPLETE**  
-**Queue SoT:** `.workflow/autopilot-queue.json`  
-**Gate model:** `cursor-grok-4.5-high-fast` (all gates, in_session_grok)
+| Item | Status |
+|---|---|
+| T2 restructure (hygiene + cadence query + lane split) | **in progress** |
+| Phase A weight search | in progress |
+| Phase B serial folds | pending weight decisions |
+| Cloud probe dispatch (5 lanes) | **pending operator / cloud agent** |
+| `ws_cadence_2` completion | running |
+| `ws_cadence_5/10` | queued (cadence not killed) |
 
-## Queue status (2026-08-02)
+### Lane table (authoritative snapshot)
 
-| Status | Count | Items |
-|---|---:|---|
-| **done** | **24** | All packets P0-1 through DC-EXIT-GATE |
-| in_progress | 0 | — |
-| pending | 0 | — |
+| Lane | Host | Status | Notes |
+|---|---|---|---|
+| `ws_cadence_2` | local | running | PID 77784; ~6/21 windows logged |
+| `ws_cadence_5` | — | queued | |
+| `ws_cadence_10` | — | queued | |
+| `ws_volume_1` | cloud | pending_launch | local stopped; checkpoint 2026-01-11 |
+| `ws_volume_5` | cloud | pending_launch | local stopped; checkpoint 2026-01-11 |
+| `ws_volume_15` | cloud | pending_launch | local stopped; checkpoint 2026-01-11 |
+| `ws_geo_5` | — | **aborted** | geo_velocity null (100% zero deltas) |
+| `ws_feat_volume` | local | running | ~day 10/21 |
+| `ws_precision_gate` | local | running | ~day 10/21 |
+| `ws_fleet` | cloud | pending_launch | local stopped; checkpoint 2026-01-11 |
+| `ws_staged_drift` | cloud | pending_launch | local stopped; checkpoint 2026-01-11 |
 
-## Exit gate
+**SoT:** `.workflow/2026-08-02-series-i-serial-calibration/state.json`
 
-- **Verdict:** PASS (2026-08-02, cursor-grok-4.5-high)
-- **pytest:** 204 passed (`results/DC-EXIT-GATE-pytest.txt`)
-- **ruff:** clean (`results/DC-EXIT-GATE-ruff.txt`)
-- **Verdict doc:** `results/DC-EXIT-GATE-verdict.md`
+## DC drift-capability expansion
 
-## Series sweeps (cloud complete)
-
-| Series | Commit | Governance |
-|---|---|---|
-| E | `8989f15` | `docs/scoring-config-governance-series-e.md` |
-| F | `a916d13` | `docs/scoring-config-governance-series-f.md` |
-| G | `b63884c` | `docs/scoring-config-governance-series-g.md` |
-| H | `1cc2e3e` | `docs/scoring-config-governance-series-h.md` |
-
-All `enabled` flags in committed `config/scoring_config.yaml` remain **false**.
+**Status:** COMPLETE (2026-08-02). See `.workflow/2026-07-30-drift-capability-expansion/`.

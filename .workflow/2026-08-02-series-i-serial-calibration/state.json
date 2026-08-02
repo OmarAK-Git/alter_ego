@@ -3,14 +3,32 @@
   "branch": "series-i-serial-calibration",
   "status": "in_progress",
   "started_at": "2026-08-02T04:23:00Z",
-  "phase": "A_weight_search_parallel",
-  "current_step": "parallel_weight_and_flag_solos",
-  "parallel_weight_mode": true,
+  "phase": "A_weight_search_split",
+  "current_step": "cloud_local_split_post_cadence_query",
+  "parallel_weight_mode": false,
+  "local_max_writers": 3,
   "accepted_flags": {},
   "rejected_flags": {},
   "weight_winners": {},
   "solo_flag_candidates": {},
   "solo_flag_rejects": {},
+  "aborted_lanes": {
+    "ws_geo_5": {
+      "reason": "geo_velocity_delta_last_build 100% zero in partial Series I DB (n=585); consistent with Series G mean=0",
+      "aborted_at": "2026-08-02T20:00:00Z"
+    }
+  },
+  "cadence_kill_decision": {
+    "killed": false,
+    "reason": "cadence_cov NOT overwhelmingly zero: combined n=4160, frac_exact_0=0.713, frac_lt_0.05=0.713, mean=0.280; Series F cadence delta mean=0.288",
+    "queried_at": "2026-08-02T20:00:00Z",
+    "sources": [
+      "alter_ego_calibrate_series_e.db",
+      "alter_ego_calibrate_series_f.db",
+      "alter_ego_calibrate_series_g.db",
+      "alter_ego_calibrate_series_i_ws_cadence_2.db"
+    ]
+  },
   "baseline_ref": {
     "source": "series_e_h",
     "precision": 0.006708907938874394,
@@ -30,13 +48,12 @@
     "ws_cadence_2",
     "ws_cadence_5",
     "ws_cadence_10",
-    "ws_precision_gate",
     "ws_volume_1",
     "ws_volume_5",
     "ws_volume_15",
-    "ws_geo_5",
     "ws_feat_volume",
     "ws_fleet",
+    "ws_precision_gate",
     "ws_staged_drift",
     "fold_01_cadence",
     "fold_02_feature_volume",
@@ -46,112 +63,96 @@
     "fold_06_precision_gate",
     "fold_07_staged_drift"
   ],
-  "parallel_probes": {
-    "ws_volume_1": {
-      "pid": 59924,
+  "lanes": {
+    "ws_cadence_2": {
+      "host": "local",
       "status": "running",
-      "sets": [
-        "drift_weights.total_volume_delta.enabled=true",
-        "drift_weights.total_volume_delta.weight=1.0"
-      ],
-      "started_at": "2026-08-02T13:11:10Z",
-      "db": "alter_ego_calibrate_series_i_ws_volume_1.db",
-      "config": "config/scoring_config.series_i_ws_volume_1.yaml",
-      "log": "C:\\Users\\oalan\\alter_ego\\.workflow\\2026-08-02-series-i-serial-calibration\\results\\series_i_ws_volume_1_sweep.log"
+      "pid": 77784,
+      "progress": "~day 6/21 complete (day 7 in progress)",
+      "db": "alter_ego_calibrate_series_i_ws_cadence_2.db"
+    },
+    "ws_cadence_5": {
+      "host": null,
+      "status": "queued"
+    },
+    "ws_cadence_10": {
+      "host": null,
+      "status": "queued"
+    },
+    "ws_volume_1": {
+      "host": "cloud",
+      "status": "pending_launch",
+      "local_stopped_reason": "migrated to cloud",
+      "checkpoint": "scratch/series_i_ws_volume_1_checkpoint.json",
+      "resume_from": "2026-01-11T00:00:00"
     },
     "ws_volume_5": {
-      "pid": 73336,
-      "status": "running",
-      "sets": [
-        "drift_weights.total_volume_delta.enabled=true",
-        "drift_weights.total_volume_delta.weight=5.0"
-      ],
-      "started_at": "2026-08-02T13:11:10Z",
-      "db": "alter_ego_calibrate_series_i_ws_volume_5.db",
-      "config": "config/scoring_config.series_i_ws_volume_5.yaml",
-      "log": "C:\\Users\\oalan\\alter_ego\\.workflow\\2026-08-02-series-i-serial-calibration\\results\\series_i_ws_volume_5_sweep.log"
+      "host": "cloud",
+      "status": "pending_launch",
+      "local_stopped_reason": "migrated to cloud",
+      "checkpoint": "scratch/series_i_ws_volume_5_checkpoint.json",
+      "resume_from": "2026-01-11T00:00:00"
     },
     "ws_volume_15": {
-      "pid": 93860,
-      "status": "running",
-      "sets": [
-        "drift_weights.total_volume_delta.enabled=true",
-        "drift_weights.total_volume_delta.weight=15.0"
-      ],
-      "started_at": "2026-08-02T13:11:10Z",
-      "db": "alter_ego_calibrate_series_i_ws_volume_15.db",
-      "config": "config/scoring_config.series_i_ws_volume_15.yaml",
-      "log": "C:\\Users\\oalan\\alter_ego\\.workflow\\2026-08-02-series-i-serial-calibration\\results\\series_i_ws_volume_15_sweep.log"
+      "host": "cloud",
+      "status": "pending_launch",
+      "local_stopped_reason": "migrated to cloud",
+      "checkpoint": "scratch/series_i_ws_volume_15_checkpoint.json",
+      "resume_from": "2026-01-11T00:00:00"
     },
     "ws_geo_5": {
-      "pid": 55172,
-      "status": "running",
-      "sets": [
-        "drift_weights.geo_velocity.enabled=true",
-        "drift_weights.geo_velocity.weight=5.0"
-      ],
-      "started_at": "2026-08-02T13:11:10Z",
-      "db": "alter_ego_calibrate_series_i_ws_geo_5.db",
-      "config": "config/scoring_config.series_i_ws_geo_5.yaml",
-      "log": "C:\\Users\\oalan\\alter_ego\\.workflow\\2026-08-02-series-i-serial-calibration\\results\\series_i_ws_geo_5_sweep.log"
+      "host": null,
+      "status": "aborted",
+      "abort_reason": "geo_velocity_delta_last_build 100% zero (n=585 partial DB)"
     },
     "ws_feat_volume": {
-      "pid": 22968,
+      "host": "local",
       "status": "running",
-      "sets": [
-        "features.total_volume_delta.enabled=true"
-      ],
-      "started_at": "2026-08-02T13:11:10Z",
-      "db": "alter_ego_calibrate_series_i_ws_feat_volume.db",
-      "config": "config/scoring_config.series_i_ws_feat_volume.yaml",
-      "log": "C:\\Users\\oalan\\alter_ego\\.workflow\\2026-08-02-series-i-serial-calibration\\results\\series_i_ws_feat_volume_sweep.log"
-    },
-    "ws_fleet": {
-      "pid": 44840,
-      "status": "running",
-      "sets": [
-        "cohort_gating_constants.fleet_drift_enabled=true"
-      ],
-      "started_at": "2026-08-02T13:11:10Z",
-      "db": "alter_ego_calibrate_series_i_ws_fleet.db",
-      "config": "config/scoring_config.series_i_ws_fleet.yaml",
-      "log": "C:\\Users\\oalan\\alter_ego\\.workflow\\2026-08-02-series-i-serial-calibration\\results\\series_i_ws_fleet_sweep.log"
+      "pid": 64496,
+      "progress": "~day 10/21"
     },
     "ws_precision_gate": {
-      "pid": 67800,
+      "host": "local",
       "status": "running",
-      "sets": [
-        "precision_gate.enabled=true"
-      ],
-      "started_at": "2026-08-02T13:11:10Z",
-      "db": "alter_ego_calibrate_series_i_ws_precision_gate.db",
-      "config": "config/scoring_config.series_i_ws_precision_gate.yaml",
-      "log": "C:\\Users\\oalan\\alter_ego\\.workflow\\2026-08-02-series-i-serial-calibration\\results\\series_i_ws_precision_gate_sweep.log"
+      "pid": 89136,
+      "progress": "~day 10/21"
+    },
+    "ws_fleet": {
+      "host": "cloud",
+      "status": "pending_launch",
+      "local_stopped_reason": "migrated to cloud",
+      "checkpoint": "scratch/series_i_ws_fleet_checkpoint.json",
+      "resume_from": "2026-01-11T00:00:00"
     },
     "ws_staged_drift": {
-      "pid": 80516,
-      "status": "running",
-      "sets": [
-        "staged_drift.enabled=true"
-      ],
-      "started_at": "2026-08-02T13:11:10Z",
-      "db": "alter_ego_calibrate_series_i_ws_staged_drift.db",
-      "config": "config/scoring_config.series_i_ws_staged_drift.yaml",
-      "log": "C:\\Users\\oalan\\alter_ego\\.workflow\\2026-08-02-series-i-serial-calibration\\results\\series_i_ws_staged_drift_sweep.log"
+      "host": "cloud",
+      "status": "pending_launch",
+      "local_stopped_reason": "migrated to cloud",
+      "checkpoint": "scratch/series_i_ws_staged_drift_checkpoint.json",
+      "resume_from": "2026-01-11T00:00:00"
     }
   },
   "calibrated": false,
   "merge_recommendation": null,
+  "resume_capability": {
+    "batch_eval_runner": "yes — resume_from + windows_per_invocation + clear_first=False",
+    "run_series_i_sweep": "yes — --chunked added 2026-08-02 (per-step checkpoint in scratch/)",
+    "run_series_i_campaign": "no — serial orchestrator does not chunk/resume"
+  },
+  "av_exclusions": {
+    "status": "pending_operator_admin",
+    "commands": [
+      "Add-MpPreference -ExclusionPath 'C:\\Users\\oalan\\alter_ego'",
+      "Add-MpPreference -ExclusionPath 'C:\\Users\\oalan\\alter_ego\\.workflow\\2026-08-02-series-i-serial-calibration'",
+      "Add-MpPreference -ExclusionPath 'C:\\Users\\oalan\\alter_ego\\scratch'",
+      "Add-MpPreference -ExclusionExtension '.db'"
+    ]
+  },
   "notes": [
-    "2026-08-02: parallel mode \u2014 cadence ws_cadence_2 continues undisturbed;",
-    "volume/geo weight solos + weightless flag solos (feat_volume/fleet/precision_gate/staged_drift)",
-    "run via isolated ALTER_EGO_SCORING_CONFIG YAML copies; additive folds stay serial after weight decisions."
+    "2026-08-02 T2: stopped 8-9 local parallel writers; 3 local max (cadence + precision_gate + feat_volume).",
+    "Cloud lanes pending dispatch — branch pushed; see CLOUD-I-LAUNCH.md.",
+    "Cadence kill path NOT taken (71% zero insufficient vs 29% non-zero + Series F cadence mean 0.288).",
+    "scoring_config.yaml restored from cadence_2 backup (cadence enabled=false)."
   ],
-  "updated_at": "2026-08-02T13:13:30Z",
-  "orchestrator_pids": {
-    "cadence_ws_cadence_2": 77784,
-    "parallel_launcher": 46556,
-    "parallel_collector": 28776,
-    "watchdog": 82920
-  }
+  "updated_at": "2026-08-02T20:00:00Z"
 }

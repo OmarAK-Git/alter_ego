@@ -113,6 +113,7 @@ Classic `# TODO` / `# FIXME` / `# HACK` / `# XXX` markers are **absent** from pr
 | DEBT-075 | L deferrals | SPEC / progress S5.11 | Fleet-level `cohort_drift` parallel detector shipped (`fleet_drift_enabled: false`); independent cohort artifacts + prior-update gates still deferred | S1 | **Partial recovery** — Phase 3 fleet detector (`fc8f530`..`b63884c`, see DEBT-068); Series G governance done; S5.11 Path B unchanged; close after `enabled` flip |
 | DEBT-076 | L deferrals | SPEC / progress S2.7 | Profile lifecycle states — no `lifecycle_state` | S2 | Spec-aligned ship or keep Path B |
 | DEBT-077 | L deferrals | SPEC / progress S5.2 | K8s / Terraform deferred; compose-as-IaC | S3 | Optional portfolio IaC |
+| DEBT-078 | B constants | `batch/profile_builder/builder.py:748–777` | Cadence drift uses **absolute** `cadence_cov` (same value per prev profile) not Δ vs baseline `cadence_cov`; pairs with DEBT-012 `cv/0.3` floor | S2 | Compute `abs(cadence_cov - prev.cadence_cov)` or KL-style delta before weight sweeps; Series I query 2026-08-02: 71% `cadence_cov==0` but 29% non-zero (mean 0.28) — sweep still informative, kill path **not** taken |
 
 **ID range in use:** `DEBT-001` … `DEBT-077`. Next new item: `DEBT-078`.
 
