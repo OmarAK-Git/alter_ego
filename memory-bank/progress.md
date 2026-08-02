@@ -339,3 +339,11 @@ Real SIEM integration · multi-tenant SaaS · production IAM disablement · live
 ## Next action
 
 **Autopilot stopped:** `--stop-before-gate` — next runnable `S3-EXIT-GATE` (chat_gate). S3.1–S3.6 complete (S3.3 wontfix). See `results/autopilot-loop-stop-report.md`.
+
+## Series I serial calibration (2026-08-02T04:25Z)
+
+- Branch: `series-i-serial-calibration`
+- Status: IN PROGRESS — Phase A weight search launching
+- Harness: `scratch/run_series_i_campaign.py`
+- Artifacts: `.workflow/2026-08-02-series-i-serial-calibration/`
+- Calibrated: false (never claim CALIBRATED)
