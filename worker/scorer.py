@@ -360,6 +360,32 @@ def _get_cohort_histogram(feature_name: str, profile: ProfileArtifact) -> tuple[
     return cohort_data.get("terminus", {}).get(feature_name, {}), "terminus"
 
 
+def _resolve_effective_profile(
+    db: Session, entity_id: str, promoted: ProfileArtifact, as_of: datetime
+) -> tuple[ProfileArtifact, str | None]:
+    """S55-D4-style shadow read, extended beyond drift to point-rarity/embedding.
+
+    Returns (effective_profile, flag_or_none). Logs a WARNING itself on the
+    no-shadow-yet path, mirroring the existing drift_shadow_fallback contract.
+    """
+    if not entity_has_active_uncleared_alert(db, entity_id):
+        return promoted, None
+    store = ProfileStore(db)
+    shadow = store.get_latest_shadow_profile(entity_id, as_of=as_of)
+    if shadow is not None:
+        if shadow.profile_version != promoted.profile_version:
+            return shadow, f"point_baseline_shadow_fallback:{shadow.profile_version}"
+        return shadow, None
+    active_shadow_count = store.count_shadow_profiles(entity_id)
+    logger.warning(
+        "point_baseline_shadow_fallback entity_id=%s as_of=%s active_shadow_count=%s",
+        entity_id,
+        as_of,
+        active_shadow_count,
+    )
+    return promoted, "point_baseline_shadow_fallback:no_shadow"
+
+
 def compute_periodicity(
     db: Session, entity_id: str, event_time: datetime, window_minutes: int = 60
 ) -> tuple[float, int]:
@@ -384,6 +410,77 @@ def compute_periodicity(
         return 0.0, count
     cv = (math.sqrt(sum((x - mean_int) ** 2 for x in intervals) / len(intervals))) / mean_int
     return max(0.0, 1.0 - (cv / 0.3)), count
+
+
+def _count_entity_events_in_hour(db: Session, entity_id: str, event_time: datetime) -> int:
+    hour_start = event_time.replace(minute=0, second=0, microsecond=0)
+    hour_end = hour_start + timedelta(hours=1)
+    stmt = select(func.count()).select_from(ResolvedEventModel).where(
+        and_(
+            ResolvedEventModel.entity_id == entity_id,
+            ResolvedEventModel.timestamp >= hour_start,
+            ResolvedEventModel.timestamp < hour_end,
+        )
+    )
+    return db.execute(stmt).scalar_one()
+
+
+def compute_volume_rarity(recent_count: int, historical_hourly_counts: dict, alpha: float = 1.0) -> float:
+    """Laplace-smoothed rarity of a recent event count against the entity's own
+    historical hourly-count histogram, same -log2(prob) shape as categorical rarity."""
+    if not historical_hourly_counts:
+        return 0.0
+    buckets = sorted(int(k) for k in historical_hourly_counts.keys())
+    vocab_size = max(len(buckets), 1)
+    total = sum(historical_hourly_counts.values())
+    nearest_bucket = min(buckets, key=lambda b: abs(b - recent_count))
+    count_at_bucket = historical_hourly_counts.get(str(nearest_bucket), 0)
+    prob = get_laplace_prob(count_at_bucket, total, vocab_size, alpha)
+    return -math.log2(prob) if prob > 0 else 0.0
+
+
+_SIGNAL_FAMILIES: dict[str, tuple[str, ...]] = {
+    "rarity": ("login_hour_rarity", "geolocation_rarity", "endpoint_set_rarity", "process_name_rarity"),
+    "drift": ("drift_alert",),
+    "cadence": ("cadence",),
+    "volume": ("total_volume_delta",),
+    "geo_velocity": ("geo_velocity",),
+}
+
+
+def compute_signal_family_agreement(
+    contributions: list, family_floor_fraction: float, max_contrib: float
+) -> int:
+    """Count independent signal families whose contribution exceeds a soft floor
+    (family_floor_fraction * max_contrib) on this decision. Additive metric only —
+    does not itself change is_anomaly or any existing scoring path (Stage A)."""
+    floor = family_floor_fraction * max_contrib
+    by_feature = {c.feature_name: c.contribution_score for c in contributions}
+    agreement = 0
+    for family_features in _SIGNAL_FAMILIES.values():
+        if any(by_feature.get(f, 0.0) > floor for f in family_features):
+            agreement += 1
+    return agreement
+
+
+def _containment_eligible(
+    total_score: float,
+    decision_confidence: float,
+    signal_family_agreement_count: int,
+    containment_threshold: float,
+    confidence_floor: float,
+    precision_gate_active: bool,
+    containment_min_agreement: int,
+) -> tuple[bool, bool]:
+    """Stage A containment gate. Returns (should_queue, should_flag_deferred).
+    precision_gate_active=False reproduces pre-Phase-5 behavior exactly."""
+    score_and_confidence_ok = total_score >= containment_threshold and decision_confidence >= confidence_floor
+    if not score_and_confidence_ok:
+        return False, False
+    meets_agreement = (not precision_gate_active) or (signal_family_agreement_count >= containment_min_agreement)
+    if meets_agreement:
+        return True, False
+    return False, True
 
 
 def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArtifact, config: dict) -> DecisionRecord:
@@ -435,6 +532,8 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
             cohort_unsupported=True,
             flags=flags,
             embedding_model_version=profile.embedding_model_version,
+            signal_family_agreement_count=0,
+            precision_gate_version=None,
         )
 
     cohort_gate_config = config.get("cohort_gating_constants", {})
@@ -473,6 +572,8 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
             cohort_unsupported=True,
             flags=flags,
             embedding_model_version=profile.embedding_model_version,
+            signal_family_agreement_count=0,
+            precision_gate_version=None,
         )
 
     def get_rarity_score(val, hist, vocab_size, weight_key, feature_name, baseline_bits=0):
@@ -506,12 +607,20 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
             flags.append(f"cap_hit_{weight_key}")
         return score, weight, (0.0 if suppressed else centered)
 
+    effective_profile, point_baseline_flag = _resolve_effective_profile(
+        db, resolved_event.entity_id, profile, resolved_event.timestamp
+    )
+    if point_baseline_flag is not None:
+        flags.append(point_baseline_flag)
+        if point_baseline_flag == "point_baseline_shadow_fallback:no_shadow":
+            flags.append("drift_shadow_fallback:no_shadow")
+
     # --- Feature scores ---
     # Fix #8 — get histogram + fallback level once per feature, track all levels
-    hist_login, lvl_login = _get_cohort_histogram("login_hours", profile)
-    hist_geo, lvl_geo = _get_cohort_histogram("geolocations", profile)
-    hist_end, lvl_end = _get_cohort_histogram("endpoints", profile)
-    hist_proc, lvl_proc = _get_cohort_histogram("process_names", profile)
+    hist_login, lvl_login = _get_cohort_histogram("login_hours", effective_profile)
+    hist_geo, lvl_geo = _get_cohort_histogram("geolocations", effective_profile)
+    hist_end, lvl_end = _get_cohort_histogram("endpoints", effective_profile)
+    hist_proc, lvl_proc = _get_cohort_histogram("process_names", effective_profile)
 
     fallback_levels = [lvl_login, lvl_geo, lvl_end, lvl_proc]
     _level_rank = {"local": 0, "role_cohort": 1, "terminus": 2}
@@ -525,7 +634,7 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
     # Embedding
     cmd_line = get_event_field("command_line", "")
     event_vec = vectorize_command_line(cmd_line)
-    profile_vec = np.array(profile.embedding) if profile.embedding else None
+    profile_vec = np.array(effective_profile.embedding) if effective_profile.embedding else None
 
     if profile_vec is not None and len(profile_vec) == len(event_vec):
         dist = compute_cosine_distance(event_vec, profile_vec)
@@ -551,11 +660,19 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
         if raw_period > max_contrib:
             flags.append("cap_hit_periodicity")
 
-    # total_volume_delta deferred (S2.6): hourly spike formula needs calibrated
-    # window counts + baseline; reserved weight in YAML until post-S3 sweep.
-    score_vol = 0.0
-    v_delta = 0.0
-    flags.append("volume_delta_deferred")
+    volume_cfg = features_config.get("total_volume_delta", {})
+    hourly_counts = effective_profile.features.get("hourly_event_counts", {})
+    recent_hour_count = _count_entity_events_in_hour(db, resolved_event.entity_id, resolved_event.timestamp)
+    v_delta = compute_volume_rarity(recent_hour_count, hourly_counts, alpha)
+    weight_vol = volume_cfg.get("weight", 1.0)
+    raw_vol = v_delta * 0.5 * weight_vol
+    if volume_cfg.get("enabled", False):
+        score_vol = min(max_contrib, raw_vol)
+        if raw_vol > max_contrib:
+            flags.append("cap_hit_volume")
+    else:
+        score_vol = 0.0
+        flags.append("volume_delta_deferred")
 
     # Fix #5 — proportional drift scoring (replaces binary threshold gate).
     # Intended operating point (threshold=5, weight=100, max_contrib=50):
@@ -566,29 +683,12 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
     # accumulated drift units, well before the 5-unit "full" threshold. The cap
     # and threshold are intentionally asymmetric to give drift early-warning power.
     #
-    # S55 D4: while entity is build-blocked, read cumulative_drift from latest
-    # shadow profile; all other features stay on the promoted profile.
-    drift_accum = profile.features.get("cumulative_drift", 0.0)
-    drift_source_version = profile.profile_version
-    if entity_has_active_uncleared_alert(db, resolved_event.entity_id):
-        store = ProfileStore(db)
-        shadow = store.get_latest_shadow_profile(
-            resolved_event.entity_id, as_of=resolved_event.timestamp
-        )
-        if shadow is not None:
-            drift_accum = shadow.features.get("cumulative_drift", 0.0)
-            drift_source_version = shadow.profile_version
-            if drift_source_version != profile.profile_version:
-                flags.append(f"drift_source_profile_version:{drift_source_version}")
-        else:
-            active_shadow_count = store.count_shadow_profiles(resolved_event.entity_id)
-            logger.warning(
-                "drift_shadow_fallback entity_id=%s as_of=%s active_shadow_count=%s",
-                resolved_event.entity_id,
-                resolved_event.timestamp,
-                active_shadow_count,
-            )
-            flags.append("drift_shadow_fallback:no_shadow")
+    # S55 D4 + Phase 0: effective_profile (resolved once, above) already carries
+    # the shadow accumulator when blocked; reuse it instead of a second lookup.
+    drift_accum = effective_profile.features.get("cumulative_drift", 0.0)
+    drift_source_version = effective_profile.profile_version
+    if drift_source_version != profile.profile_version:
+        flags.append(f"drift_source_profile_version:{drift_source_version}")
     drift_threshold = config.get("drift_threshold", 5.0)
     weight_drift = features_config.get("drift_alert", {}).get("weight", 100.0)
     score_drift = 0.0
@@ -623,6 +723,17 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
             )
         )
 
+    precision_gate_cfg = config.get("precision_gate", {})
+    family_floor_fraction = precision_gate_cfg.get("family_floor_fraction", 0.1)
+    signal_family_agreement_count = compute_signal_family_agreement(
+        contributions, family_floor_fraction, max_contrib
+    )
+    precision_gate_version = (
+        precision_gate_cfg.get("version", "stage_a_v1")
+        if precision_gate_cfg.get("enabled", False)
+        else None
+    )
+
     n = profile.features.get("total_events")
     if n is None:
         n = sum(profile.features.get("login_hours", {}).values())
@@ -647,11 +758,19 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
             logger.info(f"  - {c.feature_name}: raw={c.raw_value:.2f} score={c.contribution_score:.2f}")
 
     containment_threshold = config.get("containment_threshold", 85.0)
-    if (
-        total_score >= containment_threshold
-        and decision_confidence >= confidence_floor
-    ):
+    should_queue, should_flag_deferred = _containment_eligible(
+        total_score=total_score,
+        decision_confidence=decision_confidence,
+        signal_family_agreement_count=signal_family_agreement_count,
+        containment_threshold=containment_threshold,
+        confidence_floor=confidence_floor,
+        precision_gate_active=precision_gate_cfg.get("enabled", False),
+        containment_min_agreement=precision_gate_cfg.get("containment_min_agreement", 2),
+    )
+    if should_queue:
         flags.append("simulated_containment_queued")
+    elif should_flag_deferred:
+        flags.append("containment_deferred_single_family")
 
     decision_id = compute_decision_id(
         event_id=resolved_event.event_id,
@@ -677,6 +796,8 @@ def score_event(db: Session, resolved_event: ResolvedEvent, profile: ProfileArti
         cohort_unsupported=(worst_level == "terminus"),
         flags=flags,
         embedding_model_version=profile.embedding_model_version,
+        signal_family_agreement_count=signal_family_agreement_count,
+        precision_gate_version=precision_gate_version,
     )
 
 

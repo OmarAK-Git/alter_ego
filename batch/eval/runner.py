@@ -92,33 +92,52 @@ def calculate_metrics(db, threshold=None):
         
     return results
 
-def run_pipeline(events_path: Path, labels_path: Path, window_delta_days: int = 1):
+def run_pipeline(
+    events_path: Path,
+    labels_path: Path,
+    window_delta_days: int = 1,
+    *,
+    clear_first: bool = True,
+    windows_per_invocation: int | None = None,
+    resume_from: datetime | None = None,
+):
+    """Run day-window eval pipeline. Supports chunked resume for long sweeps."""
     Base.metadata.create_all(engine)
     db = SessionLocal()
     try:
-        clear_db(db)
-        
+        if clear_first:
+            clear_db(db)
+
         events = []
         with open(events_path, "r") as f:
             for line in f:
                 if line.strip():
                     events.append(json.loads(line))
         events.sort(key=lambda x: x["timestamp"])
-        
+
         if not events:
-            return
+            return db, False, None
+
         start_time = datetime.fromisoformat(events[0]["timestamp"])
         end_time = datetime.fromisoformat(events[-1]["timestamp"])
-        
-        ingest_ground_truth(labels_path, db)
-        
-        current_window_start = start_time
+
+        if clear_first:
+            ingest_ground_truth(labels_path, db)
+
+        current_window_start = resume_from if resume_from is not None else start_time
         window_delta = timedelta(days=window_delta_days)
-        
+        windows_done = 0
+
         while current_window_start <= end_time:
             current_window_end = current_window_start + window_delta
-            window_events = [e for e in events if current_window_start <= datetime.fromisoformat(e["timestamp"]) < current_window_end]
-            
+            window_events = [
+                e
+                for e in events
+                if current_window_start
+                <= datetime.fromisoformat(e["timestamp"])
+                < current_window_end
+            ]
+
             if window_events:
                 temp_events = Path(f"temp_window_{current_window_start.strftime('%Y%m%d')}.jsonl")
                 with open(temp_events, "w") as f:
@@ -132,11 +151,14 @@ def run_pipeline(events_path: Path, labels_path: Path, window_delta_days: int = 
                 build_profiles(db, as_of=current_window_end)
                 process_unscored_events(db)
                 logger.info(f"Processed window ending {current_window_end.date()}")
+                windows_done += 1
 
             current_window_start = current_window_end
+            if windows_per_invocation is not None and windows_done >= windows_per_invocation:
+                has_more = current_window_start <= end_time
+                return db, has_more, current_window_start if has_more else None
 
-        # Return the DB session for further calibration if needed
-        return db
+        return db, False, None
     except Exception as e:
         db.close()
         raise e
@@ -146,7 +168,7 @@ if __name__ == "__main__":
         print("Usage: python -m batch.eval.runner <events.jsonl> <ground_truth.jsonl>")
         sys.exit(1)
         
-    db = run_pipeline(Path(sys.argv[1]), Path(sys.argv[2]))
+    db, _has_more, _next = run_pipeline(Path(sys.argv[1]), Path(sys.argv[2]))
     if db:
         metrics = calculate_metrics(db)
         logger.info(f"Final Metrics: {json.dumps(metrics, indent=2)}")

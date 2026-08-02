@@ -41,6 +41,7 @@ cohort_gating_constants:
   # Deferred S5.11: prior-update rejection semantics not wired; no production reader.
   min_clean_observation_count: 5
   max_changed_fraction: 0.2
+  fleet_drift_enabled: false
 
 # Deferred S4.6: telemetry-gap two-tier not wired; no production reader.
 gap_windows:
@@ -62,9 +63,10 @@ features:
     weight: 100.0
   service_account_execution_frequency_deviation:
     weight: 5.0
-  # Deferred (S2.6): hourly volume spike — weight unused; scorer always score_vol=0.
+  # Shadow-computed volume delta — disabled by default (Phase 2).
   total_volume_delta:
     weight: 1.0
+    enabled: false
 
 drift_weights:
   login_hour: 5.0
@@ -72,3 +74,25 @@ drift_weights:
   endpoint_set: 5.0
   process_name: 20.0
   embedding: 40.0
+  cadence:
+    weight: 0.0
+    enabled: false
+  total_volume_delta:
+    weight: 0.0
+    enabled: false
+  geo_velocity:
+    weight: 0.0
+    enabled: false
+    vpn_allowlist: []
+
+precision_gate:
+  enabled: false
+  version: "stage_a_v1"
+  family_floor_fraction: 0.1
+  containment_min_agreement: 2
+
+staged_drift:
+  enabled: false
+  soft_crossing_fraction: 0.5
+  templates:
+    - ["endpoint_set", "process_name", "embedding"]

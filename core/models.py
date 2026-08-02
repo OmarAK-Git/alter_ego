@@ -76,6 +76,8 @@ class DecisionRecordModel(Base):
     embedding_model_version = Column(String, nullable=False, default='unknown')
     flags = Column(JSONB, nullable=False)
     replay_run_id = Column(String, nullable=True, index=True)
+    signal_family_agreement_count = Column(Integer, nullable=False, default=0)
+    precision_gate_version = Column(String, nullable=True)
 
 class ExplanationRecordModel(Base):
     __tablename__ = "explanations"

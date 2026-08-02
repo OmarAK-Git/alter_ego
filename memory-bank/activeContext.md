@@ -1,27 +1,40 @@
-# Active Context
-
-**Updated:** 2026-07-30
-
-## Current focus
-
-**T3:** `.workflow/2026-07-30-reverse-spec-rfc-remediation/` — **CLOSED** 2026-07-30  
-**Plan:** `docs/superpowers/plans/2026-07-30-reverse-spec-rfc-remediation.md`  
-**Gate:** `R-EXIT-GATE` — **ACCEPT-WITH-GAPS** (`cursor-grok-4.5-high`; fresh pytest **165**, ruff clean).  
-**Final report:** `.workflow/2026-07-30-reverse-spec-rfc-remediation/final-report.md`
-
-## What landed
-
-- **RFC-006 / R1** (`5311d3a`): rename `tests/batch/profile_builder/builder.py` → `test_builder.py` (pure R100 rename).
-- **RFC-005 / R2** (`2aaa4e0` + `019487e`): `_stream_events_to_jsonl` with `execution_options(yield_per=chunk_size)`; trailing `chunk_size` defaults to 5000.
-
-## Accepted gap
-
-Session identity-map retention without `expunge` — peak ORM memory still scales with window size even though the Python result list is gone.
-
-## Standing order
-
-**All gates on Grok** (`cursor-grok-4.5-high`, `gate_run_mode: in_session_grok`) until the operator says otherwise. Recorded in `OPS.md`.
-
-## Current baseline
-
-**Series D:** `docs/calibration_series_d_metrics.json` — Not CALIBRATED. Only permitted C→D claim: D4 engagement 0→12840.
+# Active Context
+
+**Updated:** 2026-08-02T03:30Z — **DC SPRINT COMPLETE** (exit gate PASS)
+
+## Current focus
+
+**T3:** `.workflow/2026-07-30-drift-capability-expansion/` — **COMPLETE**  
+**Plan:** `docs/superpowers/plans/2026-07-30-drift-detection-capability-expansion.md`  
+**Design:** `docs/superpowers/specs/2026-07-30-drift-detection-capability-expansion-design.md`  
+**Sprint report:** `.workflow/2026-07-30-drift-capability-expansion/results/SPRINT-PROGRESS-REPORT.md`
+
+## Exit gate
+
+| Check | Result |
+|---|---|
+| pytest | 204 passed |
+| ruff | All checks passed |
+| Verdict | **PASS** (`results/DC-EXIT-GATE-verdict.md`, cursor-grok-4.5-high) |
+
+## Series E/F/G/H (cloud complete)
+
+| Series | Commit | Agent |
+|---|---|---|
+| E | `8989f15` | cloud |
+| F | `a916d13` | bc-20a38b02 |
+| G | `b63884c` | bc-ec99cada |
+| H | `1cc2e3e` | bc-9fa3d834 (PR #1) |
+
+Scenario recall (all series): S1=1.0, S2=0.74, S3=0.11, S4=1.0, S5=0.60
+
+## What landed
+
+- Phases 0–6 implementation + all phase gates
+- Series E/F/G/H metrics + governance docs
+- FINAL-DOCS: `DEBT_LEDGER.md` + `docs/residual-risk-drift-hypotheses.md` updated
+- All new `enabled` flags remain **false** in committed YAML
+
+## Standing order
+
+All gates on Grok until operator overrides.

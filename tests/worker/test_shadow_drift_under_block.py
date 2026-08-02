@@ -264,6 +264,7 @@ def test_blocked_shadow_miss_emits_fallback_flag(db_session, caplog):
     with caplog.at_level(logging.WARNING, logger="worker.scorer"):
         decision = score_event(db_session, event, promoted, config)
 
+    assert "point_baseline_shadow_fallback:no_shadow" in decision.flags
     assert "drift_shadow_fallback:no_shadow" in decision.flags
     assert not any(
         isinstance(f, str) and f.startswith("drift_source_profile_version:")
@@ -273,7 +274,9 @@ def test_blocked_shadow_miss_emits_fallback_flag(db_session, caplog):
     assert abs(drift_c.raw_value - promoted_drift) < 1e-9
 
     warning_records = [
-        r for r in caplog.records if r.levelname == "WARNING" and "drift_shadow_fallback" in r.message
+        r
+        for r in caplog.records
+        if r.levelname == "WARNING" and "point_baseline_shadow_fallback" in r.message
     ]
     assert len(warning_records) == 1
     record = warning_records[0]

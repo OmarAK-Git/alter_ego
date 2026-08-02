@@ -7,11 +7,18 @@ import uuid
 from core.schemas.events import Event, AuthEventData, ProcessEventData
 
 class EntityProfile:
-    def __init__(self, rng: random.Random, entity_id: str, entity_type: str, role: str = None):
+    def __init__(
+        self,
+        rng: random.Random,
+        entity_id: str,
+        entity_type: str,
+        role: str = None,
+        archetype: str = "it_automation",
+    ):
         self.entity_id = entity_id
         self.entity_type = entity_type
         self.role = role
-        
+
         # Behavior parameters
         if entity_type == "human":
             # Assign base shift hour (e.g. 9 AM)
@@ -19,12 +26,20 @@ class EntityProfile:
             self.primary_endpoint = f"ep_{rng.randint(1, 1000)}"
             self.geography = rng.choice(["US-East", "US-West", "EU-Central", "AP-South"])
             self.typical_processes = self._get_role_processes(role)
-        else: # service_account
-            self.periodicity_minutes = rng.choice([60, 120, 720, 1440]) # exact cron intervals
+            self.jitter_minutes = 0.0
+        else:  # service_account
+            self.archetype = archetype
+            if archetype == "ot_polling":
+                self.periodicity_minutes = 1
+                self.jitter_minutes = 0.0
+                self.typical_processes = ["plc_poll.exe", "scada_read.exe"]
+            else:  # it_automation (existing behavior + jitter)
+                self.periodicity_minutes = rng.choice([60, 120, 720, 1440])
+                self.jitter_minutes = rng.uniform(1.0, 5.0)
+                self.typical_processes = ["backup.sh", "db_dump.exe", "sync_worker.py"]
             self.last_run_time = None
             self.primary_endpoint = f"server_{rng.randint(1, 50)}"
             self.geography = "US-East-DC1"
-            self.typical_processes = ["backup.sh", "db_dump.exe", "sync_worker.py"]
 
     def _get_role_processes(self, role: str) -> List[str]:
         base = ["explorer.exe", "chrome.exe", "teams.exe"]
@@ -51,10 +66,22 @@ class EventGenerator:
                 eid = f"user_{role.lower()}_{i}"
                 self.entities[eid] = EntityProfile(self.rng, eid, "human", role)
                 
-        # Service accounts
+        # Service accounts (existing IT-automation-style)
         for i in range(10):
             eid = f"svc_backup_{i}"
-            self.entities[eid] = EntityProfile(self.rng, eid, "service_account")
+            profile = EntityProfile(
+                self.rng, eid, "service_account", archetype="it_automation"
+            )
+            if i == 0:
+                profile.periodicity_minutes = 60
+            self.entities[eid] = profile
+
+        # OT/ICS-style polling service accounts (Phase 1 / H12)
+        for i in range(10):
+            eid = f"svc_ot_poll_{i}"
+            self.entities[eid] = EntityProfile(
+                self.rng, eid, "service_account", archetype="ot_polling"
+            )
 
     def generate_baseline(self, start_date: datetime, end_date: datetime) -> Tuple[List[Event], List[Dict]]:
         events = []
@@ -101,9 +128,15 @@ class EventGenerator:
                                 event_data=data
                             ))
                 
-                else: # Service Account
-                    # Strict periodicity
-                    if entity.last_run_time is None or (current_time - entity.last_run_time).total_seconds() / 60 >= entity.periodicity_minutes:
+                else:  # Service Account
+                    effective_periodicity = entity.periodicity_minutes
+                    if entity.jitter_minutes > 0:
+                        effective_periodicity += self.rng.uniform(
+                            -entity.jitter_minutes, entity.jitter_minutes
+                        )
+                    if entity.last_run_time is None or (
+                        current_time - entity.last_run_time
+                    ).total_seconds() / 60 >= effective_periodicity:
                         entity.last_run_time = current_time
                         event_id = str(uuid.UUID(int=self.rng.getrandbits(128), version=4))
                         events.append(Event(

@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 import re
 import uuid
 from datetime import datetime, timedelta
@@ -31,6 +32,7 @@ from core.schemas.profiles import (
     DEFAULT_EMBEDDING_MODEL_ID,
     DEFAULT_EMBEDDING_MODEL_VERSION,
 )
+from core.geo_centroids import haversine_km, lookup_centroid
 from core.math_utils import compute_distribution_kl, exponential_decay
 from worker.vectorizer import NORMALIZER_VERSION, compute_cosine_distance, vectorize_command_line
 
@@ -408,6 +410,104 @@ def _emit_build_block_supervisor_escalations(
 _BUILD_EXTRACT_CHUNK_SIZE: int = 5000  # rows per DB round-trip when streaming to temp JSONL (bounds build_profiles memory/disk under volume spikes)
 
 
+def _dim_weight(drift_weights_cfg: dict, key: str) -> float:
+    v = drift_weights_cfg.get(key, 1.0)
+    return v.get("weight", 0.0) if isinstance(v, dict) else v
+
+
+def compute_geo_velocity_delta(
+    db: Session, entity_id: str, window_start: datetime, window_end: datetime, min_paired_successes: int = 3
+) -> tuple[float, list[str]]:
+    """Implied travel speed between successive auth events; delta vs. the entity's
+    own max historical implied speed within the window. No cross-entity baseline."""
+    stmt = (
+        select(ResolvedEventModel.timestamp, ResolvedEventModel.event_data)
+        .where(
+            and_(
+                ResolvedEventModel.entity_id == entity_id,
+                ResolvedEventModel.timestamp >= window_start,
+                ResolvedEventModel.timestamp < window_end,
+            )
+        )
+        .order_by(ResolvedEventModel.timestamp)
+    )
+    rows = db.execute(stmt).all()
+    auth_rows = [
+        (ts, data.get("geolocation")) for ts, data in rows
+        if isinstance(data, dict) and data.get("action") == "login" and data.get("geolocation")
+    ]
+    if len(auth_rows) < min_paired_successes:
+        return 0.0, []
+
+    flags: list[str] = []
+    speeds_kmh: list[float] = []
+    for (t1, g1), (t2, g2) in zip(auth_rows, auth_rows[1:]):
+        c1, c2 = lookup_centroid(g1), lookup_centroid(g2)
+        if c1 is None or c2 is None:
+            flags.append("geo_velocity:no_centroid")
+            continue
+        hours = max((t2 - t1).total_seconds() / 3600.0, 1e-6)
+        dist_km = haversine_km(c1, c2)
+        speeds_kmh.append(dist_km / hours)
+
+    if not speeds_kmh:
+        return 0.0, list(set(flags))
+
+    max_speed = max(speeds_kmh)
+    # Plausible commercial air travel ceiling ~900 km/h; anything well beyond that
+    # relative to the entity's own max observed speed this window is the delta signal.
+    delta = max(0.0, (max_speed - 900.0) / 900.0) if max_speed > 900.0 else 0.0
+    return delta, list(set(flags))
+
+
+def compute_build_window_cadence_cov(
+    db: Session, entity_id: str, window_start: datetime, window_end: datetime, min_events: int = 20
+) -> tuple[float, int]:
+    """Build-window inter-event interval CoV, same formula as worker.scorer.compute_periodicity,
+    applied to any entity_type over the build window instead of a rolling 60-minute lookback."""
+    stmt = (
+        select(ResolvedEventModel.timestamp)
+        .where(
+            and_(
+                ResolvedEventModel.entity_id == entity_id,
+                ResolvedEventModel.timestamp >= window_start,
+                ResolvedEventModel.timestamp < window_end,
+            )
+        )
+        .order_by(ResolvedEventModel.timestamp)
+    )
+    ts_list = db.execute(stmt).scalars().all()
+    count = len(ts_list)
+    if count < min_events:
+        return 0.0, count
+    intervals = [(ts_list[i + 1] - ts_list[i]).total_seconds() for i in range(len(ts_list) - 1)]
+    mean_int = sum(intervals) / len(intervals)
+    if mean_int < 1.0:
+        return 0.0, count
+    cv = (math.sqrt(sum((x - mean_int) ** 2 for x in intervals) / len(intervals))) / mean_int
+    return max(0.0, 1.0 - (cv / 0.3)), count
+
+
+def match_staged_sequence(
+    drift_crossing_log: list[dict], templates: list[list[str]]
+) -> tuple[bool, list[str] | None]:
+    """Subsequence match: template dims must appear across the log in order,
+    not necessarily contiguously or in consecutive builds."""
+    seen_in_order: list[str] = []
+    for entry in drift_crossing_log:
+        for dim in entry.get("dims_crossed", []):
+            seen_in_order.append(dim)
+
+    for template in templates:
+        idx = 0
+        for dim in seen_in_order:
+            if idx < len(template) and dim == template[idx]:
+                idx += 1
+        if idx == len(template):
+            return True, template
+    return False, None
+
+
 def _stream_events_to_jsonl(db_session: Session, stmt, path: Path, chunk_size: int) -> int:
     """Stream ResolvedEventModel rows straight to a JSONL file in bounded
     chunks instead of materializing the full result set in Python first."""
@@ -433,21 +533,29 @@ def _stream_events_to_jsonl(db_session: Session, stmt, path: Path, chunk_size: i
     return count
 
 
-def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: datetime | None = None, chunk_size: int = _BUILD_EXTRACT_CHUNK_SIZE) -> int:
+def build_profiles(
+    db: Session | None = None,
+    drift_compare_n: int = 5,
+    as_of: datetime | None = None,
+    chunk_size: int = _BUILD_EXTRACT_CHUNK_SIZE,
+    config_override: dict | None = None,
+) -> int:
     if db is None:
         db_session = SessionLocal()
     else:
         db_session = db
-        
+
     if as_of is None:
         as_of = datetime.utcnow()
 
-    # Load scoring config for weights and thresholds
-    config_path = Path("config/scoring_config.yaml")
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
-    
-    drift_weights = config.get("drift_weights", {
+    if config_override is not None:
+        config = config_override
+    else:
+        config_path = Path("config/scoring_config.yaml")
+        with open(config_path, "r") as f:
+            config = yaml.safe_load(f)
+
+    drift_weights_cfg = config.get("drift_weights", {
         "login_hour": 1.0, "geolocation": 1.0, "endpoint_set": 1.0, "process_name": 1.0, "embedding": 2.0
     })
     drift_threshold = config.get("drift_threshold", 45.0)
@@ -455,6 +563,7 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
     half_life = config.get("drift_half_life_days", 7.0)
     laplace_alpha = config.get("laplace_alpha", 1.0)
     max_profile_build_block_days = config.get("max_profile_build_block_days", 30)
+    staged_drift_cfg = config.get("staged_drift", {})
 
     # Fix #7 — initialize temp file paths before try block to prevent NameError in finally
     temp_file_hist: Path | None = None
@@ -592,7 +701,8 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
             cur_endpoints = parse_duckdb_histogram(endpoints)
             cur_process_names = parse_duckdb_histogram(process_names)
             cur_geolocations = parse_duckdb_histogram(geolocations)
-            
+            cur_hourly_counts = cur_login_hours
+
             vectors = [vectorize_command_line(cmd) for cmd in cmd_lines if cmd]
             centroid_arr = np.mean(vectors, axis=0) if vectors else None
             if centroid_arr is not None:
@@ -628,21 +738,55 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
                 )
             ).order_by(desc(ProfileArtifactModel.data_window_end)).limit(history_count)
             prev_profiles = db_session.execute(prev_clean_stmt).scalars().all()
-            
-            _feature_drifts = []
+
+            cadence_cfg = drift_weights_cfg.get("cadence", {})
+            volume_cfg = drift_weights_cfg.get("total_volume_delta", {})
+            geo_velocity_cfg = drift_weights_cfg.get("geo_velocity", {})
+            cadence_cov, _ = compute_build_window_cadence_cov(
+                db_session, entity_id, window_start, window_end
+            )
+
+            avg_deltas: dict[str, float] = {}
             if prev_profiles:
-                deltas = {"login_hour": [], "geolocation": [], "endpoint_set": [], "process_name": [], "embedding": []}
+                deltas: dict[str, list[float]] = {
+                    "login_hour": [],
+                    "geolocation": [],
+                    "endpoint_set": [],
+                    "process_name": [],
+                    "embedding": [],
+                }
+                if cadence_cfg.get("enabled", False):
+                    deltas["cadence"] = []
+                if volume_cfg.get("enabled", False):
+                    deltas["total_volume_delta"] = []
+                if geo_velocity_cfg.get("enabled", False):
+                    deltas["geo_velocity"] = []
                 for prev in prev_profiles:
                     deltas["login_hour"].append(compute_distribution_kl(rec_login_hours, prev.features.get("login_hours", {}), alpha=laplace_alpha))
                     deltas["geolocation"].append(compute_distribution_kl(rec_geolocations, prev.features.get("geolocations", {}), alpha=laplace_alpha))
                     deltas["endpoint_set"].append(compute_distribution_kl(rec_endpoints, prev.features.get("endpoints", {}), alpha=laplace_alpha))
                     deltas["process_name"].append(compute_distribution_kl(rec_process_names, prev.features.get("process_names", {}), alpha=laplace_alpha))
-                    
+
                     if rec_centroid is not None and prev.embedding is not None:
                         deltas["embedding"].append(compute_cosine_distance(rec_centroid, np.array(prev.embedding)))
-                
+
+                    if cadence_cfg.get("enabled", False):
+                        deltas["cadence"].append(cadence_cov)
+
+                    if volume_cfg.get("enabled", False):
+                        prev_hourly = prev.features.get("hourly_event_counts", {}) if prev else {}
+                        deltas["total_volume_delta"].append(
+                            compute_distribution_kl(cur_hourly_counts, prev_hourly, alpha=laplace_alpha)
+                        )
+
+                    if geo_velocity_cfg.get("enabled", False):
+                        gv_delta, _gv_flags = compute_geo_velocity_delta(
+                            db_session, entity_id, window_start, window_end
+                        )
+                        deltas["geo_velocity"].append(gv_delta)
+
                 avg_deltas = {k: float(np.mean(v)) if v else 0.0 for k, v in deltas.items()}
-                raw_drift = sum(avg_deltas[k] * drift_weights.get(k, 1.0) for k in avg_deltas)
+                raw_drift = sum(avg_deltas[k] * _dim_weight(drift_weights_cfg, k) for k in avg_deltas)
             else:
                 raw_drift = 0.0
 
@@ -651,13 +795,16 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
                 "entity_type": entity_type,
                 "role": role,
                 "raw_drift": raw_drift,
+                "avg_deltas": avg_deltas,
                 # Store full 30d features in profile
                 "features": {
                     "total_events": total_events,
                     "login_hours": cur_login_hours,
                     "geolocations": cur_geolocations,
                     "endpoints": cur_endpoints,
-                    "process_names": cur_process_names
+                    "process_names": cur_process_names,
+                    "hourly_event_counts": cur_hourly_counts,
+                    "cadence_cov": cadence_cov,
                 },
                 "embedding": centroid_arr.tolist() if centroid_arr is not None else None,
                 "window_start": window_start,
@@ -665,6 +812,8 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
             })
 
         # Phase 2: Cohort Normalization
+        cohort_gate_config = config.get("cohort_gating_constants", {})
+        max_changed_fraction = cohort_gate_config.get("max_changed_fraction", 0.2)
         cohort_drifts = {}
         for rec in raw_drift_records:
             cohort_drifts.setdefault(rec["role"], []).append(rec["raw_drift"])
@@ -679,6 +828,35 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
             r: (median(drifts) if len(drifts) >= MIN_NORM_COHORT else global_drift_median)
             for r, drifts in cohort_drifts.items()
         }
+
+        # Phase 2.5 — Fleet-level cohort drift (DEBT-068/075, H2/H7 mitigation).
+        # Additive: does not change any individual entity's norm_drift/cumulative_drift.
+        fleet_drift_enabled = cohort_gate_config.get("fleet_drift_enabled", False)
+        if fleet_drift_enabled:
+            fleet_soft_threshold = global_drift_median  # role-relative: above the cross-role median raw_drift
+            for role, drifts in cohort_drifts.items():
+                if len(drifts) < 3:
+                    continue
+                changed_count = sum(1 for d in drifts if d > fleet_soft_threshold)
+                fraction = changed_count / len(drifts)
+                if fraction > max_changed_fraction:
+                    decision_id = f"cohort_drift_{role}_{build_timestamp.strftime('%Y%m%d%H%M%S')}"
+                    db_session.add(DecisionRecordModel(
+                        decision_id=decision_id,
+                        event_id="COHORT_DRIFT",
+                        entity_id=f"__role__{role}",
+                        timestamp=build_timestamp,
+                        score=0.0,
+                        confidence=1.0,
+                        profile_version="NONE",
+                        scoring_config_version=config.get("version", "unknown"),
+                        contributions=[{"role": role, "changed_fraction": fraction,
+                                        "cohort_size": len(drifts), "max_changed_fraction": max_changed_fraction}],
+                        is_anomaly=False,
+                        cohort_used=role,
+                        cohort_unsupported=False,
+                        flags=["fleet_cohort_drift"],
+                    ))
 
         # Phase 3: Update Accumulators and Persist
         for rec in raw_drift_records:
@@ -700,7 +878,27 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
             new_accumulator = exponential_decay(prev_accumulator, norm_drift, half_life, time_delta)
             # Ensure it doesn't go negative
             new_accumulator = max(0.0, new_accumulator)
-            
+
+            soft_crossing_threshold = staged_drift_cfg.get("soft_crossing_fraction", 0.5)
+            avg_deltas = rec.get("avg_deltas", {})
+            dims_crossed = [k for k, v in avg_deltas.items() if v > soft_crossing_threshold]
+            prior_log = latest_any.features.get("drift_crossing_log", []) if latest_any else []
+            drift_crossing_log = (
+                prior_log + [{"build_ts": rec["window_end"].isoformat(), "dims_crossed": dims_crossed}]
+            )[-10:]
+
+            matched = False
+            if staged_drift_cfg.get("enabled", False):
+                matched, _which_template = match_staged_sequence(
+                    drift_crossing_log, staged_drift_cfg.get("templates", [])
+                )
+                if matched:
+                    features_staged_bonus = staged_drift_cfg.get("bonus", 1.0)
+                    new_accumulator = exponential_decay(
+                        prev_accumulator, norm_drift + features_staged_bonus, half_life, time_delta
+                    )
+                    new_accumulator = max(0.0, new_accumulator)
+
             logger.info(f"Entity {entity_id} drift: raw={raw_drift:.2f}, normalized={norm_drift:.2f}, accum={new_accumulator:.2f}")
 
             features = {
@@ -709,11 +907,17 @@ def build_profiles(db: Session | None = None, drift_compare_n: int = 5, as_of: d
                 "geolocations": rec["features"]["geolocations"],
                 "endpoints": rec["features"]["endpoints"],
                 "process_names": rec["features"]["process_names"],
+                "hourly_event_counts": rec["features"]["hourly_event_counts"],
+                "cadence_cov": rec["features"]["cadence_cov"],
                 "role": rec["role"],
                 "cohort_data": cohorts,
                 "cumulative_drift": new_accumulator,
-                "normalized_drift": norm_drift
+                "normalized_drift": norm_drift,
+                "drift_crossing_log": drift_crossing_log,
+                "staged_match": matched if staged_drift_cfg.get("enabled", False) else None,
             }
+            for k, v in rec.get("avg_deltas", {}).items():
+                features[f"{k}_delta_last_build"] = v
             
             is_shadow_profile = entity_id in blocked_entities
             promoted_at = as_of if not is_shadow_profile else None

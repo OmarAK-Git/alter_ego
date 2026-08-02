@@ -62,7 +62,9 @@ def record_decision(decision: DecisionRecord, db: Session | None = None):
             is_anomaly=decision.is_anomaly,
             cohort_used=decision.cohort_used,
             cohort_unsupported=decision.cohort_unsupported,
-            flags=decision.flags
+            flags=decision.flags,
+            signal_family_agreement_count=decision.signal_family_agreement_count,
+            precision_gate_version=decision.precision_gate_version,
         )
         from sqlalchemy.exc import IntegrityError
         try:
