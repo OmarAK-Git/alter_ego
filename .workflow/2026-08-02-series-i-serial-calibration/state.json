@@ -4,9 +4,9 @@
   "status": "in_progress",
   "started_at": "2026-08-02T04:23:00Z",
   "phase": "A_weight_search_split",
-  "current_step": "cloud_local_split_post_cadence_query",
+  "current_step": "cloud_probes_dispatched",
   "parallel_weight_mode": false,
-  "local_max_writers": 3,
+  "local_max_writers": 2,
   "accepted_flags": {},
   "rejected_flags": {},
   "weight_winners": {},
@@ -16,18 +16,39 @@
     "ws_geo_5": {
       "reason": "geo_velocity_delta_last_build 100% zero in partial Series I DB (n=585); consistent with Series G mean=0",
       "aborted_at": "2026-08-02T20:00:00Z"
+    },
+    "ws_cadence_2": {
+      "reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires code fix: compute_build_window_cadence_cov must become CoV(recent)−CoV(baseline) per entity (delta vs baseline profile), not absolute regularity computed once outside prev_profiles loop. Related: DEBT-012.",
+      "aborted_at": "2026-08-02T22:30:00Z",
+      "evidence": {
+        "db": "alter_ego_calibrate_series_i_ws_cadence_2.db",
+        "profiles": 1365,
+        "entities": 65,
+        "cadence_cov_sa_median": 1.000,
+        "cadence_cov_sa_frac_saturated": 0.95,
+        "cadence_cov_humans": 0.0,
+        "standalone_precision": 0.050,
+        "standalone_recall": 0.143,
+        "base_rate": 0.108
+      }
+    },
+    "ws_cadence_5": {
+      "reason": "skipped — same cohort-constant inertness as ws_cadence_2; sweep uninformative; see DEBT-078",
+      "aborted_at": "2026-08-02T22:30:00Z"
+    },
+    "ws_cadence_10": {
+      "reason": "skipped — same cohort-constant inertness as ws_cadence_2; sweep uninformative; see DEBT-078",
+      "aborted_at": "2026-08-02T22:30:00Z"
     }
   },
   "cadence_kill_decision": {
-    "killed": false,
-    "reason": "cadence_cov NOT overwhelmingly zero: combined n=4160, frac_exact_0=0.713, frac_lt_0.05=0.713, mean=0.280; Series F cadence delta mean=0.288",
-    "queried_at": "2026-08-02T20:00:00Z",
+    "killed": true,
+    "reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires code fix before re-sweep",
+    "queried_at": "2026-08-02T22:30:00Z",
     "sources": [
-      "alter_ego_calibrate_series_e.db",
-      "alter_ego_calibrate_series_f.db",
-      "alter_ego_calibrate_series_g.db",
       "alter_ego_calibrate_series_i_ws_cadence_2.db"
-    ]
+    ],
+    "pid_killed": 77784
   },
   "baseline_ref": {
     "source": "series_e_h",
@@ -45,9 +66,6 @@
   },
   "sweeps_completed": [],
   "sweeps_queued": [
-    "ws_cadence_2",
-    "ws_cadence_5",
-    "ws_cadence_10",
     "ws_volume_1",
     "ws_volume_5",
     "ws_volume_15",
@@ -55,7 +73,6 @@
     "ws_fleet",
     "ws_precision_gate",
     "ws_staged_drift",
-    "fold_01_cadence",
     "fold_02_feature_volume",
     "fold_03_drift_volume",
     "fold_04_geo",
@@ -66,36 +83,46 @@
   "lanes": {
     "ws_cadence_2": {
       "host": "local",
-      "status": "running",
+      "status": "aborted",
       "pid": 77784,
-      "progress": "~day 6/21 complete (day 7 in progress)",
-      "db": "alter_ego_calibrate_series_i_ws_cadence_2.db"
+      "pid_killed_at": "2026-08-02T22:30:00Z",
+      "progress": "~day 6/21 (killed mid-run)",
+      "db": "alter_ego_calibrate_series_i_ws_cadence_2.db",
+      "abort_reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires code fix: compute_build_window_cadence_cov must become CoV(recent)−CoV(baseline) per entity (delta vs baseline profile), not absolute regularity computed once outside prev_profiles loop. Related: DEBT-012."
     },
     "ws_cadence_5": {
       "host": null,
-      "status": "queued"
+      "status": "skipped",
+      "abort_reason": "skipped — same cohort-constant inertness as ws_cadence_2; sweep uninformative; see DEBT-078"
     },
     "ws_cadence_10": {
       "host": null,
-      "status": "queued"
+      "status": "skipped",
+      "abort_reason": "skipped — same cohort-constant inertness as ws_cadence_2; sweep uninformative; see DEBT-078"
     },
     "ws_volume_1": {
       "host": "cloud",
-      "status": "pending_launch",
+      "status": "running",
+      "cloud_agent_id": "bc-6d94a41a-4ffe-46f0-9e8f-870b10ca4e04",
+      "launched_at": "2026-08-02T20:54:00Z",
       "local_stopped_reason": "migrated to cloud",
       "checkpoint": "scratch/series_i_ws_volume_1_checkpoint.json",
       "resume_from": "2026-01-11T00:00:00"
     },
     "ws_volume_5": {
       "host": "cloud",
-      "status": "pending_launch",
+      "status": "running",
+      "cloud_agent_id": "bc-78440d47-1af6-4161-91cf-e6f8d4ab0122",
+      "launched_at": "2026-08-02T20:54:00Z",
       "local_stopped_reason": "migrated to cloud",
       "checkpoint": "scratch/series_i_ws_volume_5_checkpoint.json",
       "resume_from": "2026-01-11T00:00:00"
     },
     "ws_volume_15": {
       "host": "cloud",
-      "status": "pending_launch",
+      "status": "running",
+      "cloud_agent_id": "bc-32e5935d-b0eb-4aa1-a3f6-cc5f838361e5",
+      "launched_at": "2026-08-02T20:54:00Z",
       "local_stopped_reason": "migrated to cloud",
       "checkpoint": "scratch/series_i_ws_volume_15_checkpoint.json",
       "resume_from": "2026-01-11T00:00:00"
@@ -119,14 +146,18 @@
     },
     "ws_fleet": {
       "host": "cloud",
-      "status": "pending_launch",
+      "status": "running",
+      "cloud_agent_id": "bc-edff5f1d-62e3-467b-9d87-9c09db060039",
+      "launched_at": "2026-08-02T20:54:00Z",
       "local_stopped_reason": "migrated to cloud",
       "checkpoint": "scratch/series_i_ws_fleet_checkpoint.json",
       "resume_from": "2026-01-11T00:00:00"
     },
     "ws_staged_drift": {
       "host": "cloud",
-      "status": "pending_launch",
+      "status": "running",
+      "cloud_agent_id": "bc-bbc337d7-bcac-45aa-a3a3-c331df1ce76b",
+      "launched_at": "2026-08-02T20:54:00Z",
       "local_stopped_reason": "migrated to cloud",
       "checkpoint": "scratch/series_i_ws_staged_drift_checkpoint.json",
       "resume_from": "2026-01-11T00:00:00"
@@ -150,9 +181,9 @@
   },
   "notes": [
     "2026-08-02 T2: stopped 8-9 local parallel writers; 3 local max (cadence + precision_gate + feat_volume).",
-    "Cloud lanes pending dispatch — branch pushed; see CLOUD-I-LAUNCH.md.",
-    "Cadence kill path NOT taken (71% zero insufficient vs 29% non-zero + Series F cadence mean 0.288).",
-    "scoring_config.yaml restored from cadence_2 backup (cadence enabled=false)."
+    "Cloud lanes dispatched 2026-08-02T20:54Z — 5 cloud agents running (see lanes.*.cloud_agent_id).",
+    "Cadence lanes aborted 2026-08-02T22:30Z — dimension cohort-constant; sweep uninformative; code fix required (DEBT-078). PID 77784 killed.",
+    "scoring_config.yaml: cadence enabled=false, weight=0.0 — no weight decision owed."
   ],
-  "updated_at": "2026-08-02T20:00:00Z"
+  "updated_at": "2026-08-02T22:30:00Z"
 }

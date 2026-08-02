@@ -340,14 +340,16 @@ Real SIEM integration · multi-tenant SaaS · production IAM disablement · live
 
 **Autopilot stopped:** `--stop-before-gate` — next runnable `S3-EXIT-GATE` (chat_gate). S3.1–S3.6 complete (S3.3 wontfix). See `results/autopilot-loop-stop-report.md`.
 
-## Series I serial calibration (2026-08-02T20:00Z)
+## Series I serial calibration (2026-08-02T22:30Z)
 
 - Branch: `series-i-serial-calibration` (pushed to origin)
 - Status: IN PROGRESS — T2 cloud/local split
-- Local (3): `ws_cadence_2`, `ws_precision_gate`, `ws_feat_volume`
-- Cloud pending (5): volume 1/5/15, fleet, staged_drift — `CLOUD-I-LAUNCH.md`
-- Aborted: `ws_geo_5` (geo_velocity null)
-- Cadence kill: **not taken** (71% cadence_cov zero, 29% non-zero)
+- Local (2): `ws_precision_gate`, `ws_feat_volume`
+- Cloud running (5): volume 1/5/15, fleet, staged_drift — `CLOUD-I-LAUNCH.md`
+- Aborted: `ws_geo_5` (geo_velocity null), `ws_cadence_2` (cohort-constant dimension; PID 77784 killed)
+- Skipped: `ws_cadence_5`, `ws_cadence_10` (same inertness; DEBT-078 code fix required before re-sweep)
+- Cadence: dimension cohort-constant — SA≈1, humans=0; cohort_median norm cancels any weight; no weight decision owed
+- YAML: `drift_weights.cadence.enabled: false`, weight `0.0`
 - Harness: `run_series_i_sweep.py --chunked` for resume
 - Artifacts: `.workflow/2026-08-02-series-i-serial-calibration/`
 - Calibrated: false

@@ -328,7 +328,7 @@ These are **open questions**, not solved or recommended changes. Validate with s
 
 **Source:** External review `alter-ego-drift-gap-evaluation.md` DRIFT-R3, adapted from a DNS-beacon CoV/ActiveHoursRatio methodology — method only, no network telemetry implied.
 
-**Status (2026-08-02):** Implemented shadow-computed (`drift_weights.cadence`, `enabled: false`); `ot_polling` synthetic archetype added. Series F governance complete (`a916d13`, `docs/scoring-config-governance-series-f.md`) — no `enabled` flip authorized.
+**Status (2026-08-02):** Implemented shadow-computed (`drift_weights.cadence`, `enabled: false`); `ot_polling` synthetic archetype added. Series F governance complete (`a916d13`, `docs/scoring-config-governance-series-f.md`) — no `enabled` flip authorized. **Series I abort (2026-08-02):** dimension cohort-constant as implemented — `cadence_cov` saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; Series I cadence weight sweep lanes aborted (see DEBT-078, DEBT-012). Requires code fix: delta CoV vs baseline profile per entity before re-sweep.
 
 ### H13 — Geo-velocity between successive auth successes
 
