@@ -13,9 +13,18 @@
   "rejected_flags": {
     "features.total_volume_delta": "REJECT features.total_volume_delta: inert vs prior accepted baseline",
     "cohort_gating_constants.fleet_drift_enabled": "REJECT cohort_gating_constants.fleet_drift_enabled: inert vs prior accepted baseline",
-    "staged_drift.enabled": "REJECT staged_drift.enabled: inert vs prior accepted baseline"
+    "staged_drift.enabled": "REJECT staged_drift.enabled: inert vs prior accepted baseline",
+    "drift_weights.total_volume_delta": "REJECT drift_weights.total_volume_delta: worse/equal rank vs prior accepted (F1 0.013481462988390962\u21920.013348164627363737, R 0.46153846153846156\u21920.46153846153846156, FP 7840\u21927920)"
   },
-  "weight_winners": {},
+  "weight_winners": {
+    "total_volume_delta": {
+      "weight": 1.0,
+      "from_step": "ws_volume_1",
+      "f1": 0.013431165277950503,
+      "recall": 0.46153846153846156,
+      "fp": 7870
+    }
+  },
   "archival_weight_probe_summary": {
     "dimension": "drift_weights.total_volume_delta",
     "completed_at": "2026-08-03T01:00:00Z",
@@ -86,7 +95,8 @@
       "s3": 0.1111111111111111,
       "s4": 1.0,
       "s5": 0.6
-    }
+    },
+    "volume_drift_note": "cloud grid winner ws_volume_1 w=1.0"
   },
   "aborted_lanes": {
     "ws_geo_5": {
@@ -144,11 +154,10 @@
     "fold_02_feature_volume",
     "fold_06_precision_gate",
     "fold_05_fleet",
-    "fold_07_staged_drift"
-  ],
-  "sweeps_queued": [
+    "fold_07_staged_drift",
     "fold_03_drift_volume"
   ],
+  "sweeps_queued": [],
   "sweeps_archival_background": [
     "ws_volume_1",
     "ws_volume_5",
@@ -254,8 +263,14 @@
       "pid": 64496,
       "completed_at": "2026-08-03T09:50:00Z",
       "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_ws_feat_volume_metrics.json",
-      "headline": {"f1": 0.01322556943423953, "recall": 0.46153846153846156, "fp": 7995, "s1": 1.0, "s4": 1.0},
-      "note": "inert vs baseline — confirms fold_02 reject"
+      "headline": {
+        "f1": 0.01322556943423953,
+        "recall": 0.46153846153846156,
+        "fp": 7995,
+        "s1": 1.0,
+        "s4": 1.0
+      },
+      "note": "inert vs baseline \u2014 confirms fold_02 reject"
     },
     "ws_precision_gate": {
       "host": "local",
@@ -265,8 +280,14 @@
       "pid": 89136,
       "completed_at": "2026-08-03T09:50:00Z",
       "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_ws_precision_gate_metrics.json",
-      "headline": {"f1": 0.013481462988390962, "recall": 0.46153846153846156, "fp": 7840, "s1": 1.0, "s4": 1.0},
-      "note": "matches fold_06 accept — archival confirms precision_gate"
+      "headline": {
+        "f1": 0.013481462988390962,
+        "recall": 0.46153846153846156,
+        "fp": 7840,
+        "s1": 1.0,
+        "s4": 1.0
+      },
+      "note": "matches fold_06 accept \u2014 archival confirms precision_gate"
     },
     "ws_fleet": {
       "host": "cloud",
@@ -379,7 +400,7 @@
     },
     "fold_03_drift_volume": {
       "host": "cloud",
-      "status": "running",
+      "status": "done",
       "role": "additive_fold",
       "fold_index": 5,
       "cloud_agent_id": "bc-46045319-bf9f-499a-b5c4-3b567259e8aa",
@@ -389,7 +410,8 @@
         "drift_weights.total_volume_delta.weight=5.0"
       ],
       "launched_at": "2026-08-03T09:55:00Z",
-      "note": "final fold; provisional w=5.0"
+      "note": "final fold; provisional w=5.0",
+      "completed_at": "2026-08-03T12:37:28Z"
     }
   },
   "calibrated": false,
@@ -422,5 +444,5 @@
     "Fold order: feat_volume \u2192 precision_gate \u2192 fleet \u2192 staged \u2192 volume_drift (provisional w=5.0 last). See CLOUD-I-FOLDS.md.",
     "scoring_config.yaml: cadence/geo disabled. calibrated: false."
   ],
-  "updated_at": "2026-08-03T09:50:37Z"
+  "updated_at": "2026-08-03T12:37:28Z"
 }
