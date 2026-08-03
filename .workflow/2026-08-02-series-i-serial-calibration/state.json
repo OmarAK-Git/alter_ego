@@ -7,7 +7,9 @@
   "current_step": "fold_06_precision_gate",
   "parallel_weight_mode": false,
   "local_max_writers": 2,
-  "accepted_flags": {},
+  "accepted_flags": {
+    "precision_gate.enabled": true
+  },
   "rejected_flags": {
     "features.total_volume_delta": "REJECT features.total_volume_delta: inert vs prior accepted baseline"
   },
@@ -69,7 +71,20 @@
     ],
     "prev_headline_source": "baseline_ref",
     "volume_drift_fold": "deferred_last_provisional_w5",
-    "note": "Folds are main campaign. Started without waiting for weight grids. Flag folds first; volume-drift fold last with provisional w=5.0 unless cloud ws_volume_* metrics confirm winner."
+    "note": "Folds are main campaign. Started without waiting for weight grids. Flag folds first; volume-drift fold last with provisional w=5.0 unless cloud ws_volume_* metrics confirm winner.",
+    "prev_headline": {
+      "precision": 0.006840638459589561,
+      "recall": 0.46153846153846156,
+      "f1": 0.013481462988390962,
+      "tp": 54,
+      "fp": 7840,
+      "fn": 63,
+      "s1": 1.0,
+      "s2": 0.7428571428571429,
+      "s3": 0.1111111111111111,
+      "s4": 1.0,
+      "s5": 0.6
+    }
   },
   "aborted_lanes": {
     "ws_geo_5": {
@@ -124,10 +139,10 @@
     "s5": 0.6
   },
   "sweeps_completed": [
-    "fold_02_feature_volume"
+    "fold_02_feature_volume",
+    "fold_06_precision_gate"
   ],
   "sweeps_queued": [
-    "fold_06_precision_gate",
     "fold_05_fleet",
     "fold_07_staged_drift",
     "fold_03_drift_volume"
@@ -305,7 +320,7 @@
     },
     "fold_06_precision_gate": {
       "host": "cloud",
-      "status": "running",
+      "status": "done",
       "role": "additive_fold",
       "fold_index": 2,
       "cloud_agent_id": "bc-40622c65-6172-4d03-9810-81f8d91ad106",
@@ -313,7 +328,8 @@
         "precision_gate.enabled=true"
       ],
       "launched_at": "2026-08-03T00:45:00Z",
-      "note": "fold_02 rejected — no prior accepted flags; single-flag sweep"
+      "note": "fold_02 rejected \u2014 no prior accepted flags; single-flag sweep",
+      "completed_at": "2026-08-03T04:21:41Z"
     }
   },
   "calibrated": false,
@@ -346,5 +362,5 @@
     "Fold order: feat_volume \u2192 precision_gate \u2192 fleet \u2192 staged \u2192 volume_drift (provisional w=5.0 last). See CLOUD-I-FOLDS.md.",
     "scoring_config.yaml: cadence/geo disabled. calibrated: false."
   ],
-  "updated_at": "2026-08-03T00:41:27Z"
+  "updated_at": "2026-08-03T04:21:41Z"
 }

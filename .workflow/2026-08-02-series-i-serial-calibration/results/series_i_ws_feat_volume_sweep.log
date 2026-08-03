@@ -64,7 +64,10 @@ Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_w
 2026-08-02 18:35:21,074 [INFO] Processed window ending 2026-01-14
 2026-08-02 19:23:24,840 [INFO] Processed window ending 2026-01-15
 2026-08-02 20:14:46,813 [INFO] Processed window ending 2026-01-16
-2026-01-13
-2026-08-02 18:35:21,074 [INFO] Processed window ending 2026-01-14
-2026-08-02 19:23:24,840 [INFO] Processed window ending 2026-01-15
-2026-08-02 20:14:46,813 [INFO] Processed window ending 2026-01-16
+2026-08-02 21:10:01,234 [INFO] Processed window ending 2026-01-17
+2026-08-02 22:41:24,030 [INFO] Processed window ending 2026-01-18
+2026-08-02 23:46:58,329 [INFO] Processed window ending 2026-01-19
+2026-01-16
+2026-08-02 21:10:01,234 [INFO] Processed window ending 2026-01-17
+2026-08-02 22:41:24,030 [INFO] Processed window ending 2026-01-18
+2026-08-02 23:46:58,329 [INFO] Processed window ending 2026-01-19
