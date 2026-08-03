@@ -1,0 +1,168 @@
+2026-08-03 07:08:00,978 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:08:00Z ===
+2026-08-03 07:08:00,978 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:08:00,979 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:08:00,979 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:08:05,147 [INFO] Generated 323996 events and 117 labels (S2 victim=user_engineer_8 excluded from S5)
+2026-08-03 07:08:05,282 [INFO] Clearing database tables...
+2026-08-03 07:08:18,751 [INFO] Processed window ending 2026-01-02
+2026-08-03 07:08:18,905 [INFO] Chunked sweep: checkpointed resume_from=2026-01-02 00:00:00 (exit 2)
+2026-08-03 07:08:19,363 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:08:19Z ===
+2026-08-03 07:08:19,363 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:08:19,364 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:08:19,364 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:08:19,364 [INFO] Chunked resume from 2026-01-02 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:08:19,364 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 07:10:49,628 [INFO] Processed window ending 2026-01-03
+2026-08-03 07:10:49,797 [INFO] Chunked sweep: checkpointed resume_from=2026-01-03 00:00:00 (exit 2)
+2026-08-03 07:10:50,262 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:10:50Z ===
+2026-08-03 07:10:50,262 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:10:50,262 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:10:50,262 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:10:50,262 [INFO] Chunked resume from 2026-01-03 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:10:50,262 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 07:13:43,379 [INFO] Processed window ending 2026-01-04
+2026-08-03 07:13:43,590 [INFO] Chunked sweep: checkpointed resume_from=2026-01-04 00:00:00 (exit 2)
+2026-08-03 07:13:44,076 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:13:44Z ===
+2026-08-03 07:13:44,076 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:13:44,076 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:13:44,077 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:13:44,077 [INFO] Chunked resume from 2026-01-04 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:13:44,077 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 07:17:05,334 [INFO] Processed window ending 2026-01-05
+2026-08-03 07:17:05,663 [INFO] Chunked sweep: checkpointed resume_from=2026-01-05 00:00:00 (exit 2)
+2026-08-03 07:17:06,143 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:17:06Z ===
+2026-08-03 07:17:06,143 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:17:06,143 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:17:06,143 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:17:06,143 [INFO] Chunked resume from 2026-01-05 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:17:06,143 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 07:21:12,521 [INFO] Processed window ending 2026-01-06
+2026-08-03 07:21:12,853 [INFO] Chunked sweep: checkpointed resume_from=2026-01-06 00:00:00 (exit 2)
+2026-08-03 07:21:13,328 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:21:13Z ===
+2026-08-03 07:21:13,328 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:21:13,329 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:21:13,329 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:21:13,329 [INFO] Chunked resume from 2026-01-06 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:21:13,329 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 07:25:55,546 [INFO] Processed window ending 2026-01-07
+2026-08-03 07:25:55,777 [INFO] Chunked sweep: checkpointed resume_from=2026-01-07 00:00:00 (exit 2)
+2026-08-03 07:25:56,243 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:25:56Z ===
+2026-08-03 07:25:56,243 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:25:56,243 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:25:56,243 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:25:56,243 [INFO] Chunked resume from 2026-01-07 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:25:56,243 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 07:31:14,486 [INFO] Processed window ending 2026-01-08
+2026-08-03 07:31:14,740 [INFO] Chunked sweep: checkpointed resume_from=2026-01-08 00:00:00 (exit 2)
+2026-08-03 07:31:15,212 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:31:15Z ===
+2026-08-03 07:31:15,213 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:31:15,213 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:31:15,213 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:31:15,213 [INFO] Chunked resume from 2026-01-08 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:31:15,213 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 07:37:12,614 [INFO] Processed window ending 2026-01-09
+2026-08-03 07:37:12,803 [INFO] Chunked sweep: checkpointed resume_from=2026-01-09 00:00:00 (exit 2)
+2026-08-03 07:37:13,287 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:37:13Z ===
+2026-08-03 07:37:13,287 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:37:13,287 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:37:13,287 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:37:13,287 [INFO] Chunked resume from 2026-01-09 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:37:13,287 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 07:43:49,937 [INFO] Processed window ending 2026-01-10
+2026-08-03 07:43:50,131 [INFO] Chunked sweep: checkpointed resume_from=2026-01-10 00:00:00 (exit 2)
+2026-08-03 07:43:50,607 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:43:50Z ===
+2026-08-03 07:43:50,608 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:43:50,608 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:43:50,608 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:43:50,608 [INFO] Chunked resume from 2026-01-10 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:43:50,608 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 07:50:46,858 [INFO] Processed window ending 2026-01-11
+2026-08-03 07:50:47,213 [INFO] Chunked sweep: checkpointed resume_from=2026-01-11 00:00:00 (exit 2)
+2026-08-03 07:50:47,747 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:50:47Z ===
+2026-08-03 07:50:47,748 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:50:47,748 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:50:47,748 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:50:47,748 [INFO] Chunked resume from 2026-01-11 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:50:47,748 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 07:58:07,867 [INFO] Processed window ending 2026-01-12
+2026-08-03 07:58:08,190 [INFO] Chunked sweep: checkpointed resume_from=2026-01-12 00:00:00 (exit 2)
+2026-08-03 07:58:08,670 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T07:58:08Z ===
+2026-08-03 07:58:08,670 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 07:58:08,670 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 07:58:08,670 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 07:58:08,670 [INFO] Chunked resume from 2026-01-12 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 07:58:08,670 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 08:06:21,693 [INFO] Processed window ending 2026-01-13
+2026-08-03 08:06:21,869 [INFO] Chunked sweep: checkpointed resume_from=2026-01-13 00:00:00 (exit 2)
+2026-08-03 08:06:22,339 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T08:06:22Z ===
+2026-08-03 08:06:22,339 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 08:06:22,339 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 08:06:22,339 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 08:06:22,339 [INFO] Chunked resume from 2026-01-13 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 08:06:22,340 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 08:15:16,892 [INFO] Processed window ending 2026-01-14
+2026-08-03 08:15:17,223 [INFO] Chunked sweep: checkpointed resume_from=2026-01-14 00:00:00 (exit 2)
+2026-08-03 08:15:17,704 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T08:15:17Z ===
+2026-08-03 08:15:17,705 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 08:15:17,705 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 08:15:17,705 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 08:15:17,705 [INFO] Chunked resume from 2026-01-14 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 08:15:17,705 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 08:24:55,319 [INFO] Processed window ending 2026-01-15
+2026-08-03 08:24:55,572 [INFO] Chunked sweep: checkpointed resume_from=2026-01-15 00:00:00 (exit 2)
+2026-08-03 08:24:56,054 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T08:24:56Z ===
+2026-08-03 08:24:56,054 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 08:24:56,054 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 08:24:56,054 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 08:24:56,054 [INFO] Chunked resume from 2026-01-15 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 08:24:56,054 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 08:35:19,084 [INFO] Processed window ending 2026-01-16
+2026-08-03 08:35:19,411 [INFO] Chunked sweep: checkpointed resume_from=2026-01-16 00:00:00 (exit 2)
+2026-08-03 08:35:19,911 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T08:35:19Z ===
+2026-08-03 08:35:19,911 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 08:35:19,911 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 08:35:19,911 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 08:35:19,911 [INFO] Chunked resume from 2026-01-16 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 08:35:19,912 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 08:46:18,216 [INFO] Processed window ending 2026-01-17
+2026-08-03 08:46:18,389 [INFO] Chunked sweep: checkpointed resume_from=2026-01-17 00:00:00 (exit 2)
+2026-08-03 08:46:18,854 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T08:46:18Z ===
+2026-08-03 08:46:18,854 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 08:46:18,854 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 08:46:18,854 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 08:46:18,854 [INFO] Chunked resume from 2026-01-17 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 08:46:18,854 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 08:57:33,484 [INFO] Processed window ending 2026-01-18
+2026-08-03 08:57:33,752 [INFO] Chunked sweep: checkpointed resume_from=2026-01-18 00:00:00 (exit 2)
+2026-08-03 08:57:34,229 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T08:57:34Z ===
+2026-08-03 08:57:34,229 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 08:57:34,229 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 08:57:34,229 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 08:57:34,229 [INFO] Chunked resume from 2026-01-18 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 08:57:34,230 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 09:09:17,868 [INFO] Processed window ending 2026-01-19
+2026-08-03 09:09:18,101 [INFO] Chunked sweep: checkpointed resume_from=2026-01-19 00:00:00 (exit 2)
+2026-08-03 09:09:18,574 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T09:09:18Z ===
+2026-08-03 09:09:18,574 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 09:09:18,574 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 09:09:18,574 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 09:09:18,574 [INFO] Chunked resume from 2026-01-19 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 09:09:18,574 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 09:21:51,629 [INFO] Processed window ending 2026-01-20
+2026-08-03 09:21:51,905 [INFO] Chunked sweep: checkpointed resume_from=2026-01-20 00:00:00 (exit 2)
+2026-08-03 09:21:52,379 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T09:21:52Z ===
+2026-08-03 09:21:52,379 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 09:21:52,379 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 09:21:52,379 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 09:21:52,379 [INFO] Chunked resume from 2026-01-20 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 09:21:52,379 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 09:34:57,483 [INFO] Processed window ending 2026-01-21
+2026-08-03 09:34:57,827 [INFO] Chunked sweep: checkpointed resume_from=2026-01-21 00:00:00 (exit 2)
+2026-08-03 09:34:58,324 [INFO] === Series I step=fold_07_staged_drift started 2026-08-03T09:34:58Z ===
+2026-08-03 09:34:58,324 [INFO] Overrides: [('precision_gate.enabled', True), ('staged_drift.enabled', True)]
+2026-08-03 09:34:58,324 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_07_staged_drift.db
+2026-08-03 09:34:58,324 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_07_staged_drift.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 09:34:58,324 [INFO] Chunked resume from 2026-01-21 00:00:00 (checkpoint /workspace/scratch/series_i_fold_07_staged_drift_checkpoint.json)
+2026-08-03 09:34:58,324 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 09:48:43,679 [INFO] Processed window ending 2026-01-22
+2026-08-03 09:49:04,343 [INFO] DONE step=fold_07_staged_drift elapsed=846.0s F1=0.013481462988390962 R=0.46153846153846156 FP=7840 S1=1.0 S4=1.0
