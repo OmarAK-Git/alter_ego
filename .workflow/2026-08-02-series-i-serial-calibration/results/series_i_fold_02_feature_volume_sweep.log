@@ -1,0 +1,168 @@
+2026-08-02 21:59:48,865 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T21:59:48Z ===
+2026-08-02 21:59:48,865 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 21:59:48,865 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 21:59:48,865 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 21:59:53,253 [INFO] Generated 323996 events and 117 labels (S2 victim=user_engineer_8 excluded from S5)
+2026-08-02 21:59:53,388 [INFO] Clearing database tables...
+2026-08-02 22:00:06,655 [INFO] Processed window ending 2026-01-02
+2026-08-02 22:00:06,845 [INFO] Chunked sweep: checkpointed resume_from=2026-01-02 00:00:00 (exit 2)
+2026-08-02 22:00:07,289 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:00:07Z ===
+2026-08-02 22:00:07,289 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:00:07,289 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:00:07,289 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:00:07,289 [INFO] Chunked resume from 2026-01-02 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:00:07,289 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:02:41,792 [INFO] Processed window ending 2026-01-03
+2026-08-02 22:02:42,072 [INFO] Chunked sweep: checkpointed resume_from=2026-01-03 00:00:00 (exit 2)
+2026-08-02 22:02:42,549 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:02:42Z ===
+2026-08-02 22:02:42,549 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:02:42,549 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:02:42,549 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:02:42,550 [INFO] Chunked resume from 2026-01-03 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:02:42,550 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:05:36,481 [INFO] Processed window ending 2026-01-04
+2026-08-02 22:05:36,666 [INFO] Chunked sweep: checkpointed resume_from=2026-01-04 00:00:00 (exit 2)
+2026-08-02 22:05:37,142 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:05:37Z ===
+2026-08-02 22:05:37,142 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:05:37,142 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:05:37,142 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:05:37,143 [INFO] Chunked resume from 2026-01-04 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:05:37,143 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:09:04,394 [INFO] Processed window ending 2026-01-05
+2026-08-02 22:09:04,714 [INFO] Chunked sweep: checkpointed resume_from=2026-01-05 00:00:00 (exit 2)
+2026-08-02 22:09:05,189 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:09:05Z ===
+2026-08-02 22:09:05,189 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:09:05,189 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:09:05,190 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:09:05,190 [INFO] Chunked resume from 2026-01-05 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:09:05,190 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:13:11,644 [INFO] Processed window ending 2026-01-06
+2026-08-02 22:13:11,966 [INFO] Chunked sweep: checkpointed resume_from=2026-01-06 00:00:00 (exit 2)
+2026-08-02 22:13:12,455 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:13:12Z ===
+2026-08-02 22:13:12,455 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:13:12,455 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:13:12,456 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:13:12,456 [INFO] Chunked resume from 2026-01-06 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:13:12,456 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:17:51,849 [INFO] Processed window ending 2026-01-07
+2026-08-02 22:17:52,168 [INFO] Chunked sweep: checkpointed resume_from=2026-01-07 00:00:00 (exit 2)
+2026-08-02 22:17:52,651 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:17:52Z ===
+2026-08-02 22:17:52,652 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:17:52,652 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:17:52,652 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:17:52,652 [INFO] Chunked resume from 2026-01-07 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:17:52,652 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:23:12,708 [INFO] Processed window ending 2026-01-08
+2026-08-02 22:23:12,879 [INFO] Chunked sweep: checkpointed resume_from=2026-01-08 00:00:00 (exit 2)
+2026-08-02 22:23:13,343 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:23:13Z ===
+2026-08-02 22:23:13,343 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:23:13,343 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:23:13,343 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:23:13,343 [INFO] Chunked resume from 2026-01-08 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:23:13,343 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:29:09,118 [INFO] Processed window ending 2026-01-09
+2026-08-02 22:29:09,291 [INFO] Chunked sweep: checkpointed resume_from=2026-01-09 00:00:00 (exit 2)
+2026-08-02 22:29:09,754 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:29:09Z ===
+2026-08-02 22:29:09,755 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:29:09,755 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:29:09,755 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:29:09,755 [INFO] Chunked resume from 2026-01-09 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:29:09,755 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:35:50,248 [INFO] Processed window ending 2026-01-10
+2026-08-02 22:35:50,423 [INFO] Chunked sweep: checkpointed resume_from=2026-01-10 00:00:00 (exit 2)
+2026-08-02 22:35:50,900 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:35:50Z ===
+2026-08-02 22:35:50,901 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:35:50,901 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:35:50,901 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:35:50,901 [INFO] Chunked resume from 2026-01-10 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:35:50,901 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:42:49,614 [INFO] Processed window ending 2026-01-11
+2026-08-02 22:42:49,943 [INFO] Chunked sweep: checkpointed resume_from=2026-01-11 00:00:00 (exit 2)
+2026-08-02 22:42:50,424 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:42:50Z ===
+2026-08-02 22:42:50,424 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:42:50,424 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:42:50,424 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:42:50,424 [INFO] Chunked resume from 2026-01-11 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:42:50,424 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:50:25,141 [INFO] Processed window ending 2026-01-12
+2026-08-02 22:50:25,466 [INFO] Chunked sweep: checkpointed resume_from=2026-01-12 00:00:00 (exit 2)
+2026-08-02 22:50:25,950 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:50:25Z ===
+2026-08-02 22:50:25,950 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:50:25,950 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:50:25,950 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:50:25,950 [INFO] Chunked resume from 2026-01-12 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:50:25,950 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 22:58:51,619 [INFO] Processed window ending 2026-01-13
+2026-08-02 22:58:52,021 [INFO] Chunked sweep: checkpointed resume_from=2026-01-13 00:00:00 (exit 2)
+2026-08-02 22:58:52,597 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T22:58:52Z ===
+2026-08-02 22:58:52,597 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 22:58:52,597 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 22:58:52,597 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 22:58:52,597 [INFO] Chunked resume from 2026-01-13 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 22:58:52,597 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 23:08:02,379 [INFO] Processed window ending 2026-01-14
+2026-08-02 23:08:02,711 [INFO] Chunked sweep: checkpointed resume_from=2026-01-14 00:00:00 (exit 2)
+2026-08-02 23:08:03,187 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T23:08:03Z ===
+2026-08-02 23:08:03,187 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 23:08:03,187 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 23:08:03,187 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 23:08:03,187 [INFO] Chunked resume from 2026-01-14 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 23:08:03,187 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 23:17:34,852 [INFO] Processed window ending 2026-01-15
+2026-08-02 23:17:35,187 [INFO] Chunked sweep: checkpointed resume_from=2026-01-15 00:00:00 (exit 2)
+2026-08-02 23:17:35,670 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T23:17:35Z ===
+2026-08-02 23:17:35,670 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 23:17:35,671 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 23:17:35,671 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 23:17:35,671 [INFO] Chunked resume from 2026-01-15 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 23:17:35,671 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 23:27:46,786 [INFO] Processed window ending 2026-01-16
+2026-08-02 23:27:47,025 [INFO] Chunked sweep: checkpointed resume_from=2026-01-16 00:00:00 (exit 2)
+2026-08-02 23:27:47,501 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T23:27:47Z ===
+2026-08-02 23:27:47,501 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 23:27:47,501 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 23:27:47,501 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 23:27:47,501 [INFO] Chunked resume from 2026-01-16 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 23:27:47,501 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 23:38:55,455 [INFO] Processed window ending 2026-01-17
+2026-08-02 23:38:55,712 [INFO] Chunked sweep: checkpointed resume_from=2026-01-17 00:00:00 (exit 2)
+2026-08-02 23:38:56,186 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T23:38:56Z ===
+2026-08-02 23:38:56,186 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 23:38:56,186 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 23:38:56,186 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 23:38:56,187 [INFO] Chunked resume from 2026-01-17 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 23:38:56,187 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-02 23:50:04,281 [INFO] Processed window ending 2026-01-18
+2026-08-02 23:50:04,540 [INFO] Chunked sweep: checkpointed resume_from=2026-01-18 00:00:00 (exit 2)
+2026-08-02 23:50:05,007 [INFO] === Series I step=fold_02_feature_volume started 2026-08-02T23:50:05Z ===
+2026-08-02 23:50:05,007 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 23:50:05,007 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-02 23:50:05,007 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 23:50:05,007 [INFO] Chunked resume from 2026-01-18 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-02 23:50:05,008 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 00:01:41,927 [INFO] Processed window ending 2026-01-19
+2026-08-03 00:01:42,208 [INFO] Chunked sweep: checkpointed resume_from=2026-01-19 00:00:00 (exit 2)
+2026-08-03 00:01:42,732 [INFO] === Series I step=fold_02_feature_volume started 2026-08-03T00:01:42Z ===
+2026-08-03 00:01:42,732 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-03 00:01:42,733 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-03 00:01:42,733 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 00:01:42,733 [INFO] Chunked resume from 2026-01-19 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-03 00:01:42,733 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 00:13:56,421 [INFO] Processed window ending 2026-01-20
+2026-08-03 00:13:56,597 [INFO] Chunked sweep: checkpointed resume_from=2026-01-20 00:00:00 (exit 2)
+2026-08-03 00:13:57,060 [INFO] === Series I step=fold_02_feature_volume started 2026-08-03T00:13:57Z ===
+2026-08-03 00:13:57,060 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-03 00:13:57,060 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-03 00:13:57,060 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 00:13:57,060 [INFO] Chunked resume from 2026-01-20 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-03 00:13:57,061 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 00:26:56,798 [INFO] Processed window ending 2026-01-21
+2026-08-03 00:26:56,964 [INFO] Chunked sweep: checkpointed resume_from=2026-01-21 00:00:00 (exit 2)
+2026-08-03 00:26:57,426 [INFO] === Series I step=fold_02_feature_volume started 2026-08-03T00:26:57Z ===
+2026-08-03 00:26:57,426 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-03 00:26:57,426 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_02_feature_volume.db
+2026-08-03 00:26:57,426 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_02_feature_volume.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 00:26:57,426 [INFO] Chunked resume from 2026-01-21 00:00:00 (checkpoint /workspace/scratch/series_i_fold_02_feature_volume_checkpoint.json)
+2026-08-03 00:26:57,426 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 00:40:34,996 [INFO] Processed window ending 2026-01-22
+2026-08-03 00:40:54,831 [INFO] DONE step=fold_02_feature_volume elapsed=837.4s F1=0.01322556943423953 R=0.46153846153846156 FP=7995 S1=1.0 S4=1.0
