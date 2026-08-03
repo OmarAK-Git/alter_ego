@@ -1,19 +1,13 @@
 # Tasks
 
-**Updated:** 2026-08-03T00:45Z
-
-## Active: Series I Phase B folds
+**Updated:** 2026-08-03T04:25Z
 
 | Step | Agent | Governance | Status |
 |---|---|---|---|
-| `fold_02_feature_volume` | bc-29a79b5f | REJECT (inert) | done |
-| `fold_06_precision_gate` | bc-40622c65 | pending | **running** |
-| `fold_05_fleet` | — | — | queued |
-| `fold_07_staged_drift` | — | — | queued |
-| `fold_03_drift_volume` | — | — | deferred |
+| fold_02 | bc-29a79b5f | REJECT | done |
+| fold_06 | bc-40622c65 | ACCEPT | done |
+| fold_05 | bc-9da7fc31 | pending | running |
+| fold_07 | — | — | queued |
+| fold_03 | — | — | deferred |
 
-**Accepted flags:** none. **Calibrated:** false.
-
-Cloud archival probes complete (volume 1/5/15, fleet, staged). Local solos still running.
-
-**SoT:** `.workflow/2026-08-02-series-i-serial-calibration/state.json`
+**Accepted:** precision_gate.enabled=true

@@ -4,7 +4,7 @@
   "status": "in_progress",
   "started_at": "2026-08-02T04:23:00Z",
   "phase": "B_additive_folds",
-  "current_step": "fold_06_precision_gate",
+  "current_step": "fold_05_fleet",
   "parallel_weight_mode": false,
   "local_max_writers": 2,
   "accepted_flags": {
@@ -324,12 +324,27 @@
       "role": "additive_fold",
       "fold_index": 2,
       "cloud_agent_id": "bc-40622c65-6172-4d03-9810-81f8d91ad106",
+      "governance": "accept",
+      "governance_reason": "F1 0.0132->0.0135, FP 7995->7840, S1/S4 intact",
+      "git_commit": "def9725",
+      "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_fold_06_precision_gate_metrics.json",
       "overrides": [
         "precision_gate.enabled=true"
       ],
       "launched_at": "2026-08-03T00:45:00Z",
-      "note": "fold_02 rejected \u2014 no prior accepted flags; single-flag sweep",
       "completed_at": "2026-08-03T04:21:41Z"
+    },
+    "fold_05_fleet": {
+      "host": "cloud",
+      "status": "running",
+      "role": "additive_fold",
+      "fold_index": 3,
+      "cloud_agent_id": "bc-9da7fc31-5476-463f-b234-aa5b8261f205",
+      "overrides": [
+        "precision_gate.enabled=true",
+        "cohort_gating_constants.fleet_drift_enabled=true"
+      ],
+      "launched_at": "2026-08-03T04:25:00Z"
     }
   },
   "calibrated": false,

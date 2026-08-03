@@ -1,15 +1,13 @@
 # Active Context
 
-**Updated:** 2026-08-03T00:45Z
+**Updated:** 2026-08-03T04:25Z
 
-## Phase B additive folds
+## Phase B folds
 
-| # | Step | Agent | Status |
-|---|---|---|---|
-| 1 | `fold_02_feature_volume` | bc-29a79b5f | **REJECT** (inert) |
-| 2 | `fold_06_precision_gate` | bc-40622c65 | **running** |
-| 3–5 | fleet → staged → volume_drift | — | queued |
+| Step | Agent | Governance |
+|---|---|---|
+| fold_02 | bc-29a79b5f | REJECT |
+| fold_06 | bc-40622c65 | **ACCEPT** |
+| fold_05 | bc-9da7fc31 | running |
 
-**Accepted flags:** none (fold 1 rejected). **Calibrated:** false.
-
-Cloud archival probes (volume/fleet/staged) finished; metrics on branch. Local solos still running.
+**Accepted:** `precision_gate.enabled=true`. **Calibrated:** false.
