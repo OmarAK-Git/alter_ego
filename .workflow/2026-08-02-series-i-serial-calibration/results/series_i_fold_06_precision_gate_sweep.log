@@ -1,0 +1,168 @@
+2026-08-03 00:43:05,187 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T00:43:05Z ===
+2026-08-03 00:43:05,187 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 00:43:05,188 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 00:43:05,188 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 00:43:09,356 [INFO] Generated 323996 events and 117 labels (S2 victim=user_engineer_8 excluded from S5)
+2026-08-03 00:43:09,487 [INFO] Clearing database tables...
+2026-08-03 00:43:22,657 [INFO] Processed window ending 2026-01-02
+2026-08-03 00:43:22,824 [INFO] Chunked sweep: checkpointed resume_from=2026-01-02 00:00:00 (exit 2)
+2026-08-03 00:43:23,278 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T00:43:23Z ===
+2026-08-03 00:43:23,278 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 00:43:23,278 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 00:43:23,278 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 00:43:23,278 [INFO] Chunked resume from 2026-01-02 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 00:43:23,278 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 00:46:04,487 [INFO] Processed window ending 2026-01-03
+2026-08-03 00:46:04,798 [INFO] Chunked sweep: checkpointed resume_from=2026-01-03 00:00:00 (exit 2)
+2026-08-03 00:46:05,267 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T00:46:05Z ===
+2026-08-03 00:46:05,267 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 00:46:05,267 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 00:46:05,267 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 00:46:05,268 [INFO] Chunked resume from 2026-01-03 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 00:46:05,268 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 00:49:23,151 [INFO] Processed window ending 2026-01-04
+2026-08-03 00:49:23,317 [INFO] Chunked sweep: checkpointed resume_from=2026-01-04 00:00:00 (exit 2)
+2026-08-03 00:49:23,763 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T00:49:23Z ===
+2026-08-03 00:49:23,764 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 00:49:23,764 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 00:49:23,764 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 00:49:23,764 [INFO] Chunked resume from 2026-01-04 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 00:49:23,764 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 00:53:29,145 [INFO] Processed window ending 2026-01-05
+2026-08-03 00:53:29,452 [INFO] Chunked sweep: checkpointed resume_from=2026-01-05 00:00:00 (exit 2)
+2026-08-03 00:53:29,925 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T00:53:29Z ===
+2026-08-03 00:53:29,925 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 00:53:29,925 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 00:53:29,925 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 00:53:29,925 [INFO] Chunked resume from 2026-01-05 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 00:53:29,925 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 00:58:28,651 [INFO] Processed window ending 2026-01-06
+2026-08-03 00:58:28,972 [INFO] Chunked sweep: checkpointed resume_from=2026-01-06 00:00:00 (exit 2)
+2026-08-03 00:58:29,453 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T00:58:29Z ===
+2026-08-03 00:58:29,453 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 00:58:29,453 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 00:58:29,453 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 00:58:29,453 [INFO] Chunked resume from 2026-01-06 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 00:58:29,453 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 01:04:25,361 [INFO] Processed window ending 2026-01-07
+2026-08-03 01:04:25,551 [INFO] Chunked sweep: checkpointed resume_from=2026-01-07 00:00:00 (exit 2)
+2026-08-03 01:04:26,004 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T01:04:26Z ===
+2026-08-03 01:04:26,004 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 01:04:26,004 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 01:04:26,005 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 01:04:26,005 [INFO] Chunked resume from 2026-01-07 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 01:04:26,005 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 01:11:04,788 [INFO] Processed window ending 2026-01-08
+2026-08-03 01:11:04,960 [INFO] Chunked sweep: checkpointed resume_from=2026-01-08 00:00:00 (exit 2)
+2026-08-03 01:11:05,424 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T01:11:05Z ===
+2026-08-03 01:11:05,424 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 01:11:05,424 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 01:11:05,424 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 01:11:05,424 [INFO] Chunked resume from 2026-01-08 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 01:11:05,424 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 01:18:35,630 [INFO] Processed window ending 2026-01-09
+2026-08-03 01:18:35,963 [INFO] Chunked sweep: checkpointed resume_from=2026-01-09 00:00:00 (exit 2)
+2026-08-03 01:18:36,433 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T01:18:36Z ===
+2026-08-03 01:18:36,433 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 01:18:36,433 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 01:18:36,433 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 01:18:36,433 [INFO] Chunked resume from 2026-01-09 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 01:18:36,433 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 01:27:04,940 [INFO] Processed window ending 2026-01-10
+2026-08-03 01:27:05,272 [INFO] Chunked sweep: checkpointed resume_from=2026-01-10 00:00:00 (exit 2)
+2026-08-03 01:27:05,753 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T01:27:05Z ===
+2026-08-03 01:27:05,753 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 01:27:05,753 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 01:27:05,753 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 01:27:05,753 [INFO] Chunked resume from 2026-01-10 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 01:27:05,753 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 01:36:21,970 [INFO] Processed window ending 2026-01-11
+2026-08-03 01:36:22,298 [INFO] Chunked sweep: checkpointed resume_from=2026-01-11 00:00:00 (exit 2)
+2026-08-03 01:36:22,772 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T01:36:22Z ===
+2026-08-03 01:36:22,772 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 01:36:22,772 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 01:36:22,772 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 01:36:22,773 [INFO] Chunked resume from 2026-01-11 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 01:36:22,773 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 01:46:32,763 [INFO] Processed window ending 2026-01-12
+2026-08-03 01:46:33,144 [INFO] Chunked sweep: checkpointed resume_from=2026-01-12 00:00:00 (exit 2)
+2026-08-03 01:46:33,686 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T01:46:33Z ===
+2026-08-03 01:46:33,686 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 01:46:33,686 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 01:46:33,686 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 01:46:33,686 [INFO] Chunked resume from 2026-01-12 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 01:46:33,686 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 01:57:51,420 [INFO] Processed window ending 2026-01-13
+2026-08-03 01:57:51,598 [INFO] Chunked sweep: checkpointed resume_from=2026-01-13 00:00:00 (exit 2)
+2026-08-03 01:57:52,069 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T01:57:52Z ===
+2026-08-03 01:57:52,069 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 01:57:52,069 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 01:57:52,069 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 01:57:52,069 [INFO] Chunked resume from 2026-01-13 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 01:57:52,069 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 02:10:10,449 [INFO] Processed window ending 2026-01-14
+2026-08-03 02:10:10,621 [INFO] Chunked sweep: checkpointed resume_from=2026-01-14 00:00:00 (exit 2)
+2026-08-03 02:10:11,087 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T02:10:11Z ===
+2026-08-03 02:10:11,087 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 02:10:11,087 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 02:10:11,087 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 02:10:11,087 [INFO] Chunked resume from 2026-01-14 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 02:10:11,087 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 02:23:14,080 [INFO] Processed window ending 2026-01-15
+2026-08-03 02:23:14,419 [INFO] Chunked sweep: checkpointed resume_from=2026-01-15 00:00:00 (exit 2)
+2026-08-03 02:23:14,906 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T02:23:14Z ===
+2026-08-03 02:23:14,906 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 02:23:14,906 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 02:23:14,906 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 02:23:14,906 [INFO] Chunked resume from 2026-01-15 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 02:23:14,906 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 02:37:10,959 [INFO] Processed window ending 2026-01-16
+2026-08-03 02:37:11,141 [INFO] Chunked sweep: checkpointed resume_from=2026-01-16 00:00:00 (exit 2)
+2026-08-03 02:37:11,649 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T02:37:11Z ===
+2026-08-03 02:37:11,649 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 02:37:11,649 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 02:37:11,649 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 02:37:11,649 [INFO] Chunked resume from 2026-01-16 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 02:37:11,649 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 02:51:58,499 [INFO] Processed window ending 2026-01-17
+2026-08-03 02:51:58,788 [INFO] Chunked sweep: checkpointed resume_from=2026-01-17 00:00:00 (exit 2)
+2026-08-03 02:51:59,281 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T02:51:59Z ===
+2026-08-03 02:51:59,281 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 02:51:59,282 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 02:51:59,282 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 02:51:59,282 [INFO] Chunked resume from 2026-01-17 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 02:51:59,282 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 03:07:22,871 [INFO] Processed window ending 2026-01-18
+2026-08-03 03:07:23,211 [INFO] Chunked sweep: checkpointed resume_from=2026-01-18 00:00:00 (exit 2)
+2026-08-03 03:07:23,694 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T03:07:23Z ===
+2026-08-03 03:07:23,694 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 03:07:23,694 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 03:07:23,694 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 03:07:23,694 [INFO] Chunked resume from 2026-01-18 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 03:07:23,695 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 03:23:59,023 [INFO] Processed window ending 2026-01-19
+2026-08-03 03:23:59,330 [INFO] Chunked sweep: checkpointed resume_from=2026-01-19 00:00:00 (exit 2)
+2026-08-03 03:23:59,799 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T03:23:59Z ===
+2026-08-03 03:23:59,799 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 03:23:59,799 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 03:23:59,799 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 03:23:59,799 [INFO] Chunked resume from 2026-01-19 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 03:23:59,799 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 03:41:28,573 [INFO] Processed window ending 2026-01-20
+2026-08-03 03:41:28,774 [INFO] Chunked sweep: checkpointed resume_from=2026-01-20 00:00:00 (exit 2)
+2026-08-03 03:41:29,249 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T03:41:29Z ===
+2026-08-03 03:41:29,249 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 03:41:29,249 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 03:41:29,249 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 03:41:29,249 [INFO] Chunked resume from 2026-01-20 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 03:41:29,249 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 04:00:10,721 [INFO] Processed window ending 2026-01-21
+2026-08-03 04:00:10,924 [INFO] Chunked sweep: checkpointed resume_from=2026-01-21 00:00:00 (exit 2)
+2026-08-03 04:00:11,390 [INFO] === Series I step=fold_06_precision_gate started 2026-08-03T04:00:11Z ===
+2026-08-03 04:00:11,390 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-03 04:00:11,390 [INFO] DB: /workspace/alter_ego_calibrate_series_i_fold_06_precision_gate.db
+2026-08-03 04:00:11,390 [INFO] Isolated config: /workspace/config/scoring_config.series_i_fold_06_precision_gate.yaml (base=/workspace/config/scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-03 04:00:11,390 [INFO] Chunked resume from 2026-01-21 00:00:00 (checkpoint /workspace/scratch/series_i_fold_06_precision_gate_checkpoint.json)
+2026-08-03 04:00:11,390 [INFO] Reusing existing events/labels at /workspace/scratch/series_i_events.jsonl
+2026-08-03 04:20:16,665 [INFO] Processed window ending 2026-01-22
+2026-08-03 04:20:37,782 [INFO] DONE step=fold_06_precision_gate elapsed=1226.4s F1=0.013481462988390962 R=0.46153846153846156 FP=7840 S1=1.0 S4=1.0
