@@ -1,5 +1,13 @@
 # Active Context
 
-**Updated:** 2026-08-03T09:55Z
+**Updated:** 2026-08-03T12:40Z
 
-Phase B: 4/5 folds done. Only **precision_gate** accepted. fold_07 REJECT (staged inert). Final fold_03 drift volume running on [bc-46045319](bc-46045319-bf9f-499a-b5c4-3b567259e8aa) w=5.0 provisional. All archival solos complete. calibrated: false.
+## Series I Phase B — COMPLETE
+
+All 5 additive folds done. **1 accept / 4 reject.**
+
+**Branch YAML promotion:** `precision_gate.enabled=true` only (FP 7995→7840, F1 +0.00026, S1/S4 intact).
+
+**calibrated:** false. **merge to main:** pending operator review.
+
+Workflow: `.workflow/2026-08-02-series-i-serial-calibration/`

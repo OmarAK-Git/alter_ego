@@ -1,10 +1,10 @@
 {
   "slug": "2026-08-02-series-i-serial-calibration",
   "branch": "series-i-serial-calibration",
-  "status": "in_progress",
+  "status": "fold_chain_complete",
   "started_at": "2026-08-02T04:23:00Z",
-  "phase": "B_additive_folds",
-  "current_step": "fold_03_drift_volume",
+  "phase": "B_additive_folds_complete",
+  "current_step": "fold_chain_done",
   "parallel_weight_mode": false,
   "local_max_writers": 2,
   "accepted_flags": {
@@ -404,18 +404,41 @@
       "role": "additive_fold",
       "fold_index": 5,
       "cloud_agent_id": "bc-46045319-bf9f-499a-b5c4-3b567259e8aa",
+      "governance": "reject",
+      "governance_reason": "worse vs fold_06 accepted (F1 0.0135->0.0133, FP 7840->7920)",
+      "git_commit": "40af8b1",
+      "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_fold_03_drift_volume_metrics.json",
       "overrides": [
         "precision_gate.enabled=true",
         "drift_weights.total_volume_delta.enabled=true",
         "drift_weights.total_volume_delta.weight=5.0"
       ],
       "launched_at": "2026-08-03T09:55:00Z",
-      "note": "final fold; provisional w=5.0",
       "completed_at": "2026-08-03T12:37:28Z"
     }
   },
   "calibrated": false,
-  "merge_recommendation": null,
+  "merge_recommendation": {
+    "action": "operator_review_only",
+    "merge_to_main": false,
+    "branch_yaml_delta": "precision_gate.enabled=true only",
+    "accepted_flags": ["precision_gate.enabled"],
+    "rejected_flags": [
+      "features.total_volume_delta",
+      "cohort_gating_constants.fleet_drift_enabled",
+      "staged_drift.enabled",
+      "drift_weights.total_volume_delta",
+      "drift_weights.cadence",
+      "drift_weights.geo_velocity"
+    ],
+    "headline_vs_baseline": {
+      "f1": "0.01322556943423953 -> 0.013481462988390962",
+      "recall": "0.462 (unchanged)",
+      "fp": "7995 -> 7840",
+      "s1_s4": "1.0 / 1.0 (floors intact)"
+    },
+    "note": "NOT CALIBRATED. Single flag promotion from 5-fold chain. Do not merge without operator governance review."
+  },
   "resume_capability": {
     "batch_eval_runner": "yes \u2014 resume_from + windows_per_invocation + clear_first=False",
     "run_series_i_sweep": "yes \u2014 --chunked added 2026-08-02 (per-step checkpoint in scratch/)",

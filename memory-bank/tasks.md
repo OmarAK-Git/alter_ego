@@ -1,13 +1,16 @@
 # Tasks
 
-**Updated:** 2026-08-03T04:25Z
+**Updated:** 2026-08-03T12:40Z
 
-| Step | Agent | Governance | Status |
-|---|---|---|---|
-| fold_02 | bc-29a79b5f | REJECT | done |
-| fold_06 | bc-40622c65 | ACCEPT | done |
-| fold_05 | bc-9da7fc31 | pending | running |
-| fold_07 | — | — | queued |
-| fold_03 | — | — | deferred |
+## Series I serial calibration — FOLD CHAIN COMPLETE
 
-**Accepted:** precision_gate.enabled=true
+| Phase | Status |
+|---|---|
+| Phase A weight search | archival complete |
+| Phase B additive folds | **COMPLETE** (5/5) |
+
+**Accepted:** `precision_gate.enabled=true`  
+**Rejected:** feat_volume, fleet, staged, volume_drift, cadence, geo  
+**calibrated:** false
+
+**Operator next:** review merge recommendation in `state.json` → `merge_recommendation`
