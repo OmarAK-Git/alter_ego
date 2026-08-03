@@ -35,6 +35,36 @@ Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_w
 2026-08-02 09:11:11,742 [INFO] Reusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
 2026-08-02 09:11:12,020 [INFO] Clearing database tables...
 2026-08-02 09:11:43,325 [INFO] Processed window ending 2026-01-02
-ing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:31:39,638 [INFO] Processed window ending 2026-01-03
+es_i_events.jsonl
 2026-08-02 09:11:12,020 [INFO] Clearing database tables...
 2026-08-02 09:11:43,325 [INFO] Processed window ending 2026-01-02
+2026-08-02 09:31:39,638 [INFO] Processed window ending 2026-01-03
+
+=== parallel launch 2026-08-02T13:34:20Z ===
+Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_ws_feat_volume.db
+2026-08-02 09:34:21,579 [INFO] === Series I step=ws_feat_volume started 2026-08-02T13:34:21Z ===
+2026-08-02 09:34:21,579 [INFO] Overrides: [('features.total_volume_delta.enabled', True)]
+2026-08-02 09:34:21,579 [INFO] DB: C:\Users\oalan\alter_ego\alter_ego_calibrate_series_i_ws_feat_volume.db
+2026-08-02 09:34:21,580 [INFO] Isolated config: C:\Users\oalan\alter_ego\config\scoring_config.series_i_ws_feat_volume.yaml (base=C:\Users\oalan\alter_ego\config\scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 09:34:21,592 [INFO] Reusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:34:21,899 [INFO] Clearing database tables...
+2026-08-02 09:35:01,472 [INFO] Processed window ending 2026-01-02
+2026-08-02 09:53:01,107 [INFO] Processed window ending 2026-01-03
+2026-08-02 10:14:58,619 [INFO] Processed window ending 2026-01-04
+2026-08-02 10:43:21,085 [INFO] Processed window ending 2026-01-05
+2026-08-02 11:15:06,746 [INFO] Processed window ending 2026-01-06
+2026-08-02 11:54:54,167 [INFO] Processed window ending 2026-01-07
+2026-08-02 12:44:40,833 [INFO] Processed window ending 2026-01-08
+2026-08-02 13:38:41,451 [INFO] Processed window ending 2026-01-09
+2026-08-02 14:43:30,078 [INFO] Processed window ending 2026-01-10
+2026-08-02 15:59:33,789 [INFO] Processed window ending 2026-01-11
+2026-08-02 16:54:46,696 [INFO] Processed window ending 2026-01-12
+2026-08-02 17:45:02,512 [INFO] Processed window ending 2026-01-13
+2026-08-02 18:35:21,074 [INFO] Processed window ending 2026-01-14
+2026-08-02 19:23:24,840 [INFO] Processed window ending 2026-01-15
+2026-08-02 20:14:46,813 [INFO] Processed window ending 2026-01-16
+2026-01-13
+2026-08-02 18:35:21,074 [INFO] Processed window ending 2026-01-14
+2026-08-02 19:23:24,840 [INFO] Processed window ending 2026-01-15
+2026-08-02 20:14:46,813 [INFO] Processed window ending 2026-01-16

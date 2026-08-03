@@ -35,6 +35,30 @@ Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_w
 2026-08-02 09:11:11,726 [INFO] Reusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
 2026-08-02 09:11:12,007 [INFO] Clearing database tables...
 2026-08-02 09:11:43,395 [INFO] Processed window ending 2026-01-02
-isting events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:31:39,942 [INFO] Processed window ending 2026-01-03
+vents.jsonl
 2026-08-02 09:11:12,007 [INFO] Clearing database tables...
 2026-08-02 09:11:43,395 [INFO] Processed window ending 2026-01-02
+2026-08-02 09:31:39,942 [INFO] Processed window ending 2026-01-03
+
+=== parallel launch 2026-08-02T13:34:20Z ===
+Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_ws_geo_5.db
+2026-08-02 09:34:21,556 [INFO] === Series I step=ws_geo_5 started 2026-08-02T13:34:21Z ===
+2026-08-02 09:34:21,556 [INFO] Overrides: [('drift_weights.geo_velocity.enabled', True), ('drift_weights.geo_velocity.weight', 5.0)]
+2026-08-02 09:34:21,556 [INFO] DB: C:\Users\oalan\alter_ego\alter_ego_calibrate_series_i_ws_geo_5.db
+2026-08-02 09:34:21,557 [INFO] Isolated config: C:\Users\oalan\alter_ego\config\scoring_config.series_i_ws_geo_5.yaml (base=C:\Users\oalan\alter_ego\config\scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 09:34:21,571 [INFO] Reusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:34:21,872 [INFO] Clearing database tables...
+2026-08-02 09:35:01,400 [INFO] Processed window ending 2026-01-02
+2026-08-02 09:53:00,070 [INFO] Processed window ending 2026-01-03
+2026-08-02 10:14:59,374 [INFO] Processed window ending 2026-01-04
+2026-08-02 10:43:20,133 [INFO] Processed window ending 2026-01-05
+2026-08-02 11:15:08,717 [INFO] Processed window ending 2026-01-06
+2026-08-02 11:55:00,225 [INFO] Processed window ending 2026-01-07
+2026-08-02 12:44:51,940 [INFO] Processed window ending 2026-01-08
+2026-08-02 13:38:56,092 [INFO] Processed window ending 2026-01-09
+2026-08-02 14:43:54,419 [INFO] Processed window ending 2026-01-10
+1-07
+2026-08-02 12:44:51,940 [INFO] Processed window ending 2026-01-08
+2026-08-02 13:38:56,092 [INFO] Processed window ending 2026-01-09
+2026-08-02 14:43:54,419 [INFO] Processed window ending 2026-01-10

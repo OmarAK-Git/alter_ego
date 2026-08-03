@@ -8,15 +8,50 @@
   "parallel_weight_mode": false,
   "local_max_writers": 2,
   "accepted_flags": {},
-  "rejected_flags": {},
+  "rejected_flags": {
+    "features.total_volume_delta": "REJECT features.total_volume_delta: inert vs prior accepted baseline"
+  },
   "weight_winners": {},
+  "archival_weight_probe_summary": {
+    "dimension": "drift_weights.total_volume_delta",
+    "completed_at": "2026-08-03T01:00:00Z",
+    "baseline_fp": 7995,
+    "baseline_f1": 0.01322556943423953,
+    "grid": [
+      {
+        "weight": 1.0,
+        "f1": 0.013431165277950503,
+        "fp": 7870,
+        "recall": 0.46153846153846156,
+        "metrics": "results/series_i_ws_volume_1_metrics.json"
+      },
+      {
+        "weight": 5.0,
+        "f1": 0.013348164627363737,
+        "fp": 7920,
+        "recall": 0.46153846153846156,
+        "metrics": "results/series_i_ws_volume_5_metrics.json"
+      },
+      {
+        "weight": 15.0,
+        "f1": 0.013201320132013201,
+        "fp": 8010,
+        "recall": 0.46153846153846156,
+        "metrics": "results/series_i_ws_volume_15_metrics.json"
+      }
+    ],
+    "best_f1_weight": 1.0,
+    "best_fp_weight": 1.0,
+    "fold_03_provisional_weight": 5.0,
+    "governance": "archival only \u2014 fold_03 still provisional w=5.0 pending operator review after flag folds"
+  },
   "solo_flag_candidates": {},
   "solo_flag_rejects": {},
   "weight_search_policy": {
     "new_work": "deferred_until_flag_folds_complete",
     "in_flight": "preserve_finish_do_not_kill",
     "role": "archival_evidence_not_gate",
-    "note": "Cloud ws_volume_1/5/15, ws_fleet, ws_staged_drift and local ws_feat_volume/ws_precision_gate continue running. DBs/logs/metrics retained for post-fold review. Do NOT cancel these lanes."
+    "note": "All cloud volume weight probes complete (w=1/5/15). Archival evidence for post-fold review; fold_03 still provisional w=5.0."
   },
   "fold_chain": {
     "started_at": "2026-08-02T23:00:00Z",
@@ -42,32 +77,32 @@
       "aborted_at": "2026-08-02T20:00:00Z"
     },
     "ws_cadence_2": {
-      "reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires two-part code fix (not implemented): (1) per-entity delta — CoV(recent window)−CoV(baseline profile) inside prev_profiles loop, not absolute regularity computed once outside it; (2) timescale-appropriate divisor — max(0, 1−cv/0.3) tuned for scorer.compute_periodicity 60-minute lookback but applied unchanged to 60–1440-minute build windows in compute_build_window_cadence_cov; re-derive or parameterize DEBT-012 floor for build-window timescales.",
+      "reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA\u22481, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires two-part code fix (not implemented): (1) per-entity delta \u2014 CoV(recent window)\u2212CoV(baseline profile) inside prev_profiles loop, not absolute regularity computed once outside it; (2) timescale-appropriate divisor \u2014 max(0, 1\u2212cv/0.3) tuned for scorer.compute_periodicity 60-minute lookback but applied unchanged to 60\u20131440-minute build windows in compute_build_window_cadence_cov; re-derive or parameterize DEBT-012 floor for build-window timescales.",
       "aborted_at": "2026-08-02T22:30:00Z",
       "evidence": {
         "db": "alter_ego_calibrate_series_i_ws_cadence_2.db",
         "profiles": 1365,
         "entities": 65,
-        "cadence_cov_sa_median": 1.000,
+        "cadence_cov_sa_median": 1.0,
         "cadence_cov_sa_frac_saturated": 0.95,
         "cadence_cov_humans": 0.0,
-        "standalone_precision": 0.050,
+        "standalone_precision": 0.05,
         "standalone_recall": 0.143,
         "base_rate": 0.108
       }
     },
     "ws_cadence_5": {
-      "reason": "skipped — same cohort-constant inertness as ws_cadence_2; sweep uninformative; see DEBT-078",
+      "reason": "skipped \u2014 same cohort-constant inertness as ws_cadence_2; sweep uninformative; see DEBT-078",
       "aborted_at": "2026-08-02T22:30:00Z"
     },
     "ws_cadence_10": {
-      "reason": "skipped — same cohort-constant inertness as ws_cadence_2; sweep uninformative; see DEBT-078",
+      "reason": "skipped \u2014 same cohort-constant inertness as ws_cadence_2; sweep uninformative; see DEBT-078",
       "aborted_at": "2026-08-02T22:30:00Z"
     }
   },
   "cadence_kill_decision": {
     "killed": true,
-    "reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA≈1, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires two-part code fix (not implemented): per-entity CoV delta + timescale-appropriate divisor (see DEBT-078)",
+    "reason": "dimension cohort-constant as implemented; absolute CoV saturates per role (SA\u22481, humans=0); cohort_median norm cancels contribution for any weight; sweep uninformative; requires two-part code fix (not implemented): per-entity CoV delta + timescale-appropriate divisor (see DEBT-078)",
     "queried_at": "2026-08-02T22:30:00Z",
     "sources": [
       "alter_ego_calibrate_series_i_ws_cadence_2.db"
@@ -88,9 +123,10 @@
     "s4": 1.0,
     "s5": 0.6
   },
-  "sweeps_completed": [],
+  "sweeps_completed": [
+    "fold_02_feature_volume"
+  ],
   "sweeps_queued": [
-    "fold_02_feature_volume",
     "fold_06_precision_gate",
     "fold_05_fleet",
     "fold_07_staged_drift",
@@ -118,42 +154,75 @@
     "ws_cadence_5": {
       "host": null,
       "status": "skipped",
-      "abort_reason": "skipped — same cohort-constant inertness as ws_cadence_2; see DEBT-078"
+      "abort_reason": "skipped \u2014 same cohort-constant inertness as ws_cadence_2; see DEBT-078"
     },
     "ws_cadence_10": {
       "host": null,
       "status": "skipped",
-      "abort_reason": "skipped — same cohort-constant inertness as ws_cadence_2; see DEBT-078"
+      "abort_reason": "skipped \u2014 same cohort-constant inertness as ws_cadence_2; see DEBT-078"
     },
     "ws_volume_1": {
       "host": "cloud",
-      "status": "running",
+      "status": "completed",
       "role": "archival_weight_probe",
       "cloud_agent_id": "bc-6d94a41a-4ffe-46f0-9e8f-870b10ca4e04",
       "launched_at": "2026-08-02T20:54:00Z",
-      "preserve": true,
-      "checkpoint": "scratch/series_i_ws_volume_1_checkpoint.json",
-      "resume_from": "2026-01-11T00:00:00"
+      "completed_at": "2026-08-03T01:00:00Z",
+      "git_commit": "c80c3fa",
+      "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_ws_volume_1_metrics.json",
+      "headline": {
+        "f1": 0.013431165277950503,
+        "recall": 0.46153846153846156,
+        "fp": 7870,
+        "precision": 0.006814740030287734,
+        "tp": 54,
+        "fn": 63
+      },
+      "run_mode": "full_21_day_cloud",
+      "checkpoint_used": false,
+      "calibrated": false
     },
     "ws_volume_5": {
       "host": "cloud",
-      "status": "running",
+      "status": "completed",
       "role": "archival_weight_probe",
       "cloud_agent_id": "bc-78440d47-1af6-4161-91cf-e6f8d4ab0122",
       "launched_at": "2026-08-02T20:54:00Z",
-      "preserve": true,
-      "checkpoint": "scratch/series_i_ws_volume_5_checkpoint.json",
-      "resume_from": "2026-01-11T00:00:00"
+      "completed_at": "2026-08-03T00:30:00Z",
+      "git_commit": "22fd0a5",
+      "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_ws_volume_5_metrics.json",
+      "headline": {
+        "f1": 0.013348164627363737,
+        "recall": 0.46153846153846156,
+        "fp": 7920,
+        "precision": 0.006772009029345372,
+        "tp": 54,
+        "fn": 63
+      },
+      "run_mode": "full_21_day_cloud",
+      "checkpoint_used": false,
+      "calibrated": false
     },
     "ws_volume_15": {
       "host": "cloud",
-      "status": "running",
+      "status": "completed",
       "role": "archival_weight_probe",
       "cloud_agent_id": "bc-32e5935d-b0eb-4aa1-a3f6-cc5f838361e5",
       "launched_at": "2026-08-02T20:54:00Z",
-      "preserve": true,
-      "checkpoint": "scratch/series_i_ws_volume_15_checkpoint.json",
-      "resume_from": "2026-01-11T00:00:00"
+      "completed_at": "2026-08-02T22:24:58Z",
+      "git_commit": "8b317f5",
+      "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_ws_volume_15_metrics.json",
+      "headline": {
+        "f1": 0.013201320132013201,
+        "recall": 0.46153846153846156,
+        "fp": 8010,
+        "precision": 0.006696428571428571,
+        "tp": 54,
+        "fn": 63
+      },
+      "run_mode": "full_21_day_cloud",
+      "checkpoint_used": false,
+      "calibrated": false
     },
     "ws_geo_5": {
       "host": null,
@@ -178,43 +247,66 @@
     },
     "ws_fleet": {
       "host": "cloud",
-      "status": "running",
+      "status": "completed",
       "role": "archival_solo_screen",
       "cloud_agent_id": "bc-edff5f1d-62e3-467b-9d87-9c09db060039",
       "launched_at": "2026-08-02T20:54:00Z",
-      "preserve": true,
-      "checkpoint": "scratch/series_i_ws_fleet_checkpoint.json",
-      "resume_from": "2026-01-11T00:00:00"
+      "completed_at": "2026-08-03T00:00:00Z",
+      "git_commit": "11a7314",
+      "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_ws_fleet_metrics.json",
+      "headline": {
+        "f1": 0.013481462988390962,
+        "recall": 0.46153846153846156,
+        "fp": 7840,
+        "precision": 0.006840638459589561,
+        "tp": 54,
+        "fn": 63
+      },
+      "run_mode": "full_21_day_cloud",
+      "checkpoint_used": false,
+      "calibrated": false
     },
     "ws_staged_drift": {
       "host": "cloud",
-      "status": "running",
+      "status": "completed",
       "role": "archival_solo_screen",
       "cloud_agent_id": "bc-bbc337d7-bcac-45aa-a3a3-c331df1ce76b",
       "launched_at": "2026-08-02T20:54:00Z",
-      "preserve": true,
-      "checkpoint": "scratch/series_i_ws_staged_drift_checkpoint.json",
-      "resume_from": "2026-01-11T00:00:00"
+      "completed_at": "2026-08-02T23:30:00Z",
+      "git_commit": "3474a88",
+      "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_ws_staged_drift_metrics.json",
+      "headline": {
+        "f1": 0.013481462988390962,
+        "recall": 0.46153846153846156,
+        "fp": 7840,
+        "precision": 0.006840638459589561,
+        "tp": 54,
+        "fn": 63
+      },
+      "run_mode": "full_21_day_cloud",
+      "checkpoint_used": false,
+      "calibrated": false
     },
     "fold_02_feature_volume": {
       "host": "cloud",
-      "status": "running",
+      "status": "done",
       "role": "additive_fold",
       "fold_index": 1,
       "cloud_agent_id": "bc-29a79b5f-14e2-47a2-ba14-629b42724baa",
       "overrides": [
         "features.total_volume_delta.enabled=true"
       ],
-      "launched_at": "2026-08-02T23:00:00Z"
+      "launched_at": "2026-08-02T23:00:00Z",
+      "completed_at": "2026-08-03T00:41:27Z"
     }
   },
   "calibrated": false,
   "merge_recommendation": null,
   "resume_capability": {
-    "batch_eval_runner": "yes — resume_from + windows_per_invocation + clear_first=False",
-    "run_series_i_sweep": "yes — --chunked added 2026-08-02 (per-step checkpoint in scratch/)",
-    "run_series_i_campaign": "no — serial orchestrator does not chunk/resume",
-    "series_i_fold_chain": "yes — scratch/series_i_fold_chain.py --watch"
+    "batch_eval_runner": "yes \u2014 resume_from + windows_per_invocation + clear_first=False",
+    "run_series_i_sweep": "yes \u2014 --chunked added 2026-08-02 (per-step checkpoint in scratch/)",
+    "run_series_i_campaign": "no \u2014 serial orchestrator does not chunk/resume",
+    "series_i_fold_chain": "yes \u2014 scratch/series_i_fold_chain.py --watch"
   },
   "av_exclusions": {
     "status": "pending_operator_admin",
@@ -227,11 +319,16 @@
   },
   "notes": [
     "2026-08-02 T2: stopped 8-9 local parallel writers; 3 local max (cadence + precision_gate + feat_volume).",
-    "Cloud weight/solo lanes dispatched 2026-08-02T20:54Z — PRESERVE in-flight (preserve:true). Archival evidence only; NOT gates for folds.",
-    "Cadence lanes aborted 2026-08-02T22:30Z — DEBT-078. PID 77784 killed. Geo skipped.",
+    "Cloud weight/solo lanes dispatched 2026-08-02T20:54Z \u2014 PRESERVE in-flight (preserve:true). Archival evidence only; NOT gates for folds.",
+    "Cadence lanes aborted 2026-08-02T22:30Z \u2014 DEBT-078. PID 77784 killed. Geo skipped.",
     "2026-08-02T23:00Z: Phase B additive folds UNBLOCKED. Folds are main campaign. No new weight-search launches; in-flight ws_* lanes continue to completion.",
-    "Fold order: feat_volume → precision_gate → fleet → staged → volume_drift (provisional w=5.0 last). See CLOUD-I-FOLDS.md.",
+    "ws_volume_15 completed on cloud (bc-32e5935d): full 21-day, w=15.0; F1=0.0132 R=0.462 FP=8010; metrics at results/series_i_ws_volume_15_metrics.json (8b317f5).",
+    "ws_volume_5 completed on cloud (bc-78440d47): full 21-day, w=5.0; F1=0.0133 R=0.462 FP=7920; metrics at results/series_i_ws_volume_5_metrics.json (22fd0a5).",
+    "ws_volume_1 completed on cloud (bc-6d94a41a): full 21-day, w=1.0; F1=0.0134 R=0.462 FP=7870; metrics at results/series_i_ws_volume_1_metrics.json (c80c3fa). All volume weight probes done \u2014 best F1/FP at w=1.0 (archival).",
+    "ws_staged_drift completed on cloud (bc-bbc337d7): full 21-day, staged_drift.enabled=true; F1=0.0135 R=0.462 FP=7840; metrics at results/series_i_ws_staged_drift_metrics.json (3474a88).",
+    "ws_fleet completed on cloud (bc-edff5f1d): full 21-day, fleet_drift_enabled=true; F1=0.0135 R=0.462 FP=7840; metrics at results/series_i_ws_fleet_metrics.json (11a7314).",
+    "Fold order: feat_volume \u2192 precision_gate \u2192 fleet \u2192 staged \u2192 volume_drift (provisional w=5.0 last). See CLOUD-I-FOLDS.md.",
     "scoring_config.yaml: cadence/geo disabled. calibrated: false."
   ],
-  "updated_at": "2026-08-02T23:00:00Z"
+  "updated_at": "2026-08-03T00:41:27Z"
 }

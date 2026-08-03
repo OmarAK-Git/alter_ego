@@ -21,6 +21,36 @@ Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_w
 2026-08-02 09:11:11,756 [INFO] Reusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
 2026-08-02 09:11:12,037 [INFO] Clearing database tables...
 2026-08-02 09:11:43,580 [INFO] Processed window ending 2026-01-02
-eusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:31:38,634 [INFO] Processed window ending 2026-01-03
+eries_i_events.jsonl
 2026-08-02 09:11:12,037 [INFO] Clearing database tables...
 2026-08-02 09:11:43,580 [INFO] Processed window ending 2026-01-02
+2026-08-02 09:31:38,634 [INFO] Processed window ending 2026-01-03
+
+=== parallel launch 2026-08-02T13:34:20Z ===
+Connecting to: sqlite:///C:/Users/oalan/alter_ego/alter_ego_calibrate_series_i_ws_precision_gate.db
+2026-08-02 09:34:21,624 [INFO] === Series I step=ws_precision_gate started 2026-08-02T13:34:21Z ===
+2026-08-02 09:34:21,624 [INFO] Overrides: [('precision_gate.enabled', True)]
+2026-08-02 09:34:21,624 [INFO] DB: C:\Users\oalan\alter_ego\alter_ego_calibrate_series_i_ws_precision_gate.db
+2026-08-02 09:34:21,624 [INFO] Isolated config: C:\Users\oalan\alter_ego\config\scoring_config.series_i_ws_precision_gate.yaml (base=C:\Users\oalan\alter_ego\config\scoring_config.yaml.series_i_ws_cadence_2_backup)
+2026-08-02 09:34:21,641 [INFO] Reusing existing events/labels at C:\Users\oalan\alter_ego\scratch\series_i_events.jsonl
+2026-08-02 09:34:21,948 [INFO] Clearing database tables...
+2026-08-02 09:35:01,735 [INFO] Processed window ending 2026-01-02
+2026-08-02 09:53:03,504 [INFO] Processed window ending 2026-01-03
+2026-08-02 10:15:04,447 [INFO] Processed window ending 2026-01-04
+2026-08-02 10:43:26,332 [INFO] Processed window ending 2026-01-05
+2026-08-02 11:15:16,897 [INFO] Processed window ending 2026-01-06
+2026-08-02 11:55:09,373 [INFO] Processed window ending 2026-01-07
+2026-08-02 12:45:00,219 [INFO] Processed window ending 2026-01-08
+2026-08-02 13:39:06,780 [INFO] Processed window ending 2026-01-09
+2026-08-02 14:44:02,824 [INFO] Processed window ending 2026-01-10
+2026-08-02 16:00:07,353 [INFO] Processed window ending 2026-01-11
+2026-08-02 16:55:21,100 [INFO] Processed window ending 2026-01-12
+2026-08-02 17:45:51,786 [INFO] Processed window ending 2026-01-13
+2026-08-02 18:36:10,277 [INFO] Processed window ending 2026-01-14
+2026-08-02 19:24:23,237 [INFO] Processed window ending 2026-01-15
+2026-08-02 20:15:59,033 [INFO] Processed window ending 2026-01-16
+ng 2026-01-13
+2026-08-02 18:36:10,277 [INFO] Processed window ending 2026-01-14
+2026-08-02 19:24:23,237 [INFO] Processed window ending 2026-01-15
+2026-08-02 20:15:59,033 [INFO] Processed window ending 2026-01-16

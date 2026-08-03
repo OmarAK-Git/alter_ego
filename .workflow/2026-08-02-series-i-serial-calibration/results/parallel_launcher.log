@@ -1,9 +1,9 @@
-LAUNCHED ws_volume_1 pid=59924
-LAUNCHED ws_volume_5 pid=73336
-LAUNCHED ws_volume_15 pid=93860
-LAUNCHED ws_geo_5 pid=55172
-LAUNCHED ws_feat_volume pid=22968
-LAUNCHED ws_fleet pid=44840
-LAUNCHED ws_precision_gate pid=67800
-LAUNCHED ws_staged_drift pid=80516
+LAUNCHED ws_volume_1 pid=82764
+LAUNCHED ws_volume_5 pid=53252
+LAUNCHED ws_volume_15 pid=56152
+LAUNCHED ws_geo_5 pid=59664
+LAUNCHED ws_feat_volume pid=64496
+LAUNCHED ws_fleet pid=92740
+LAUNCHED ws_precision_gate pid=89136
+LAUNCHED ws_staged_drift pid=73752
 Waiting on 8 probes…
