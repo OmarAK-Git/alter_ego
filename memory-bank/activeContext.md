@@ -1,5 +1,5 @@
 # Active Context
 
-**Updated:** 2026-08-03T07:10Z
+**Updated:** 2026-08-03T09:55Z
 
-Phase B: fold_05 REJECT (fleet inert). fold_07 staged_drift running on [bc-e6bb797e](bc-e6bb797e-9318-4267-9b3e-476f24ea1f0b). Accepted: precision_gate only. calibrated: false.
+Phase B: 4/5 folds done. Only **precision_gate** accepted. fold_07 REJECT (staged inert). Final fold_03 drift volume running on [bc-46045319](bc-46045319-bf9f-499a-b5c4-3b567259e8aa) w=5.0 provisional. All archival solos complete. calibrated: false.

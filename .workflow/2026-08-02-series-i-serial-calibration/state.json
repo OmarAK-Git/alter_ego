@@ -4,7 +4,7 @@
   "status": "in_progress",
   "started_at": "2026-08-02T04:23:00Z",
   "phase": "B_additive_folds",
-  "current_step": "fold_07_staged_drift",
+  "current_step": "fold_03_drift_volume",
   "parallel_weight_mode": false,
   "local_max_writers": 2,
   "accepted_flags": {
@@ -248,19 +248,25 @@
     },
     "ws_feat_volume": {
       "host": "local",
-      "status": "running",
+      "status": "completed",
       "role": "archival_solo_screen",
       "preserve": true,
       "pid": 64496,
-      "progress": "~day 13/21"
+      "completed_at": "2026-08-03T09:50:00Z",
+      "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_ws_feat_volume_metrics.json",
+      "headline": {"f1": 0.01322556943423953, "recall": 0.46153846153846156, "fp": 7995, "s1": 1.0, "s4": 1.0},
+      "note": "inert vs baseline — confirms fold_02 reject"
     },
     "ws_precision_gate": {
       "host": "local",
-      "status": "running",
+      "status": "completed",
       "role": "archival_solo_screen",
       "preserve": true,
       "pid": 89136,
-      "progress": "~day 13/21"
+      "completed_at": "2026-08-03T09:50:00Z",
+      "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_ws_precision_gate_metrics.json",
+      "headline": {"f1": 0.013481462988390962, "recall": 0.46153846153846156, "fp": 7840, "s1": 1.0, "s4": 1.0},
+      "note": "matches fold_06 accept — archival confirms precision_gate"
     },
     "ws_fleet": {
       "host": "cloud",
@@ -359,12 +365,31 @@
       "role": "additive_fold",
       "fold_index": 4,
       "cloud_agent_id": "bc-e6bb797e-9318-4267-9b3e-476f24ea1f0b",
+      "governance": "reject",
+      "governance_reason": "inert vs fold_06 accepted baseline",
+      "git_commit": "d32b1f3",
+      "pr": "https://github.com/OmarAK-Git/alter_ego/pull/4",
+      "metrics": ".workflow/2026-08-02-series-i-serial-calibration/results/series_i_fold_07_staged_drift_metrics.json",
       "overrides": [
         "precision_gate.enabled=true",
         "staged_drift.enabled=true"
       ],
       "launched_at": "2026-08-03T07:10:00Z",
       "completed_at": "2026-08-03T09:50:37Z"
+    },
+    "fold_03_drift_volume": {
+      "host": "cloud",
+      "status": "running",
+      "role": "additive_fold",
+      "fold_index": 5,
+      "cloud_agent_id": "bc-46045319-bf9f-499a-b5c4-3b567259e8aa",
+      "overrides": [
+        "precision_gate.enabled=true",
+        "drift_weights.total_volume_delta.enabled=true",
+        "drift_weights.total_volume_delta.weight=5.0"
+      ],
+      "launched_at": "2026-08-03T09:55:00Z",
+      "note": "final fold; provisional w=5.0"
     }
   },
   "calibrated": false,
