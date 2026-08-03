@@ -1,13 +1,13 @@
 # Active Context
 
-**Updated:** 2026-08-03T12:40Z
+**Updated:** 2026-08-03T16:35Z
 
-## Series I Phase B — COMPLETE
+## Series I — COMPLETE (merged to main)
 
 All 5 additive folds done. **1 accept / 4 reject.**
 
-**Branch YAML promotion:** `precision_gate.enabled=true` only (FP 7995→7840, F1 +0.00026, S1/S4 intact).
+**Production YAML:** `precision_gate.enabled=true` only (cadence, geo, fleet, staged, volume remain rejected/disabled).
 
-**calibrated:** false. **merge to main:** pending operator review.
+**calibrated:** false.
 
 Workflow: `.workflow/2026-08-02-series-i-serial-calibration/`

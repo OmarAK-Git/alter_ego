@@ -352,7 +352,7 @@ These are **open questions**, not solved or recommended changes. Validate with s
 
 **Source:** DRIFT-R5, adapted from a multi-plane convergence concept (ADS-06) — method only, no ATT&CK technique graph implied or proposed.
 
-**Status (2026-08-02):** Stage A implemented (`signal_family_agreement_count`, `precision_gate.enabled: false`). Stage B explicitly not built. Series H governance complete (`1cc2e3e`, `docs/scoring-config-governance-series-h.md`) — benign FP agreement mean=0.841 vs TP=1.0.
+**Status (2026-08-02):** Stage A implemented (`signal_family_agreement_count`). Stage B explicitly not built. Series H governance complete (`1cc2e3e`, `docs/scoring-config-governance-series-h.md`) — benign FP agreement mean=0.841 vs TP=1.0. **Series I (2026-08-03):** `precision_gate.enabled: true` promoted (fold_06 accept; **not CALIBRATED**). Standing note: unexpected recall drop without knob changes — investigate Stage A containment gating (≥2 families at score≥85) before thr=45 anomaly path; see `.workflow/2026-08-02-series-i-serial-calibration/results/scoring-config-governance-series-i-fold_06_precision_gate.md`.
 
 ### H15 — Staged multi-feature drift ordering
 
