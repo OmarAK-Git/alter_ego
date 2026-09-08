@@ -127,7 +127,7 @@ Every scenario × arm emits one scorecard row. Schema is JSON, `additionalProper
 | `scenario_id` | string | One of the 15 IDs in §5. |
 | `realm` | `capability` \| `governance` \| `design` \| `threat` \| `usability` | Realm bucket. |
 | `arm` | `old_build` \| `new_build` | Which wiring ran. |
-| `status` | `pass` \| `fail` \| `pending` \| `error` | `pending` is legal **only** for capability **quality** `new_build` (`cap.attributed_s3`, `cap.drift_vs_point_axes`) and `thr.fp_block_sanctuary` `new_build` in Sprint 1. |
+| `status` | `pass` \| `fail` \| `pending` \| `error` | `pending` is legal **only** for capability **quality** `new_build` (`cap.attributed_s2_s3_s5`, `cap.drift_vs_point_axes`) and `thr.fp_block_sanctuary` `new_build` in Sprint 1. |
 | `failure_class` | `none` \| `harness` \| `scorer` \| `theater_detector` | Required when `status` is `fail` or `error`. `none` when `pass` or `pending`. |
 | `expected` | object | Frozen scenario expectation (pin / join / counts). |
 | `observed` | object | What the pipeline actually produced. |
@@ -197,13 +197,13 @@ Existing CI may remain. It is not the gate for this program unless it actually r
 
 ## 5. Initial E2E scenario set
 
-Fifteen IDs, three per realm. Short descriptions are the pin. Do not add a sixteenth in Sprint 1. IDs are locked from the approved §3 / PR #6 gap map.
+Fifteen IDs, three per realm. Short descriptions are the pin. Do not add a sixteenth in Sprint 1. IDs are locked from approved Design §3.
 
 ### Capability
 
 | ID | Pin |
 |---|---|
-| `cap.attributed_s3` | Seed-42 `scenario_3_subtle`: attributed TP via B3a / `drift_necessary` (Design 1 §1.2: `score >= anomaly_threshold` ∧ `score - contrib_drift < anomaly_threshold`) and recall. Reject vacuous R=1.0. Sprint 1 `new_build` is `pending`. This row exists so Sprint 2 has a paired baseline, not so Sprint 1 can claim usefulness. |
+| `cap.attributed_s2_s3_s5` | Seed-42 `scenario_2_slow_roll`, `scenario_3_subtle`, and `scenario_5_patient_cycle`: one row records attributed TP via B3a / `drift_necessary` (Design 1 §1.2: `score >= anomaly_threshold` ∧ `score - contrib_drift < anomaly_threshold`) and recall for **all three** scenarios (each with `n`). Reject vacuous R=1.0. Sprint 1 `old_build` is the three-scenario attribution baseline; `new_build` is `pending`. This row exists so Sprint 2 has a paired baseline, not so Sprint 1 can claim usefulness. Sprint 2 primary may still emphasize attributed S3 lift with S2/S5 held. |
 | `cap.drift_vs_point_axes` | Scorecard emits `drift_alerts` and point-anomaly FP as **separate** observed fields. F1@45 is recorded and is **not** the decision pin for drift treatments. Sprint 1 `new_build` is `pending` on the quality comparison; emitting the split fields on `old_build` is required. |
 | `cap.no_n1_headline` | Theater pin: a governance-style headline that only reports S1/S4 (n=1 each) fails the suite (`failure_class=theater_detector`). Both arms `pass` in Sprint 1 if the kernel refuses that headline. |
 
@@ -244,7 +244,7 @@ Fifteen IDs, three per realm. Short descriptions are the pin. Do not add a sixte
 1. All **15** IDs exist as scenario files and appear in the scorecard. Zero silent omissions.
 2. GitHub Actions runs the suite on deterministic fixtures and fails the job on `fail` / `error` / missing row.
 3. Governance, design, threat (except `thr.fp_block_sanctuary` `new_build`), and usability: `old_build` and `new_build` both `pass` (must-not-regress), with the honesty pins in `gov.integrity_job_sees_decisions` and `use.ui_sends_api_key` as specified above.
-4. Capability quality arms (`cap.attributed_s3`, `cap.drift_vs_point_axes`): `old_build` recorded; `new_build` is `pending` (not `pass`). `cap.no_n1_headline` is a theater pin: both arms `pass` in Sprint 1 if S1/S4-only headlines are rejected (no pending).
+4. Capability quality arms (`cap.attributed_s2_s3_s5`, `cap.drift_vs_point_axes`): `old_build` recorded; `new_build` is `pending` (not `pass`). `cap.attributed_s2_s3_s5` `old_build` must include attributed metrics for S2, S3, and S5. `cap.no_n1_headline` is a theater pin: both arms `pass` in Sprint 1 if S1/S4-only headlines are rejected (no pending).
 5. `thr.fp_block_sanctuary` `new_build` is `pending`. `use.demo_honesty` both arms `pass`.
 6. No scenario adds `/api/ingest`, a FakeProvider, a live SIEM adapter, or a Series J fold.
 7. Scorecard `failure_class` is populated on every fail/error. Theater-detector trips are visible, not folded into `scorer`.
