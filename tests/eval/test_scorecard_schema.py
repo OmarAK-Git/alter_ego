@@ -5,6 +5,7 @@ from core.schemas.scorecard import (
     LOCKED_SCENARIO_IDS,
     PENDING_ALLOWED,
     ScorecardRow,
+    validate_scorecard_row,
 )
 
 
@@ -89,11 +90,40 @@ def test_pending_only_on_allowed_quality_and_sanctuary_new_build():
             expected={},
             observed={},
         )
+    for scenario_id, realm in (
+        ("cap.attributed_s2_s3_s5", "capability"),
+        ("cap.drift_vs_point_axes", "capability"),
+        ("thr.fp_block_sanctuary", "threat"),
+    ):
+        with pytest.raises(ValidationError):
+            _row(
+                scenario_id=scenario_id,
+                realm=realm,
+                arm="old_build",
+                status="pending",
+                failure_class="none",
+                expected={},
+                observed={},
+            )
 
 
 def test_failure_class_none_only_when_pass_or_pending():
     with pytest.raises(ValidationError):
         _row(status="fail", failure_class="none", expected={}, observed={})
+    with pytest.raises(ValidationError):
+        _row(status="error", failure_class="none", expected={}, observed={})
+    with pytest.raises(ValidationError):
+        _row(status="pass", failure_class="harness")
+    with pytest.raises(ValidationError):
+        _row(
+            scenario_id="cap.attributed_s2_s3_s5",
+            realm="capability",
+            arm="new_build",
+            status="pending",
+            failure_class="harness",
+            expected={"quality": "unclaimed"},
+            observed={"quality": "unclaimed"},
+        )
     fail = _row(
         status="fail",
         failure_class="theater_detector",
@@ -106,3 +136,28 @@ def test_failure_class_none_only_when_pass_or_pending():
 def test_fixture_must_be_deterministic():
     with pytest.raises(ValidationError):
         _row(fixture="fake_provider")
+
+
+def test_realm_must_match_locked_id():
+    with pytest.raises(ValidationError):
+        _row(realm="capability")
+
+
+def test_row_is_frozen_and_validate_scorecard_row_round_trips():
+    row = validate_scorecard_row(
+        dict(
+            schema_version="1",
+            scenario_id="des.no_llm_in_score",
+            realm="design",
+            arm="old_build",
+            status="pass",
+            failure_class="none",
+            expected={"import_llm": False},
+            observed={"import_llm": False},
+            fixture="deterministic",
+            notes="",
+        )
+    )
+    assert row.status == "pass"
+    with pytest.raises(ValidationError):
+        row.status = "fail"
