@@ -1,8 +1,20 @@
 # Progress
 
+**Updated:** 2026-09-18T23:55Z
+
+## Eval kernel Sprint 1 (active T3)
+
+**Workflow:** `.workflow/2026-09-18-eval-kernel-sprint1/`  
+**Queue:** `.workflow/autopilot-queue.json`  
+**Authority:** PR #7 + PR #8 ACCEPT WITH FOLLOW-UPS.
+
+GSD loaded 2026-09-18. 25 queue items pending (21 implement + 3 phase_exit + 1 run_exit). First drain: S1-1 scorecard schema. Detector SoT remains Series I (`calibrated: false`). No usefulness claim.
+
+---
+
 **Updated:** 2026-07-31  
 
-## DC drift-capability expansion (active T3)
+## DC drift-capability expansion (closed T3; superseded as active)
 
 **Workflow:** `.workflow/2026-07-30-drift-capability-expansion/`  
 **Report:** `.workflow/2026-07-30-drift-capability-expansion/results/SPRINT-PROGRESS-REPORT.md`

@@ -1,14 +1,19 @@
 # Tasks
 
-**Updated:** 2026-09-08T20:40Z
+**Updated:** 2026-09-18T23:55Z
 
-## Eval kernel Sprint 1 — PLAN WRITTEN (not implemented)
+## Eval kernel Sprint 1 — GSD LOADED (not yet implemented)
 
 | Item | Status |
 |---|---|
-| Design spec | `docs/superpowers/specs/2026-09-08-eval-kernel-usefulness-canary-design.md` |
-| Sprint 1 plan | `docs/superpowers/plans/2026-09-08-eval-kernel-sprint1.md` |
-| Harness / 15 IDs / GHA | **not started** — implement from the plan, TDD, 21 tasks |
+| Design spec (PR #7) | accepted with follow-ups — `docs/superpowers/specs/2026-09-08-eval-kernel-usefulness-canary-design.md` |
+| Sprint 1 plan (PR #8) | accepted with follow-ups — `docs/superpowers/plans/2026-09-08-eval-kernel-sprint1.md` |
+| GSD queue | loaded — 25 items in `.workflow/autopilot-queue.json` |
+| S1-1..S1-4 foundation | pending |
+| S1-5..S1-16 gov/des/thr/use | pending (after P0 gate) |
+| S1-17..S1-19 capability | pending |
+| S1-21 docs + S1-20 GHA | pending |
+| S1-EXIT-GATE | pending |
 | Series J / `/api/ingest` / canary | **closed** |
 
 ## Series I serial calibration — FOLD CHAIN COMPLETE
@@ -21,5 +26,3 @@
 **Accepted:** `precision_gate.enabled=true`  
 **Rejected:** feat_volume, fleet, staged, volume_drift, cadence, geo  
 **calibrated:** false
-
-**Operator next:** review merge recommendation in `state.json` → `merge_recommendation`

@@ -1,14 +1,15 @@
 # Active Context
 
-**Updated:** 2026-09-08T20:40Z
+**Updated:** 2026-09-18T23:55Z
 
-## Sprint 1 plan (docs only)
+## Eval kernel Sprint 1 — GSD LOADED (draining)
 
-Implementation plan for the eval kernel is at
-`docs/superpowers/plans/2026-09-08-eval-kernel-sprint1.md`, stacked on the
-ratified design spec (`docs/superpowers/specs/2026-09-08-eval-kernel-usefulness-canary-design.md`).
-No harness, scenario, or CI code in this change. Detector SoT remains Series I
-(`calibrated: false`). Do not claim usefulness.
+PRs #7 (design) and #8 (Sprint 1 plan) accepted with non-blocking follow-ups.
+Queue: `.workflow/autopilot-queue.json` (25 items: 21 implement + 3 phase_exit + 1 run_exit).
+T3 run: `.workflow/2026-09-18-eval-kernel-sprint1/`.
+Branch: `gsd/eval-kernel-sprint1`.
+
+Sprint 1 is a harness earn. Detector SoT remains Series I (`calibrated: false`). Do not claim usefulness. Do not staff Sprint 2/3.
 
 ## Series I — COMPLETE (merged to main)
 

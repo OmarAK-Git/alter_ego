@@ -32,6 +32,7 @@ Update `state.json` first; sync memory-bank after.
 
 | Slug | Status | Purpose |
 |---|---|---|
+| `2026-09-18-eval-kernel-sprint1` | **loaded / draining** | Sprint 1 eval kernel from PR #7+#8; queue in `autopilot-queue.json` |
 | `2026-07-30-reverse-spec-rfc-remediation` | **closed** (R-EXIT-GATE ACCEPT-WITH-GAPS on Grok) | RFC-005 chunked streaming + RFC-006 pytest discovery |
 | `2026-07-19-d4-time-axis` | **closed** (SD-EXIT-GATE ACCEPT-WITH-GAPS) | D4 shadow sim-time axis + Series D re-sweep + governance |
 | `2026-07-19-series-c` | **drained** (EXIT ACCEPT-WITH-GAPS) | Series C: R-INTERLOCK baseline + scenario_5; Not CALIBRATED |
