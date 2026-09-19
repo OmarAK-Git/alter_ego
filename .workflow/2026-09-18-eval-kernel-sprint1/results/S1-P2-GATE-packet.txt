@@ -1,0 +1,49 @@
+﻿=== S1-P2-GATE packet ===
+Started: 09/18/2026 21:03:06
+
+=== Command 1 ===
+$env:PYTHONPATH="."
+pytest tests/eval/test_cap_attributed_s2_s3_s5.py tests/eval/test_cap_drift_vs_point_axes.py tests/eval/test_cap_no_n1_headline.py -v --tb=short
+
+============================= test session starts =============================
+platform win32 -- Python 3.13.12, pytest-9.0.3, pluggy-1.5.0 -- C:\Users\oalan\scoop\apps\miniconda3\current\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\oalan\alter_ego
+configfile: pyproject.toml
+plugins: anyio-4.10.0, cov-7.1.0
+collecting ... collected 5 items
+
+tests/eval/test_cap_attributed_s2_s3_s5.py::test_attributed_s2_s3_s5_old_recorded_new_pending PASSED [ 20%]
+tests/eval/test_cap_drift_vs_point_axes.py::test_axes_split_old_recorded_new_pending PASSED [ 40%]
+tests/eval/test_cap_no_n1_headline.py::test_formatter_refuses_s1_s4_only PASSED [ 60%]
+tests/eval/test_cap_no_n1_headline.py::test_formatter_accepts_s2_s3_s5_with_n PASSED [ 80%]
+tests/eval/test_cap_no_n1_headline.py::test_cap_no_n1_headline_both_arms_pass PASSED [100%]
+
+============================== warnings summary ===============================
+tests/eval/test_cap_attributed_s2_s3_s5.py: 16 warnings
+tests/eval/test_cap_drift_vs_point_axes.py: 16 warnings
+tests/eval/test_cap_no_n1_headline.py: 16 warnings
+  C:\Users\oalan\alter_ego\batch\profile_builder\builder.py:691: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    build_timestamp = datetime.utcnow()
+
+tests/eval/test_cap_attributed_s2_s3_s5.py: 258 warnings
+tests/eval/test_cap_drift_vs_point_axes.py: 258 warnings
+tests/eval/test_cap_no_n1_headline.py: 258 warnings
+  C:\Users\oalan\scoop\apps\miniconda3\current\Lib\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================= 5 passed, 822 warnings in 112.22s (0:01:52) =================
+
+Exit code: 0
+
+=== Command 2 ===
+ruff check .
+
+[1;32mAll checks passed![0m
+
+Exit code: 0
+
+Finished: 09/18/2026 21:04:59
+Elapsed seconds: 112.9523498
+
