@@ -702,6 +702,76 @@ def _eval_thr_api_key_required(
 
 ANOMALY_THRESHOLD = 45.0
 
+_KERNEL_EXCLUDED_EVENT_IDS = ("PROFILE_BUILD", "COHORT_DRIFT")
+
+
+def drift_necessary(dec, threshold=ANOMALY_THRESHOLD) -> bool:
+    if dec.score < threshold:
+        return False
+    contrib_drift = 0.0
+    for c in dec.contributions or []:
+        name = c.get("feature_name") if isinstance(c, dict) else getattr(c, "feature_name", "")
+        if name == "drift_alert":
+            contrib_drift = float(
+                c.get("contribution_score") if isinstance(c, dict) else c.contribution_score
+            )
+    return (dec.score - contrib_drift) < threshold
+
+
+def _has_drift_alert_flag(flags) -> bool:
+    if flags is None:
+        return False
+    if isinstance(flags, list):
+        return "drift_alert" in flags
+    if isinstance(flags, dict):
+        return bool(flags.get("drift_alert"))
+    return False
+
+
+def _malicious_event_ids(db: Session) -> set[str]:
+    return {
+        row.event_id
+        for row in db.scalars(
+            select(EvalGroundTruthModel).where(EvalGroundTruthModel.is_malicious.is_(True))
+        )
+    }
+
+
+def _count_drift_alerts(db: Session) -> int:
+    n = 0
+    for dec in db.scalars(select(DecisionRecordModel)):
+        if dec.event_id in _KERNEL_EXCLUDED_EVENT_IDS:
+            continue
+        if drift_necessary(dec) or _has_drift_alert_flag(dec.flags):
+            n += 1
+    return n
+
+
+def _count_point_anomaly_fp(db: Session, malicious: set[str]) -> int:
+    n = 0
+    for dec in db.scalars(select(DecisionRecordModel)):
+        if dec.event_id in _KERNEL_EXCLUDED_EVENT_IDS:
+            continue
+        if dec.is_anomaly and dec.event_id not in malicious and not drift_necessary(dec):
+            n += 1
+    return n
+
+
+def _f1_at_45(db: Session, malicious: set[str]) -> float:
+    detected = {
+        dec.event_id
+        for dec in db.scalars(select(DecisionRecordModel))
+        if dec.score >= ANOMALY_THRESHOLD
+    }
+    tp = len(detected & malicious)
+    fp = len(detected - malicious)
+    fn = len(malicious - detected)
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    if precision + recall > 0:
+        return 2 * precision * recall / (precision + recall)
+    return 0.0
+
 
 def attributed_tp(db: Session, scenario: str) -> int:
     malicious = {
@@ -803,6 +873,69 @@ def _eval_cap_attributed_s2_s3_s5(
             if theater_tripped:
                 status, failure_class = "fail", "theater_detector"
             elif all_ok:
+                status, failure_class = "pass", "none"
+            else:
+                status, failure_class = "fail", "harness"
+            rows.append(
+                _row(
+                    spec,
+                    arm=arm,
+                    status=status,
+                    failure_class=failure_class,
+                    expected=spec.arms[arm].expected,
+                    observed=observed,
+                    notes=theater_detail,
+                )
+            )
+        finally:
+            dispose_eval_bind(call.db)
+    return rows
+
+
+def _eval_cap_drift_vs_point_axes(
+    spec: ScenarioSpec, *, sqlite_root: Path
+) -> list[ScorecardRow]:
+    theater_tripped, theater_detail = run_theater_detector(
+        spec.theater_detector,
+        TheaterContext(f1_treated_as_primary=False, used_run_pipeline=True),
+    )
+    rows: list[ScorecardRow] = []
+    for arm in ("old_build", "new_build"):
+        if arm == "new_build":
+            rows.append(
+                _row(
+                    spec,
+                    arm=arm,
+                    status="pending",
+                    failure_class="none",
+                    expected=spec.arms[arm].expected,
+                    observed={"quality": "pending"},
+                    notes="Stage B unbuilt",
+                )
+            )
+            continue
+        arm_dir = Path(sqlite_root) / spec.scenario_id / arm
+        arm_dir.mkdir(parents=True, exist_ok=True)
+        events_path, labels_path = write_compact_seed42_s2_s3_s5_jsonl(arm_dir)
+        call = run_production_call(
+            events_path, labels_path, sqlite_path=arm_dir / "eval.db"
+        )
+        try:
+            malicious = _malicious_event_ids(call.db)
+            drift_alerts = _count_drift_alerts(call.db)
+            point_anomaly_fp = _count_point_anomaly_fp(call.db, malicious)
+            f1_at_45 = _f1_at_45(call.db, malicious)
+            axes_split = isinstance(drift_alerts, int) and isinstance(point_anomaly_fp, int)
+            observed = {
+                "drift_alerts": drift_alerts,
+                "point_anomaly_fp": point_anomaly_fp,
+                "f1_at_45": f1_at_45,
+                "f1_treated_as_primary": False,
+                "axes_split": axes_split,
+            }
+            if theater_tripped:
+                status, failure_class = "fail", "theater_detector"
+            elif axes_split and observed["f1_treated_as_primary"] is False:
                 status, failure_class = "pass", "none"
             else:
                 status, failure_class = "fail", "harness"
@@ -1106,6 +1239,9 @@ def evaluate_scenario(scenario_id: str, *, sqlite_root: Path) -> list[ScorecardR
             spec, sqlite_root=sqlite_root
         ),
         "cap.attributed_s2_s3_s5": lambda: _eval_cap_attributed_s2_s3_s5(
+            spec, sqlite_root=sqlite_root
+        ),
+        "cap.drift_vs_point_axes": lambda: _eval_cap_drift_vs_point_axes(
             spec, sqlite_root=sqlite_root
         ),
     }

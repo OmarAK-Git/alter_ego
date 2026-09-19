@@ -1,0 +1,17 @@
+schema_version: "1"
+scenario_id: cap.drift_vs_point_axes
+realm: capability
+description: Split drift_alerts vs point-anomaly FP; F1@45 is recorded and is not the pin.
+runner: e2e_kernel
+setup:
+  call: run_pipeline
+  events: seed42_s2_s3_s5
+arms:
+  old_build:
+    expected: {axes_split: true, f1_treated_as_primary: false}
+    fixture: deterministic
+  new_build:
+    expected: {quality: pending}
+    fixture: deterministic
+scorecard_pins: [drift_alerts, point_anomaly_fp, f1_at_45]
+theater_detector: f1_only_usefulness
