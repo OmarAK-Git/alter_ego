@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -13,11 +15,13 @@ import batch.eval.runner as runner_module
 import core.database as database_module
 from batch.eval.kernel_fixtures import write_mini_pipeline_jsonl
 from batch.eval.runner import run_pipeline
+from batch.eval.scenario_loader import ScenarioSpec, load_scenario
 from batch.eval.scorecard import (
     IncompleteScorecardError,
     assert_scorecard_complete,
     write_scorecard,
 )
+from batch.eval.theater import TheaterContext, run_theater_detector
 from core.database import Base, engine  # noqa: F401 — registers SQLite compilers
 from core.models import (
     DecisionRecordModel,
@@ -147,8 +151,86 @@ def _production_call_shape_row() -> ScorecardRow:
             dispose_eval_bind(result.db)
 
 
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
 def _scenarios_dir() -> Path:
-    return Path(__file__).resolve().parents[2] / "tests" / "eval" / "scenarios"
+    return _repo_root() / "tests" / "eval" / "scenarios"
+
+
+def _row(
+    spec: ScenarioSpec,
+    *,
+    arm: str,
+    status: str,
+    failure_class: str,
+    expected: dict,
+    observed: dict,
+    notes: str = "",
+) -> ScorecardRow:
+    return ScorecardRow(
+        schema_version="1",
+        scenario_id=spec.scenario_id,
+        realm=spec.realm,
+        arm=arm,  # type: ignore[arg-type]
+        status=status,  # type: ignore[arg-type]
+        failure_class=failure_class,  # type: ignore[arg-type]
+        expected=expected,
+        observed=observed,
+        fixture="deterministic",
+        notes=notes,
+    )
+
+
+def _eval_gov_no_knob_without_sweep(spec: ScenarioSpec) -> list[ScorecardRow]:
+    yaml_path = _repo_root() / "config" / "scoring_config.yaml"
+    baseline_path = _repo_root() / "tests" / "eval" / "fixtures" / "scoring_config_baseline.sha256"
+    exceptions_path = _repo_root() / "tests" / "eval" / "fixtures" / "knob_exceptions.yaml"
+    digest = hashlib.sha256(yaml_path.read_bytes()).hexdigest()
+    baseline = baseline_path.read_text(encoding="utf-8").strip()
+    exceptions_doc = yaml.safe_load(exceptions_path.read_text(encoding="utf-8")) or {}
+    allowed = {str(item.get("digest", "")) for item in exceptions_doc.get("exceptions", [])}
+    unrecorded = digest != baseline and digest not in allowed
+    theater_tripped, theater_detail = run_theater_detector(
+        "series_j_fold", TheaterContext(staffs_series_j=False)
+    )
+    if theater_tripped:
+        status, failure_class = "fail", "theater_detector"
+    elif unrecorded:
+        status, failure_class = "fail", "harness"
+    else:
+        status, failure_class = "pass", "none"
+    observed = {
+        "knob_diff_unrecorded": unrecorded,
+        "yaml_sha256": digest,
+    }
+    notes = (
+        "OPS no-knob-without-sweep pin (repo-file check; no run_pipeline). "
+        f"{theater_detail}".strip()
+    )
+    rows = []
+    for arm in ("old_build", "new_build"):
+        expected = spec.arms[arm].expected
+        rows.append(
+            _row(
+                spec,
+                arm=arm,
+                status=status,
+                failure_class=failure_class,
+                expected=expected,
+                observed=observed,
+                notes=notes,
+            )
+        )
+    return rows
+
+
+def evaluate_scenario(scenario_id: str, *, sqlite_root: Path) -> list[ScorecardRow]:
+    spec = load_scenario(_scenarios_dir() / f"{scenario_id}.yaml")
+    if spec.scenario_id == "gov.no_knob_without_sweep":
+        return _eval_gov_no_knob_without_sweep(spec)
+    raise NotImplementedError(f"evaluate_scenario dispatch missing for {scenario_id}")
 
 
 def main(argv: list[str] | None = None) -> int:

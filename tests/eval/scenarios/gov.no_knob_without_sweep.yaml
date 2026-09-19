@@ -1,0 +1,18 @@
+schema_version: "1"
+scenario_id: gov.no_knob_without_sweep
+realm: governance
+description: YAML weight/threshold/enabled diff without governance+metrics is CI red.
+runner: e2e_kernel
+setup:
+  call: run_pipeline
+  events: none
+  notes: Pin is a repo-file check; kernel still records an E2E row. No HTTP ingest.
+arms:
+  old_build:
+    expected: {knob_diff_unrecorded: false}
+    fixture: deterministic
+  new_build:
+    expected: {knob_diff_unrecorded: false}
+    fixture: deterministic
+scorecard_pins: [knob_diff_unrecorded, yaml_sha256]
+theater_detector: series_j_fold
