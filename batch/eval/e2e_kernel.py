@@ -24,6 +24,7 @@ from batch.eval.scorecard import (
 from batch.eval.theater import TheaterContext, run_theater_detector
 from core.database import Base, engine  # noqa: F401 — registers SQLite compilers
 from core.models import (
+    AlertWorkflowStateModel,
     DecisionRecordModel,
     EventModel,
     ProfileArtifactModel,
@@ -226,10 +227,75 @@ def _eval_gov_no_knob_without_sweep(spec: ScenarioSpec) -> list[ScorecardRow]:
     return rows
 
 
+def _eval_gov_anomaly_opens_workflow(
+    spec: ScenarioSpec, *, sqlite_root: Path
+) -> list[ScorecardRow]:
+    rows: list[ScorecardRow] = []
+    theater_tripped, theater_detail = run_theater_detector(
+        spec.theater_detector,
+        TheaterContext(used_run_pipeline=True, decision_insert_path=None),
+    )
+    for arm in ("old_build", "new_build"):
+        arm_dir = Path(sqlite_root) / spec.scenario_id / arm
+        arm_dir.mkdir(parents=True, exist_ok=True)
+        events_path, labels_path = write_mini_pipeline_jsonl(arm_dir, night_login=True)
+        call = run_production_call(
+            events_path, labels_path, sqlite_path=arm_dir / "eval.db"
+        )
+        try:
+            anomalies = list(
+                call.db.scalars(
+                    select(DecisionRecordModel).where(
+                        DecisionRecordModel.is_anomaly.is_(True),
+                        DecisionRecordModel.event_id.notin_(
+                            ("PROFILE_BUILD", "COHORT_DRIFT")
+                        ),
+                    )
+                )
+            )
+            workflows = {
+                row.decision_id: row.state
+                for row in call.db.scalars(select(AlertWorkflowStateModel))
+            }
+            all_open_new = bool(anomalies) and all(
+                workflows.get(dec.decision_id) == "new" for dec in anomalies
+            )
+            observed = {
+                "anomaly_count_gt_0": len(anomalies) > 0,
+                "all_anomalies_open_new": all_open_new,
+                "seeded_decision_insert": call.seeded_decision_insert,
+                "anomaly_count": len(anomalies),
+            }
+            if theater_tripped:
+                status, failure_class = "fail", "theater_detector"
+            elif not anomalies:
+                status, failure_class = "fail", "harness"
+            elif not all_open_new:
+                status, failure_class = "fail", "scorer"
+            else:
+                status, failure_class = "pass", "none"
+            rows.append(
+                _row(
+                    spec,
+                    arm=arm,
+                    status=status,
+                    failure_class=failure_class,
+                    expected=spec.arms[arm].expected,
+                    observed=observed,
+                    notes=theater_detail,
+                )
+            )
+        finally:
+            dispose_eval_bind(call.db)
+    return rows
+
+
 def evaluate_scenario(scenario_id: str, *, sqlite_root: Path) -> list[ScorecardRow]:
     spec = load_scenario(_scenarios_dir() / f"{scenario_id}.yaml")
     if spec.scenario_id == "gov.no_knob_without_sweep":
         return _eval_gov_no_knob_without_sweep(spec)
+    if spec.scenario_id == "gov.anomaly_opens_workflow":
+        return _eval_gov_anomaly_opens_workflow(spec, sqlite_root=sqlite_root)
     raise NotImplementedError(f"evaluate_scenario dispatch missing for {scenario_id}")
 
 
