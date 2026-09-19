@@ -54,7 +54,7 @@
     {"id": "S1-14", "status": "done", "notes": "pipeline anomaly on GET /api/alerts. Commit e6d1386.", "evidence": ["results/S1-8-16-21-verifier-result.md"]},
     {"id": "S1-15", "status": "done", "notes": "named app.js X-API-KEY gap. Commit e6d1386.", "evidence": ["results/S1-8-16-21-verifier-result.md"]},
     {"id": "S1-16", "status": "done", "notes": "demo-honesty theater + live SoT after S1-21. Commit e6d1386.", "evidence": ["results/S1-8-16-21-verifier-result.md"]},
-    {"id": "S1-P1-GATE", "status": "pending"},
+    {"id": "S1-P1-GATE", "status": "done", "notes": "ACCEPT. Packet 16/16 + ruff clean. Proceed to S1-17..S1-19. No usefulness claim.", "evidence": ["results/S1-P1-GATE-packet.txt", "results/S1-P1-GATE-verdict.md"]},
     {"id": "S1-17", "status": "pending"},
     {"id": "S1-18", "status": "pending"},
     {"id": "S1-19", "status": "pending"},
