@@ -41,7 +41,7 @@
     {"id": "S1-19", "phase": 2, "type": "implement", "title": "cap.no_n1_headline", "depends_on": ["S1-P1-GATE"], "status": "done", "plan_task": 19, "commits": ["179408d"]},
     {"id": "S1-P2-GATE", "phase": 2, "type": "phase_exit", "title": "Capability rows gate", "depends_on": ["S1-17", "S1-18", "S1-19"], "status": "done", "verdict": "ACCEPT", "commands": ["pytest tests/eval/test_cap_attributed_s2_s3_s5.py tests/eval/test_cap_drift_vs_point_axes.py tests/eval/test_cap_no_n1_headline.py -v --tb=short", "ruff check ."]},
     {"id": "S1-21", "phase": 3, "type": "implement", "title": "Docs pointer + Series I SoT honesty", "depends_on": ["S1-16"], "status": "done", "plan_task": 21, "commits": ["e11019d"]},
-    {"id": "S1-20", "phase": 3, "type": "implement", "title": "GitHub Actions + suite completeness", "depends_on": ["S1-P2-GATE", "S1-21"], "status": "in_progress", "plan_task": 20},
-    {"id": "S1-EXIT-GATE", "phase": 3, "type": "run_exit", "title": "Sprint 1 exit gate", "depends_on": ["S1-20"], "status": "pending", "commands": ["pytest -v --tb=short --ignore=tests/live", "ruff check ."]}
+    {"id": "S1-20", "phase": 3, "type": "implement", "title": "GitHub Actions + suite completeness", "depends_on": ["S1-P2-GATE", "S1-21"], "status": "done", "plan_task": 20, "commits": ["e774854"]},
+    {"id": "S1-EXIT-GATE", "phase": 3, "type": "run_exit", "title": "Sprint 1 exit gate", "depends_on": ["S1-20"], "status": "done", "verdict": "ACCEPT-WITH-GAPS", "commands": ["pytest -v --tb=short --ignore=tests/live", "ruff check ."]}
   ]
 }

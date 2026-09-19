@@ -1,18 +1,16 @@
 # Progress
 
-**Updated:** 2026-09-18T23:55Z
+**Updated:** 2026-09-19T01:30Z
 
-## Eval kernel Sprint 1 (active T3)
+## Eval kernel Sprint 1 (T3 EXIT ACCEPT-WITH-GAPS)
 
 **Workflow:** `.workflow/2026-09-18-eval-kernel-sprint1/`  
-**Queue:** `.workflow/autopilot-queue.json`  
+**Queue:** `.workflow/autopilot-queue.json` (all 25 items done)  
 **Authority:** PR #7 + PR #8 ACCEPT WITH FOLLOW-UPS.
 
-GSD loaded 2026-09-18. Drain in progress on `gsd/eval-kernel-sprint1`. Sprint 1 kernel is the eval gate; Series I remains detector SoT (`calibrated: false`).
+Sprint 1 kernel is the eval gate; Series I remains detector SoT (`calibrated: false`). No usefulness claim.
 
-**Done:** S1-1 scorecard, S1-2 `run_pipeline` kernel, S1-3 YAML loader (verifier ACCEPT).  
-**Next:** S1-4 theater registry → S1-P0-GATE → 15 scenario IDs.  
-Detector SoT remains Series I (`calibrated: false`). No usefulness claim.
+**Exit:** 252 passed / 1 failed (`test_precision_gate_disabled_does_not_change_containment_flag` vs shipped `precision_gate.enabled=true`; unchanged vs origin/main). Ruff clean.
 
 ---
 

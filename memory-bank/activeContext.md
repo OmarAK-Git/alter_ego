@@ -1,15 +1,13 @@
 # Active Context
 
-**Updated:** 2026-09-18T23:55Z
+**Updated:** 2026-09-19T01:30Z
 
-## Eval kernel Sprint 1 — GSD LOADED (draining)
+## Eval kernel Sprint 1 — EXIT ACCEPT-WITH-GAPS
 
-PRs #7 (design) and #8 (Sprint 1 plan) accepted with non-blocking follow-ups.
-Queue: `.workflow/autopilot-queue.json` (25 items: 21 implement + 3 phase_exit + 1 run_exit).
-T3 run: `.workflow/2026-09-18-eval-kernel-sprint1/`.
-Branch: `gsd/eval-kernel-sprint1`. S1-1..S1-16 + S1-21 + P0/P1 gates done. Next: capability rows S1-17..S1-19.
+Queue drained on `gsd/eval-kernel-sprint1`. T3: `.workflow/2026-09-18-eval-kernel-sprint1/`.
+Sprint 1 kernel is the eval gate (15 IDs / 30 rows; GHA owns completeness). Detector SoT remains Series I (`calibrated: false`). Do not claim usefulness. Do not staff Sprint 2/3.
 
-Sprint 1 is a harness earn. Detector SoT remains Series I (`calibrated: false`). Do not claim usefulness. Do not staff Sprint 2/3.
+`new_build` still pending on capability quality and sanctuary Stage B.
 
 ## Series I — COMPLETE (merged to main)
 

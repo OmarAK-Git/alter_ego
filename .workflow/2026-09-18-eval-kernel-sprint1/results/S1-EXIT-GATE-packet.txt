@@ -1,0 +1,589 @@
+﻿=== S1-EXIT-GATE packet ===
+Started: 09-18-2026 21:25:39
+
+=== Command 1 ===
+cd C:\Users\oalan\alter_ego
+$env:PYTHONPATH="."
+pytest -v --tb=short --ignore=tests/live
+
+============================= test session starts =============================
+platform win32 -- Python 3.13.12, pytest-9.0.3, pluggy-1.5.0 -- C:\Users\oalan\scoop\apps\miniconda3\current\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\oalan\alter_ego
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.10.0, cov-7.1.0
+collecting ... collected 253 items
+
+tests/batch/profile_builder/test_builder.py::test_profile_builder_aggregates_correctly PASSED [  0%]
+tests/batch/profile_builder/test_cadence_drift_dimension.py::test_perfectly_regular_events_score_cov_near_one PASSED [  0%]
+tests/batch/profile_builder/test_cadence_drift_dimension.py::test_irregular_events_score_lower_cov PASSED [  1%]
+tests/batch/profile_builder/test_cadence_drift_dimension.py::test_below_min_events_returns_zero PASSED [  1%]
+tests/batch/profile_builder/test_cadence_drift_dimension.py::test_cadence_disabled_by_default_does_not_change_cumulative_drift PASSED [  1%]
+tests/batch/profile_builder/test_fleet_cohort_drift.py::test_fleet_cohort_drift_disabled_by_default_emits_nothing PASSED [  2%]
+tests/batch/profile_builder/test_fleet_cohort_drift.py::test_fleet_cohort_drift_fires_when_cohort_fraction_exceeds_max_changed_fraction PASSED [  2%]
+tests/batch/profile_builder/test_fleet_cohort_drift.py::test_fleet_cohort_drift_does_not_change_per_entity_cumulative_drift PASSED [  3%]
+tests/batch/profile_builder/test_geo_velocity_drift.py::test_impossible_travel_pair_scores_high_delta PASSED [  3%]
+tests/batch/profile_builder/test_geo_velocity_drift.py::test_nearby_successive_logins_score_low_delta PASSED [  3%]
+tests/batch/profile_builder/test_geo_velocity_drift.py::test_unmapped_label_flags_and_scores_zero_for_that_pair PASSED [  4%]
+tests/batch/profile_builder/test_geo_velocity_drift.py::test_below_min_paired_successes_returns_zero PASSED [  4%]
+tests/batch/profile_builder/test_staged_drift_sequence.py::test_drift_crossing_log_bounded_and_populated PASSED [  5%]
+tests/batch/profile_builder/test_staged_drift_sequence.py::test_matching_staged_sequence_detected PASSED [  5%]
+tests/batch/profile_builder/test_staged_drift_sequence.py::test_wrong_order_does_not_match PASSED [  5%]
+tests/batch/profile_builder/test_staged_drift_sequence.py::test_staged_drift_disabled_by_default_does_not_change_accumulator PASSED [  6%]
+tests/batch/profile_builder/test_volume_drift_dimension.py::test_hourly_event_counts_populated_in_profile_features PASSED [  6%]
+tests/batch/synthetic/test_generator_archetypes.py::test_ot_polling_archetype_fires_every_minute_with_zero_jitter PASSED [  7%]
+tests/batch/synthetic/test_generator_archetypes.py::test_it_automation_archetype_has_nonzero_jitter PASSED [  7%]
+tests/batch/synthetic/test_generator_archetypes.py::test_ot_polling_events_are_tighter_interval_than_it_automation PASSED [  7%]
+tests/batch/test_alert_lifecycle_auto_resolve.py::test_auto_resolve_new_when_quiet_attest_and_dwell PASSED [  8%]
+tests/batch/test_alert_lifecycle_auto_resolve.py::test_acknowledged_exempt_from_auto_resolve PASSED [  8%]
+tests/batch/test_alert_lifecycle_auto_resolve.py::test_drift_refresh_does_not_stack_workflow_rows PASSED [  9%]
+tests/batch/test_profile_build_block_escalation.py::test_build_block_under_threshold_no_supervisor_escalation PASSED [  9%]
+tests/batch/test_profile_build_block_escalation.py::test_build_block_over_threshold_emits_supervisor_escalation PASSED [  9%]
+tests/batch/test_profile_build_block_escalation.py::test_build_block_escalation_without_events_when_over_threshold PASSED [ 10%]
+tests/batch/test_profile_build_snapshot.py::test_profile_build_is_repeatable PASSED [ 10%]
+tests/batch/test_profile_build_snapshot.py::test_profile_build_streams_events_across_multiple_chunks PASSED [ 11%]
+tests/batch/test_profile_builder_geo.py::test_profile_builder_populates_geolocation_histogram PASSED [ 11%]
+tests/batch/test_profile_builder_geo.py::test_drift_includes_geolocation_when_distributions_differ PASSED [ 11%]
+tests/batch/test_promotion_coverage_metrics.py::test_ever_one_while_in_window_below_one_frozen_profile PASSED [ 12%]
+tests/batch/test_promotion_coverage_metrics.py::test_in_window_n5_boundary_day_five_fresh_day_six_stale PASSED [ 12%]
+tests/batch/test_promotion_coverage_metrics.py::test_sim_promoted_at_axis_smoke PASSED [ 13%]
+tests/batch/test_promotion_coverage_metrics.py::test_wall_promoted_at_trap_counts_missing_not_stale PASSED [ 13%]
+tests/batch/test_replay_runner.py::test_decision_record_replay_run_id_defaults_null PASSED [ 13%]
+tests/batch/test_replay_runner.py::test_original_decision_persists_null_replay_run_id PASSED [ 14%]
+tests/batch/test_replay_runner.py::test_run_replay_sets_replay_run_id_on_emitted_decisions PASSED [ 14%]
+tests/batch/test_replay_runner.py::test_run_replay_does_not_mutate_original_decision PASSED [ 15%]
+tests/batch/test_shadow_profiles.py::test_shadow_profile_logic PASSED    [ 15%]
+tests/core/test_geo_centroids.py::test_all_synthetic_generator_labels_have_centroids PASSED [ 15%]
+tests/core/test_geo_centroids.py::test_lookup_unknown_label_returns_none PASSED [ 16%]
+tests/core/test_geo_centroids.py::test_haversine_known_distance PASSED   [ 16%]
+tests/eval/test_cap_attributed_s2_s3_s5.py::test_attributed_s2_s3_s5_old_recorded_new_pending PASSED [ 16%]
+tests/eval/test_cap_drift_vs_point_axes.py::test_axes_split_old_recorded_new_pending PASSED [ 17%]
+tests/eval/test_cap_no_n1_headline.py::test_formatter_refuses_s1_s4_only PASSED [ 17%]
+tests/eval/test_cap_no_n1_headline.py::test_formatter_accepts_s2_s3_s5_with_n PASSED [ 18%]
+tests/eval/test_cap_no_n1_headline.py::test_cap_no_n1_headline_both_arms_pass PASSED [ 18%]
+tests/eval/test_des_ngram_mismatch_halts.py::test_nomic_metadata_halts_both_arms PASSED [ 18%]
+tests/eval/test_des_no_llm_in_score.py::test_scorer_import_guard_on_live_source PASSED [ 19%]
+tests/eval/test_des_no_llm_in_score.py::test_des_no_llm_in_score_both_arms PASSED [ 19%]
+tests/eval/test_des_production_call_shape.py::test_production_call_shape_both_arms PASSED [ 20%]
+tests/eval/test_e2e_kernel.py::test_run_production_call_invokes_all_five_stages_and_does_not_insert_decisions_itself PASSED [ 20%]
+tests/eval/test_e2e_kernel.py::test_cli_assert_complete_exits_zero PASSED [ 20%]
+tests/eval/test_gov_anomaly_opens_workflow.py::test_pipeline_anomaly_opens_new_workflow_both_arms PASSED [ 21%]
+tests/eval/test_gov_integrity_job_sees_decisions.py::test_integrity_skip_is_named_after_pipeline_decisions PASSED [ 21%]
+tests/eval/test_gov_no_knob_without_sweep.py::test_baseline_hash_file_matches_current_yaml PASSED [ 22%]
+tests/eval/test_gov_no_knob_without_sweep.py::test_both_arms_pass_when_yaml_matches_baseline PASSED [ 22%]
+tests/eval/test_scenario_loader.py::test_filename_stem_must_equal_scenario_id PASSED [ 22%]
+tests/eval/test_scenario_loader.py::test_runner_must_be_e2e_kernel PASSED [ 23%]
+tests/eval/test_scenario_loader.py::test_skip_flag_field_is_rejected PASSED [ 23%]
+tests/eval/test_scenario_loader.py::test_load_des_production_call_shape_from_tree PASSED [ 24%]
+tests/eval/test_scorecard_schema.py::test_locked_ids_are_exactly_the_fifteen_from_spec_section_5 PASSED [ 24%]
+tests/eval/test_scorecard_schema.py::test_extra_field_is_rejected PASSED [ 24%]
+tests/eval/test_scorecard_schema.py::test_unknown_scenario_id_is_rejected PASSED [ 25%]
+tests/eval/test_scorecard_schema.py::test_pending_only_on_allowed_quality_and_sanctuary_new_build PASSED [ 25%]
+tests/eval/test_scorecard_schema.py::test_failure_class_none_only_when_pass_or_pending PASSED [ 26%]
+tests/eval/test_scorecard_schema.py::test_fixture_must_be_deterministic PASSED [ 26%]
+tests/eval/test_scorecard_schema.py::test_realm_must_match_locked_id PASSED [ 26%]
+tests/eval/test_scorecard_schema.py::test_row_is_frozen_and_validate_scorecard_row_round_trips PASSED [ 27%]
+tests/eval/test_suite_completeness.py::test_fifteen_scenario_files_exist_and_stems_match PASSED [ 27%]
+tests/eval/test_suite_completeness.py::test_evaluate_all_emits_thirty_rows_and_no_illegal_pending PASSED [ 28%]
+tests/eval/test_theater.py::test_registry_has_exactly_the_ten_named_checks PASSED [ 28%]
+tests/eval/test_theater.py::test_n1_headline_trips_on_s1_s4_only_decision_criterion PASSED [ 28%]
+tests/eval/test_theater.py::test_n1_headline_passes_when_s2_s3_s5_present_with_n PASSED [ 29%]
+tests/eval/test_theater.py::test_seeded_decision_e2e_trips_when_demo_insert_counted_as_win PASSED [ 29%]
+tests/eval/test_theater.py::test_unit_as_e2e_trips_without_run_pipeline PASSED [ 30%]
+tests/eval/test_theater.py::test_gt_in_scorer_trips_on_label_import PASSED [ 30%]
+tests/eval/test_theater.py::test_fake_ingest_api_trips_on_http_ingest_route PASSED [ 30%]
+tests/eval/test_theater.py::test_unearned_demo_claim_trips_on_series_a_as_current PASSED [ 31%]
+tests/eval/test_theater.py::test_f1_only_usefulness_trips_when_flagged PASSED [ 31%]
+tests/eval/test_theater.py::test_stage_a_as_fp_win_trips_when_flagged PASSED [ 32%]
+tests/eval/test_theater.py::test_series_j_fold_trips_when_flagged PASSED [ 32%]
+tests/eval/test_theater.py::test_auto_resolved_as_precision_trips_when_flagged PASSED [ 32%]
+tests/eval/test_thr_api_key_required.py::test_api_key_required_without_pytest_bypass PASSED [ 33%]
+tests/eval/test_thr_cmdline_injection_survives.py::test_cmdline_injection_survives_ingest_both_arms PASSED [ 33%]
+tests/eval/test_thr_fp_block_sanctuary.py::test_sanctuary_old_build_recorded_new_build_pending PASSED [ 33%]
+tests/eval/test_use_demo_honesty.py::test_detector_trips_on_series_a_current_fixture PASSED [ 34%]
+tests/eval/test_use_demo_honesty.py::test_live_docs_pass_demo_honesty_both_arms PASSED [ 34%]
+tests/eval/test_use_demo_honesty.py::test_readme_and_spec_mark_series_a_archival PASSED [ 35%]
+tests/eval/test_use_pipeline_to_triage.py::test_pipeline_anomaly_reaches_alerts_api PASSED [ 35%]
+tests/eval/test_use_ui_sends_api_key.py::test_kernel_names_missing_ui_api_key PASSED [ 35%]
+tests/test_attestation.py::test_declared_defaults_match_design PASSED    [ 36%]
+tests/test_attestation.py::test_novel_mass_zero_when_support_covered PASSED [ 36%]
+tests/test_attestation.py::test_novel_mass_max_over_dimensions PASSED    [ 37%]
+tests/test_attestation.py::test_novel_mass_process_fraction_only PASSED  [ 37%]
+tests/test_attestation.py::test_peak_drift_ok_strictly_below_threshold PASSED [ 37%]
+tests/test_attestation.py::test_attest_requires_all_three_gates PASSED   [ 38%]
+tests/test_audit.py::test_decision_record_is_insert_only PASSED          [ 38%]
+tests/test_audit.py::test_audit_chain_integrity_healthy_chain_passes PASSED [ 39%]
+tests/test_audit.py::test_audit_chain_integrity_broken_chain_fails PASSED [ 39%]
+tests/test_audit.py::test_audit_chain_integrity_decision_count_mismatch_fails PASSED [ 39%]
+tests/test_boil_the_frog_invariants.py::test_a3_spec_reference_present PASSED [ 40%]
+tests/test_boil_the_frog_invariants.py::test_a1_s2_attack_process_names_match_ladder_yaml PASSED [ 40%]
+tests/test_boil_the_frog_invariants.py::test_a2_s2_command_line_ramp_or_fail_sharp PASSED [ 41%]
+tests/test_boil_the_frog_invariants.py::test_b1_day0_attack_scores_below_threshold PASSED [ 41%]
+tests/test_boil_the_frog_invariants.py::test_b2_attack_raises_cumulative_drift_vs_control PASSED [ 41%]
+tests/test_boil_the_frog_invariants.py::test_b3a_every_tp_is_drift_necessary PASSED [ 42%]
+tests/test_boil_the_frog_invariants.py::test_b3b_containment_no_post_absorption_tps PASSED [ 42%]
+tests/test_boil_the_frog_invariants.py::test_b4_eventual_detection_within_fixture_window PASSED [ 43%]
+tests/test_embedding_defaults.py::test_profile_artifact_schema_defaults_to_ngram_model PASSED [ 43%]
+tests/test_embedding_defaults.py::test_profile_artifact_model_orm_defaults_to_ngram_model PASSED [ 43%]
+tests/test_embedding_defaults.py::test_builder_promote_writes_ngram_embedding_metadata PASSED [ 44%]
+tests/test_generator.py::test_scenario_2_tagged_eval_and_feeds_builder PASSED [ 44%]
+tests/test_generator.py::test_scenario_3_tagged_eval_and_feeds_builder PASSED [ 45%]
+tests/test_generator.py::test_scenario_1_and_4_do_not_feed_builder PASSED [ 45%]
+tests/test_generator.py::test_baseline_events_remain_production_partition PASSED [ 45%]
+tests/test_generator.py::test_benign_only_baseline_smoke_production_partition PASSED [ 46%]
+tests/test_generator.py::test_correlated_benign_rollout_stays_production PASSED [ 46%]
+tests/test_generator.py::test_attack_partitions_match_scenario_table PASSED [ 47%]
+tests/test_generator.py::test_builder_partition_constant_matches_code PASSED [ 47%]
+tests/test_generator.py::test_scenario_5_attack_events_on_eval_scenario_5 PASSED [ 47%]
+tests/test_generator.py::test_scenario_5_labels_patient_cycle PASSED     [ 48%]
+tests/test_generator.py::test_scenario_5_quiet_gaps_at_least_four_days PASSED [ 48%]
+tests/test_generator.py::test_scenario_5_attack_process_names_match_ladder PASSED [ 49%]
+tests/test_generator.py::test_scenario_5_quiet_events_eval_partition_not_malicious PASSED [ 49%]
+tests/test_generator.py::test_scenario_2_and_5_victims_differ_with_exclude PASSED [ 49%]
+tests/test_generator.py::test_event_generator_deterministic PASSED       [ 50%]
+tests/test_profile_immutability.py::test_profile_artifact_is_frozen PASSED [ 50%]
+tests/test_s55_invariants_c1_c3.py::test_c1_benign_fp_block_auto_resolves_without_analyst PASSED [ 50%]
+tests/test_s55_invariants_c1_c3.py::test_c3_bounded_laundering_after_auto_resolve PASSED [ 51%]
+tests/test_s55_invariants_c1_c3.py::test_c3_high_novel_mass_blocks_auto_resolve PASSED [ 51%]
+tests/test_s55_invariants_c1_c3.py::test_design_1f_fp_injection_deadlock_resolves PASSED [ 52%]
+tests/test_schemas.py::test_auth_event_schema_validation PASSED          [ 52%]
+tests/test_schemas.py::test_process_event_schema_validation PASSED       [ 52%]
+tests/test_scoring_config_governance.py::test_scoring_config_is_frozen PASSED [ 53%]
+tests/test_scoring_config_governance.py::test_scoring_config_governance_chain PASSED [ 53%]
+tests/test_simple_print.py::test_print PASSED                            [ 54%]
+tests/test_spec_alignment.py::test_new_confidence_calculation PASSED     [ 54%]
+tests/test_spec_alignment.py::test_audit_log_hash_chaining PASSED        [ 54%]
+tests/web/test_api.py::test_get_triage_alerts PASSED                     [ 55%]
+tests/web/test_api.py::test_workflow_state_transition PASSED             [ 55%]
+tests/web/test_api.py::test_clear_alert_hides_from_triage PASSED         [ 56%]
+tests/web/test_api.py::test_high_confidence_anomaly_in_triage_not_suppressed PASSED [ 56%]
+tests/web/test_api.py::test_low_confidence_anomaly_in_suppressed_not_triage PASSED [ 56%]
+tests/web/test_api.py::test_cleared_suppressed_decision_excluded_from_both PASSED [ 57%]
+tests/web/test_api.py::test_alert_detail_includes_replay_run_id_when_present PASSED [ 57%]
+tests/web/test_api.py::test_alert_detail_replay_run_id_null_for_original PASSED [ 58%]
+tests/web/test_demo_path.py::test_demo_path_api_chain PASSED             [ 58%]
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_staleness_with_active_alert PASSED [ 58%]
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_no_anomaly_required_for_halt_decision PASSED [ 59%]
+tests/web/test_mandatory_escalations.py::test_cleared_alert_removes_from_mandatory_queue PASSED [ 59%]
+tests/web/test_mandatory_escalations.py::test_extend_halt_requires_justification PASSED [ 60%]
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue PASSED [ 60%]
+tests/web/test_mandatory_escalations.py::test_expired_extend_halt_returns_entity_to_queue PASSED [ 60%]
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_build_block_sla PASSED [ 61%]
+tests/worker/test_alert_workflow_on_anomaly.py::test_anomaly_decision_opens_active_alert_workflow PASSED [ 61%]
+tests/worker/test_alert_workflow_on_anomaly.py::test_non_anomaly_does_not_open_workflow PASSED [ 62%]
+tests/worker/test_confidence.py::test_load_scoring_config_includes_confidence_k PASSED [ 62%]
+tests/worker/test_confidence.py::test_confidence_formula_from_yaml_config PASSED [ 62%]
+tests/worker/test_confidence.py::test_confidence_k_override_changes_confidence PASSED [ 63%]
+tests/worker/test_confidence.py::test_larger_n_higher_confidence_fixed_k PASSED [ 63%]
+tests/worker/test_confidence.py::test_confidence_fallback_to_login_hours_sum PASSED [ 64%]
+tests/worker/test_containment_queue.py::test_load_scoring_config_includes_containment_threshold PASSED [ 64%]
+tests/worker/test_containment_queue.py::test_scorer_sets_containment_flag_when_threshold_and_confidence_met PASSED [ 64%]
+tests/worker/test_containment_queue.py::test_scorer_no_containment_flag_below_threshold PASSED [ 65%]
+tests/worker/test_containment_queue.py::test_scorer_no_containment_flag_low_confidence PASSED [ 65%]
+tests/worker/test_containment_queue.py::test_record_decision_writes_containment_queue_when_flag_set PASSED [ 66%]
+tests/worker/test_containment_queue.py::test_record_decision_no_queue_without_flag PASSED [ 66%]
+tests/worker/test_counterfactual_consistency.py::test_corpus_counterfactual_consistency[normal_top_k] PASSED [ 66%]
+tests/worker/test_counterfactual_consistency.py::test_corpus_counterfactual_consistency[fewer_than_k] PASSED [ 67%]
+tests/worker/test_counterfactual_consistency.py::test_corpus_counterfactual_consistency[empty_contributions] PASSED [ 67%]
+tests/worker/test_counterfactual_consistency.py::test_build_top_k_counterfactuals_non_list_input PASSED [ 67%]
+tests/worker/test_counterfactual_consistency.py::test_generate_explanation_counterfactual_integration PASSED [ 68%]
+tests/worker/test_embedding_metadata_mismatch.py::test_check_profile_embedding_metadata_match PASSED [ 68%]
+tests/worker/test_embedding_metadata_mismatch.py::test_check_profile_embedding_metadata_model_id_mismatch PASSED [ 69%]
+tests/worker/test_embedding_metadata_mismatch.py::test_check_profile_embedding_metadata_dimensionality_mismatch PASSED [ 69%]
+tests/worker/test_embedding_metadata_mismatch.py::test_matching_metadata_allows_scoring PASSED [ 69%]
+tests/worker/test_embedding_metadata_mismatch.py::test_model_id_mismatch_halts_scoring PASSED [ 70%]
+tests/worker/test_embedding_metadata_mismatch.py::test_normalizer_version_mismatch_halts_scoring PASSED [ 70%]
+tests/worker/test_embedding_metadata_mismatch.py::test_find_active_profiles_with_embedding_mismatch PASSED [ 71%]
+tests/worker/test_evidence_binding.py::test_evidence_binding_reconstructs_raw_score_from_contributions PASSED [ 71%]
+tests/worker/test_evidence_binding.py::test_evidence_binding_damped_score_differs_from_contribution_sum PASSED [ 71%]
+tests/worker/test_explainer.py::test_low_trust_slot_escapes_injection_attempt PASSED [ 72%]
+tests/worker/test_explainer.py::test_low_trust_slot_length_cap PASSED    [ 72%]
+tests/worker/test_explainer.py::test_high_trust_fields_remain_structured_json PASSED [ 73%]
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json PASSED [ 73%]
+tests/worker/test_explainer.py::test_prohibited_content_validation PASSED [ 73%]
+tests/worker/test_explainer.py::test_scoring_config_includes_explainer_queue_depth PASSED [ 74%]
+tests/worker/test_explainer.py::test_queue_overflow_uses_template_without_llm PASSED [ 74%]
+tests/worker/test_explainer.py::test_under_capacity_calls_llm_provider PASSED [ 75%]
+tests/worker/test_llm_provider_precedence.py::test_provider_prefers_anthropic PASSED [ 75%]
+tests/worker/test_llm_provider_precedence.py::test_provider_falls_back_to_openai PASSED [ 75%]
+tests/worker/test_llm_provider_precedence.py::test_provider_vertex_via_project PASSED [ 76%]
+tests/worker/test_llm_provider_precedence.py::test_provider_vertex_model_override PASSED [ 76%]
+tests/worker/test_llm_provider_precedence.py::test_provider_none_without_google PASSED [ 77%]
+tests/worker/test_precision_gate_stage_a.py::test_single_family_agreement_counts_one PASSED [ 77%]
+tests/worker/test_precision_gate_stage_a.py::test_two_families_agreement_counts_two PASSED [ 77%]
+tests/worker/test_precision_gate_stage_a.py::test_below_floor_does_not_count PASSED [ 78%]
+tests/worker/test_precision_gate_stage_a.py::test_single_family_high_score_queues_when_gate_disabled PASSED [ 78%]
+tests/worker/test_precision_gate_stage_a.py::test_single_family_high_score_deferred_when_gate_enabled PASSED [ 79%]
+tests/worker/test_precision_gate_stage_a.py::test_two_family_agreement_queues_when_gate_enabled PASSED [ 79%]
+tests/worker/test_precision_gate_stage_a.py::test_below_threshold_never_queues_or_defers_regardless_of_gate PASSED [ 79%]
+tests/worker/test_precision_gate_stage_a.py::test_precision_gate_disabled_does_not_change_containment_flag FAILED [ 80%]
+tests/worker/test_precision_gate_stage_a.py::test_score_event_defers_containment_flag_when_gate_enabled_and_single_family PASSED [ 80%]
+tests/worker/test_profile_selection.py::test_profile_selection_point_in_time PASSED [ 81%]
+tests/worker/test_resolution_confidence_flags.py::test_collision_fixture_maps_distinct_raw_refs_to_same_canonical_with_low_confidence PASSED [ 81%]
+tests/worker/test_resolution_confidence_flags.py::test_split_fixture_produces_low_confidence_for_ambiguous_ref PASSED [ 81%]
+tests/worker/test_resolution_confidence_flags.py::test_happy_path_user_svc_remain_high_confidence PASSED [ 82%]
+tests/worker/test_resolution_confidence_flags.py::test_scorer_emits_low_resolution_confidence_flag PASSED [ 82%]
+tests/worker/test_resolution_confidence_flags.py::test_scorer_does_not_emit_low_resolution_confidence_for_high_confidence PASSED [ 83%]
+tests/worker/test_resolver.py::test_resolve_entity PASSED                [ 83%]
+tests/worker/test_scorer.py::test_kl_divergence PASSED                   [ 83%]
+tests/worker/test_scorer.py::test_laplace_prob PASSED                    [ 84%]
+tests/worker/test_scorer.py::test_idempotent_decision_id PASSED          [ 84%]
+tests/worker/test_scorer.py::test_decision_determinism PASSED            [ 84%]
+tests/worker/test_scorer.py::test_total_volume_delta_deferred PASSED     [ 85%]
+tests/worker/test_scorer.py::test_decision_id_matches_canonical_formula PASSED [ 85%]
+tests/worker/test_scorer.py::test_decision_id_sensitive_to_algorithm_version PASSED [ 86%]
+tests/worker/test_scorer.py::test_decision_id_sensitive_to_embedding_model_version PASSED [ 86%]
+tests/worker/test_scorer.py::test_scorer_ground_truth_isolation PASSED   [ 86%]
+tests/worker/test_scorer.py::test_confidence_not_hardcoded PASSED        [ 87%]
+tests/worker/test_scorer.py::test_novelty_fraction_sqlite_uses_json_extract PASSED [ 87%]
+tests/worker/test_scorer.py::test_novelty_fraction_postgresql_uses_jsonb_operator PASSED [ 88%]
+tests/worker/test_scorer.py::test_cohort_members_sqlite_uses_json_extract PASSED [ 88%]
+tests/worker/test_scorer.py::test_cohort_members_postgresql_uses_jsonb_operator PASSED [ 88%]
+tests/worker/test_scorer.py::test_novelty_cache_ttl_expiry PASSED        [ 89%]
+tests/worker/test_scorer.py::test_novelty_cache_max_size_preserved PASSED [ 89%]
+tests/worker/test_scorer.py::test_kl_both_empty_returns_zero PASSED      [ 90%]
+tests/worker/test_scorer.py::test_kl_empty_baseline_returns_max_novelty PASSED [ 90%]
+tests/worker/test_scorer.py::test_kl_empty_current_with_nonempty_baseline PASSED [ 90%]
+tests/worker/test_scorer.py::test_process_unscored_events_can_create_default_session PASSED [ 91%]
+tests/worker/test_shadow_asof_sim_clock.py::test_get_latest_shadow_profile_as_of_uses_data_window_not_wall_created_at PASSED [ 91%]
+tests/worker/test_shadow_baseline_under_block.py::test_blocked_entity_point_rarity_follows_shadow_not_frozen_promoted PASSED [ 92%]
+tests/worker/test_shadow_baseline_under_block.py::test_blocked_entity_no_shadow_falls_back_to_promoted_with_flag PASSED [ 92%]
+tests/worker/test_shadow_baseline_under_block.py::test_unblocked_entity_unaffected PASSED [ 92%]
+tests/worker/test_shadow_baseline_under_block.py::test_shadow_lookup_happens_once_per_score_event PASSED [ 93%]
+tests/worker/test_shadow_drift_under_block.py::test_shadow_drift_under_block_equals_unblocked_accumulator PASSED [ 93%]
+tests/worker/test_shadow_drift_under_block.py::test_blocked_shadow_miss_emits_fallback_flag PASSED [ 94%]
+tests/worker/test_shadow_drift_under_block.py::test_shadow_lookup_uses_data_window_end_not_created_at PASSED [ 94%]
+tests/worker/test_shadow_drift_under_block.py::test_shadow_lookup_tiebreak_prefers_later_created_at PASSED [ 94%]
+tests/worker/test_shadow_drift_under_block.py::test_shadow_lookup_future_created_at_drives_scorer_d4 PASSED [ 95%]
+tests/worker/test_six_feature_scorer.py::test_six_feature_scorer_basic PASSED [ 95%]
+tests/worker/test_staleness_escalation.py::test_staleness_halt_preserves_score_zero PASSED [ 96%]
+tests/worker/test_staleness_escalation.py::test_staleness_halt_without_active_alert_no_escalation_flag PASSED [ 96%]
+tests/worker/test_staleness_escalation.py::test_staleness_halt_with_active_alert_adds_escalation_flags[new] PASSED [ 96%]
+tests/worker/test_staleness_escalation.py::test_staleness_halt_with_active_alert_adds_escalation_flags[acknowledged] PASSED [ 97%]
+tests/worker/test_staleness_escalation.py::test_staleness_halt_with_active_alert_adds_escalation_flags[investigating] PASSED [ 97%]
+tests/worker/test_staleness_escalation.py::test_cleared_alert_does_not_trigger_escalation_flag PASSED [ 98%]
+tests/worker/test_staleness_escalation.py::test_entity_has_active_uncleared_alert_helper PASSED [ 98%]
+tests/worker/test_volume_delta.py::test_typical_recent_count_scores_low_rarity PASSED [ 98%]
+tests/worker/test_volume_delta.py::test_spike_count_scores_higher_rarity_than_typical PASSED [ 99%]
+tests/worker/test_volume_delta.py::test_empty_history_does_not_raise PASSED [ 99%]
+tests/worker/test_volume_delta.py::test_score_vol_stays_zero_when_disabled PASSED [100%]
+
+================================== FAILURES ===================================
+________ test_precision_gate_disabled_does_not_change_containment_flag ________
+tests\worker\test_precision_gate_stage_a.py:218: in test_precision_gate_disabled_does_not_change_containment_flag
+    assert "simulated_containment_queued" in decision.flags
+E   AssertionError: assert 'simulated_containment_queued' in ['volume_delta_deferred', 'containment_deferred_single_family']
+E    +  where ['volume_delta_deferred', 'containment_deferred_single_family'] = DecisionRecord(decision_id='512252b6d7f1476f5fa64018f6bc65bc7168ef9986b249d10b19ef8bcddff5ad', event_id='evt_containment_default', entity_id='user_containment_default', timestamp=datetime.datetime(2024, 6, 15, 12, 0), score=58.76894190907478, confidence=0.9090909090909091, profile_version='promoted_containment_v1', scoring_config_version='2.2', contributions=[FeatureContribution(contribution_id='feat_hour_85fddb4a', feature_name='login_hour_rarity', raw_value=0.0, contribution_score=0.0, confidence_weight=0.9), FeatureContribution(contribution_id='feat_geo_57217afc', feature_name='geolocation_rarity', raw_value=0.0, contribution_score=0.0, confidence_weight=0.9), FeatureContribution(contribution_id='feat_end_35f517bf', feature_name='endpoint_set_rarity', raw_value=0.0, contribution_score=0.0, confidence_weight=0.9), FeatureContribution(contribution_id='feat_proc_66a1b4e9', feature_name='process_name_rarity', raw_value=0.0, contribution_score=0.0, confidence_weight=0.9), FeatureContribution(contribution_id='feat_embed_f7a9c712', feature_name='command_line_embedding_similarity', raw_value=0.5876894190907478, contribution_score=8.76894190907478, confidence_weight=0.7), FeatureContribution(contribution_id='feat_vol_9cc33aa8', feature_name='total_volume_delta', raw_value=0.0, contribution_score=0.0, confidence_weight=0.6), FeatureContribution(contribution_id='feat_drift_a1b89836', feature_name='drift_alert', raw_value=2.5, contribution_score=50.0, confidence_weight=0.8)], is_anomaly=True, cohort_used='local', cohort_unsupported=False, flags=['volume_delta_deferred', 'containment_deferred_single_family'], embedding_model_version='1.0', replay_run_id=None, signal_family_agreement_count=1, precision_gate_version='stage_a_v1').flags
+============================== warnings summary ===============================
+tests/batch/profile_builder/test_builder.py: 1 warning
+tests/batch/profile_builder/test_cadence_drift_dimension.py: 2 warnings
+tests/batch/profile_builder/test_fleet_cohort_drift.py: 5 warnings
+tests/batch/profile_builder/test_staged_drift_sequence.py: 3 warnings
+tests/batch/profile_builder/test_volume_drift_dimension.py: 1 warning
+tests/batch/test_alert_lifecycle_auto_resolve.py: 3 warnings
+tests/batch/test_profile_build_block_escalation.py: 2 warnings
+tests/batch/test_profile_build_snapshot.py: 3 warnings
+tests/batch/test_profile_builder_geo.py: 3 warnings
+tests/batch/test_shadow_profiles.py: 2 warnings
+tests/eval/test_cap_attributed_s2_s3_s5.py: 16 warnings
+tests/eval/test_cap_drift_vs_point_axes.py: 16 warnings
+tests/eval/test_cap_no_n1_headline.py: 16 warnings
+tests/eval/test_des_ngram_mismatch_halts.py: 6 warnings
+tests/eval/test_des_no_llm_in_score.py: 6 warnings
+tests/eval/test_des_production_call_shape.py: 6 warnings
+tests/eval/test_e2e_kernel.py: 3 warnings
+tests/eval/test_gov_anomaly_opens_workflow.py: 24 warnings
+tests/eval/test_gov_integrity_job_sees_decisions.py: 6 warnings
+tests/eval/test_suite_completeness.py: 159 warnings
+tests/eval/test_thr_api_key_required.py: 6 warnings
+tests/eval/test_thr_cmdline_injection_survives.py: 8 warnings
+tests/eval/test_thr_fp_block_sanctuary.py: 13 warnings
+tests/eval/test_use_demo_honesty.py: 6 warnings
+tests/eval/test_use_pipeline_to_triage.py: 24 warnings
+tests/eval/test_use_ui_sends_api_key.py: 6 warnings
+tests/test_boil_the_frog_invariants.py: 60 warnings
+tests/test_embedding_defaults.py: 1 warning
+tests/test_s55_invariants_c1_c3.py: 15 warnings
+  C:\Users\oalan\alter_ego\batch\profile_builder\builder.py:691: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    build_timestamp = datetime.utcnow()
+
+tests/batch/test_alert_lifecycle_auto_resolve.py: 1 warning
+tests/batch/test_profile_build_block_escalation.py: 2 warnings
+tests/batch/test_profile_builder_geo.py: 1 warning
+tests/batch/test_replay_runner.py: 1 warning
+tests/batch/test_shadow_profiles.py: 1 warning
+tests/eval/test_cap_attributed_s2_s3_s5.py: 258 warnings
+tests/eval/test_cap_drift_vs_point_axes.py: 258 warnings
+tests/eval/test_cap_no_n1_headline.py: 258 warnings
+tests/eval/test_gov_anomaly_opens_workflow.py: 16 warnings
+tests/eval/test_suite_completeness.py: 837 warnings
+tests/eval/test_thr_cmdline_injection_survives.py: 18 warnings
+tests/eval/test_thr_fp_block_sanctuary.py: 13 warnings
+tests/eval/test_use_pipeline_to_triage.py: 16 warnings
+tests/test_audit.py: 6 warnings
+tests/test_boil_the_frog_invariants.py: 165 warnings
+tests/test_embedding_defaults.py: 1 warning
+tests/test_s55_invariants_c1_c3.py: 3 warnings
+tests/test_spec_alignment.py: 3 warnings
+tests/web/test_api.py: 4 warnings
+tests/web/test_demo_path.py: 2 warnings
+tests/web/test_mandatory_escalations.py: 2 warnings
+tests/worker/test_alert_workflow_on_anomaly.py: 1 warning
+tests/worker/test_containment_queue.py: 3 warnings
+tests/worker/test_staleness_escalation.py: 4 warnings
+  C:\Users\oalan\scoop\apps\miniconda3\current\Lib\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+tests/batch/test_profile_build_block_escalation.py::test_build_block_escalation_without_events_when_over_threshold
+  C:\Users\oalan\alter_ego\batch\profile_builder\builder.py:619: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    build_timestamp = datetime.utcnow()
+
+tests/batch/test_replay_runner.py::test_decision_record_replay_run_id_defaults_null
+  C:\Users\oalan\alter_ego\tests\batch\test_replay_runner.py:47: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/batch/test_replay_runner.py::test_original_decision_persists_null_replay_run_id
+  C:\Users\oalan\alter_ego\tests\batch\test_replay_runner.py:66: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/batch/test_replay_runner.py::test_run_replay_sets_replay_run_id_on_emitted_decisions
+tests/batch/test_replay_runner.py::test_run_replay_does_not_mutate_original_decision
+  C:\Users\oalan\alter_ego\batch\replay_runner.py:82: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    started_at = datetime.utcnow()
+
+tests/batch/test_replay_runner.py::test_run_replay_sets_replay_run_id_on_emitted_decisions
+tests/batch/test_replay_runner.py::test_run_replay_does_not_mutate_original_decision
+  C:\Users\oalan\alter_ego\batch\replay_runner.py:169: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    finished_at = datetime.utcnow()
+
+tests/test_audit.py::test_decision_record_is_insert_only
+  C:\Users\oalan\alter_ego\tests\test_audit.py:44: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/test_profile_immutability.py::test_profile_artifact_is_frozen
+  C:\Users\oalan\alter_ego\tests\test_profile_immutability.py:11: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/test_profile_immutability.py::test_profile_artifact_is_frozen
+  C:\Users\oalan\alter_ego\tests\test_profile_immutability.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_start=datetime.utcnow(),
+
+tests/test_profile_immutability.py::test_profile_artifact_is_frozen
+  C:\Users\oalan\alter_ego\tests\test_profile_immutability.py:13: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_end=datetime.utcnow(),
+
+tests/test_schemas.py::test_auth_event_schema_validation
+  C:\Users\oalan\alter_ego\tests\test_schemas.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/test_schemas.py::test_process_event_schema_validation
+  C:\Users\oalan\alter_ego\tests\test_schemas.py:28: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/test_scoring_config_governance.py::test_scoring_config_governance_chain
+tests/test_scoring_config_governance.py::test_scoring_config_governance_chain
+  C:\Users\oalan\alter_ego\worker\config_store.py:44: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_api.py::test_get_triage_alerts
+  C:\Users\oalan\alter_ego\tests\web\test_api.py:38: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_api.py::test_workflow_state_transition
+  C:\Users\oalan\alter_ego\tests\web\test_api.py:64: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_api.py::test_clear_alert_hides_from_triage
+  C:\Users\oalan\alter_ego\tests\web\test_api.py:92: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_api.py::test_clear_alert_hides_from_triage
+tests/web/test_api.py::test_alert_detail_includes_replay_run_id_when_present
+tests/web/test_api.py::test_alert_detail_replay_run_id_null_for_original
+tests/web/test_demo_path.py::test_demo_path_api_chain
+  C:\Users\oalan\alter_ego\web\api.py:86: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    as_of = datetime.utcnow()
+
+tests/web/test_api.py::test_high_confidence_anomaly_in_triage_not_suppressed
+tests/web/test_api.py::test_low_confidence_anomaly_in_suppressed_not_triage
+tests/web/test_api.py::test_cleared_suppressed_decision_excluded_from_both
+  C:\Users\oalan\alter_ego\tests\web\test_api.py:120: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_api.py::test_alert_detail_includes_replay_run_id_when_present
+  C:\Users\oalan\alter_ego\tests\web\test_api.py:180: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_api.py::test_alert_detail_replay_run_id_null_for_original
+  C:\Users\oalan\alter_ego\tests\web\test_api.py:205: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_demo_path.py::test_demo_path_api_chain
+  C:\Users\oalan\alter_ego\scripts\demo_path.py:83: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/web/test_demo_path.py::test_demo_path_api_chain
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json
+tests/worker/test_explainer.py::test_prohibited_content_validation
+tests/worker/test_explainer.py::test_queue_overflow_uses_template_without_llm
+  C:\Users\oalan\alter_ego\worker\explainer.py:500: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow()
+
+tests/web/test_mandatory_escalations.py: 11 warnings
+  C:\Users\oalan\alter_ego\tests\web\test_mandatory_escalations.py:61: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_staleness_with_active_alert
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_no_anomaly_required_for_halt_decision
+tests/web/test_mandatory_escalations.py::test_cleared_alert_removes_from_mandatory_queue
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue
+tests/web/test_mandatory_escalations.py::test_expired_extend_halt_returns_entity_to_queue
+  C:\Users\oalan\alter_ego\web\api.py:211: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue
+  C:\Users\oalan\alter_ego\web\api.py:288: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+tests/web/test_mandatory_escalations.py::test_extend_halt_persists_and_removes_from_queue
+  C:\Users\oalan\alter_ego\tests\web\test_mandatory_escalations.py:191: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    assert ext.expires_at > datetime.utcnow()
+
+tests/web/test_mandatory_escalations.py::test_expired_extend_halt_returns_entity_to_queue
+  C:\Users\oalan\alter_ego\tests\web\test_mandatory_escalations.py:216: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    extended_at=datetime.utcnow() - timedelta(hours=48),
+
+tests/web/test_mandatory_escalations.py::test_expired_extend_halt_returns_entity_to_queue
+  C:\Users\oalan\alter_ego\tests\web\test_mandatory_escalations.py:217: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    expires_at=datetime.utcnow() - timedelta(hours=1),
+
+tests/web/test_mandatory_escalations.py::test_mandatory_escalations_lists_build_block_sla
+  C:\Users\oalan\alter_ego\tests\web\test_mandatory_escalations.py:249: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/worker/test_containment_queue.py::test_record_decision_writes_containment_queue_when_flag_set
+  C:\Users\oalan\alter_ego\tests\worker\test_containment_queue.py:137: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    ts = datetime.utcnow()
+
+tests/worker/test_containment_queue.py::test_record_decision_no_queue_without_flag
+  C:\Users\oalan\alter_ego\tests\worker\test_containment_queue.py:169: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/worker/test_counterfactual_consistency.py::test_generate_explanation_counterfactual_integration
+  C:\Users\oalan\alter_ego\tests\worker\test_counterfactual_consistency.py:76: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/worker/test_counterfactual_consistency.py::test_generate_explanation_counterfactual_integration
+  C:\Users\oalan\alter_ego\tests\worker\test_counterfactual_consistency.py:91: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/worker/test_counterfactual_consistency.py::test_generate_explanation_counterfactual_integration
+  C:\Users\oalan\alter_ego\tests\worker\test_counterfactual_consistency.py:92: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_start=datetime.utcnow(),
+
+tests/worker/test_counterfactual_consistency.py::test_generate_explanation_counterfactual_integration
+  C:\Users\oalan\alter_ego\tests\worker\test_counterfactual_consistency.py:93: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_end=datetime.utcnow(),
+
+tests/worker/test_counterfactual_consistency.py::test_generate_explanation_counterfactual_integration
+tests/worker/test_explainer.py::test_under_capacity_calls_llm_provider
+  C:\Users\oalan\alter_ego\worker\explainer.py:639: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow()
+
+tests/worker/test_explainer.py::test_low_trust_slot_escapes_injection_attempt
+tests/worker/test_explainer.py::test_low_trust_slot_length_cap
+tests/worker/test_explainer.py::test_high_trust_fields_remain_structured_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:24: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_low_trust_slot_escapes_injection_attempt
+tests/worker/test_explainer.py::test_low_trust_slot_length_cap
+tests/worker/test_explainer.py::test_high_trust_fields_remain_structured_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:51: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_low_trust_slot_escapes_injection_attempt
+tests/worker/test_explainer.py::test_low_trust_slot_length_cap
+tests/worker/test_explainer.py::test_high_trust_fields_remain_structured_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:52: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_start=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_low_trust_slot_escapes_injection_attempt
+tests/worker/test_explainer.py::test_low_trust_slot_length_cap
+tests/worker/test_explainer.py::test_high_trust_fields_remain_structured_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:53: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_end=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:124: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:142: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:143: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_start=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_template_fallback_on_invalid_json
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:144: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_end=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_prohibited_content_validation
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:165: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_prohibited_content_validation
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:182: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_prohibited_content_validation
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:183: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_start=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_prohibited_content_validation
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:184: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_end=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_queue_overflow_uses_template_without_llm
+tests/worker/test_explainer.py::test_under_capacity_calls_llm_provider
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:222: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_queue_overflow_uses_template_without_llm
+tests/worker/test_explainer.py::test_under_capacity_calls_llm_provider
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:244: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    created_at=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_queue_overflow_uses_template_without_llm
+tests/worker/test_explainer.py::test_under_capacity_calls_llm_provider
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:245: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_start=datetime.utcnow(),
+
+tests/worker/test_explainer.py::test_queue_overflow_uses_template_without_llm
+tests/worker/test_explainer.py::test_under_capacity_calls_llm_provider
+  C:\Users\oalan\alter_ego\tests\worker\test_explainer.py:246: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    data_window_end=datetime.utcnow(),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/worker/test_precision_gate_stage_a.py::test_precision_gate_disabled_does_not_change_containment_flag
+========== 1 failed, 252 passed, 2386 warnings in 495.56s (0:08:15) ===========
+
+=== Command 1 exit code: 1 ===
+
+=== Command 2 ===
+ruff check .
+
+[1;32mAll checks passed![0m
+
+=== Command 2 exit code: 0 ===
+
+Finished: 09-18-2026 21:33:55
+Elapsed: 00:08:16.8513362
+PYTEST_EXIT=1
+RUFF_EXIT=0
+

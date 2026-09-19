@@ -60,7 +60,7 @@
     {"id": "S1-19", "status": "done", "notes": "format_capability_headline refuses S1/S4-only; both arms pass. Commit 179408d. Reviewer APPROVED. Verifier ACCEPT 3/3.", "evidence": ["results/S1-19-verifier-result.md"]},
     {"id": "S1-P2-GATE", "status": "done", "notes": "ACCEPT. Official 5/5 + ruff clean. Quality new_build remains pending. Proceed to S1-20.", "evidence": ["results/S1-P2-GATE-packet.txt", "results/S1-P2-GATE-verdict.md"]},
     {"id": "S1-21", "status": "done", "notes": "docs/eval-kernel.md + Series I SoT. Commit e11019d. SPEC.md byte-identical.", "evidence": ["results/S1-8-16-21-verifier-result.md"]},
-    {"id": "S1-20", "status": "in_progress"},
-    {"id": "S1-EXIT-GATE", "status": "pending"}
+    {"id": "S1-20", "status": "done", "notes": "evaluate_all 30 rows; CLI assert-complete exit 0; GHA workflows. Commit e774854. Reviewer APPROVED. Verifier ACCEPT.", "evidence": ["results/S1-20-verifier-result.md"]},
+    {"id": "S1-EXIT-GATE", "status": "done", "notes": "ACCEPT-WITH-GAPS. 252 passed / 1 failed (stale precision_gate vs enabled=true). Ruff clean. Kernel 15 IDs / 30 rows. No usefulness claim.", "evidence": ["results/S1-EXIT-GATE-packet.txt", "results/S1-EXIT-GATE-verdict.md"]}
   ]
 }
