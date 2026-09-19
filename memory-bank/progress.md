@@ -8,7 +8,11 @@
 **Queue:** `.workflow/autopilot-queue.json`  
 **Authority:** PR #7 + PR #8 ACCEPT WITH FOLLOW-UPS.
 
-GSD loaded 2026-09-18. 25 queue items pending (21 implement + 3 phase_exit + 1 run_exit). First drain: S1-1 scorecard schema. Detector SoT remains Series I (`calibrated: false`). No usefulness claim.
+GSD loaded 2026-09-18. Drain in progress on `gsd/eval-kernel-sprint1`.
+
+**Done:** S1-1 scorecard, S1-2 `run_pipeline` kernel, S1-3 YAML loader (verifier ACCEPT).  
+**Next:** S1-4 theater registry → S1-P0-GATE → 15 scenario IDs.  
+Detector SoT remains Series I (`calibrated: false`). No usefulness claim.
 
 ---
 

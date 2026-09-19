@@ -1,14 +1,14 @@
-# S1-2 skeptic-verifier result
+# S1-2 skeptic-verifier result (re-verify)
 
 **Task:** S1-2 / Plan Task 2 — E2E kernel sibling of `batch/eval/runner.py` + CLI / pytest entry
-**Claim:** Task S1-2 is complete — e2e kernel calls `run_pipeline` on a SQLite bind
-**Verdict:** REJECT
-**Branch:** `gsd/eval-kernel-sprint1` @ `81e99ae`
+**Claim:** complete after `dispose_eval_bind` + strengthened CLI test
+**Verdict:** ACCEPT
+**Branch:** `gsd/eval-kernel-sprint1` @ `c61eda0`
 **Date:** 2026-09-18
 
 ## Claim restated
 
-S1-2 is done: `run_production_call` rebinds SQLite, invokes unchanged `run_pipeline`, does not INSERT `DecisionRecord` itself, derives the five stages from post-pipeline counts, and `python -m batch.eval.e2e_kernel --assert-complete --only des.production_call_shape` writes a stub scorecard then exits nonzero because 30 rows are missing.
+The prior REJECT hole is closed: `dispose_eval_bind` releases the rebound SQLite engine before `TemporaryDirectory` cleanup, and `test_cli_writes_scorecard_and_exits_nonzero_on_missing_row` now requires a written scorecard plus a missing-rows completeness failure (not WinError 32).
 
 ## Fresh commands (re-run by verifier)
 
@@ -16,71 +16,56 @@ S1-2 is done: `run_production_call` rebinds SQLite, invokes unchanged `run_pipel
 cd C:\Users\oalan\alter_ego
 $env:PYTHONPATH = "."
 pytest tests/eval/test_e2e_kernel.py -v --tb=short
-ruff check batch/eval/e2e_kernel.py batch/eval/scorecard.py batch/eval/kernel_fixtures.py tests/eval
 ```
 
-**pytest:** 2 passed, 0 failed (4.00s), exit 0
+**pytest:** 2 passed, 0 failed (3.64s), exit 0
 
 ```
 tests/eval/test_e2e_kernel.py::test_run_production_call_invokes_all_five_stages_and_does_not_insert_decisions_itself PASSED
 tests/eval/test_e2e_kernel.py::test_cli_writes_scorecard_and_exits_nonzero_on_missing_row PASSED
-======================== 2 passed, 3 warnings in 4.00s ========================
+======================== 2 passed, 3 warnings in 3.64s ========================
 ```
 
-**ruff:** All checks passed (exit 0)
+## Files re-read this pass
 
-## Files re-read (Task 2 named set + `run_pipeline`)
+- `batch/eval/e2e_kernel.py` (`dispose_eval_bind` at `:69-78`; called on pipeline exception `:114` and in `_production_call_shape_row` finally `:147`)
+- `tests/eval/test_e2e_kernel.py` (CLI test now asserts no `PermissionError`, `"missing scorecard rows"` in stderr, file exists, and contains `des.production_call_shape` / `old_build` — `:96-102`)
 
-- `docs/superpowers/plans/2026-09-08-eval-kernel-sprint1.md` Task 2 only (through Task 3 heading)
-- `batch/eval/e2e_kernel.py`
-- `batch/eval/scorecard.py`
-- `batch/eval/kernel_fixtures.py`
-- `tests/eval/conftest.py`
-- `tests/eval/helpers.py`
-- `tests/eval/test_e2e_kernel.py`
-- `batch/eval/runner.py` (`run_pipeline` at line 96; five stages at 152–161)
-- `worker/scorer.py` (`process_unscored_events` → `record_decision` at 862)
-- `core/schemas/scorecard.py` (15 locked IDs)
+## Independent CLI replay (not the pytest subprocess)
 
-Implementer packet `packets/S1-2-report.md` was not used as evidence.
-
-## Refutation attempts (named holes)
-
-| Hole | What would prove it | Fresh evidence | Hole stands? |
-|---|---|---|---|
-| Kernel inserts `DecisionRecord` itself | `DecisionRecord(` / `DecisionRecordModel(` / `.add(` / `record_decision(` in `e2e_kernel.py` | Source scan: all four needles **False**. Only `select(func.count()).select_from(DecisionRecordModel)` at `e2e_kernel.py:81`. `seeded_decision_insert` is hardcoded `False` (`:99`) — weak test, but no insert exists. | no |
-| `run_pipeline` signature changed | S1-2 commit or working tree edits `runner.py` | `git show 81e99ae` does **not** include `batch/eval/runner.py`. Working tree clean for that file. `inspect.signature`: `(events_path, labels_path, window_delta_days=1, *, clear_first=True, windows_per_invocation=None, resume_from=None)`. Last runner commit is `f96f07b` (Series I), not S1-2. | no |
-| CLI `--assert-complete` exits 0 | Independent `python -m batch.eval.e2e_kernel --scorecard-out … --assert-complete --only des.production_call_shape` returns 0 | Subprocess **returncode=1**. Does **not** exit 0. | no (not this hole) |
-| Stages not actually from `run_pipeline` | Kernel skips `run_pipeline` or fakes the `stages` dict | Spy wrap: `SPY_CALLS=1` with the fixture `events.jsonl` / `labels.jsonl`. After call: `ENGINE_URL=sqlite:///…/probe.db` (posix bind), `DECISIONS=32`, all five stage flags True. Stages are count-inferred after `run_pipeline` exactly as Task 2 Step 3 specifies (`e2e_kernel.py:76-88`; runner five call sites `runner.py:152-161`). | no |
-
-## Why completion still fails (letter vs intent)
-
-The official CLI test is gamed. `test_cli_writes_scorecard_and_exits_nonzero_on_missing_row` (`tests/eval/test_e2e_kernel.py:74-96`) only asserts `proc.returncode != 0`. It never checks that a scorecard was written, that stderr mentions missing rows, or that the process reached `assert_scorecard_complete`.
-
-Independent replay of that exact subprocess on this Windows host:
+Same argv as the test: `python -m batch.eval.e2e_kernel --scorecard-out <tmp>/scorecard.jsonl --assert-complete --only des.production_call_shape`
 
 ```
 SUBPROC_RETURN=1
-SCORECARD_EXISTS=False
-STDERR_HAS_PERMISSION=True
-STDERR_HAS_INCOMPLETE=False
+SCORECARD_EXISTS=True
+STDERR_HAS_PERMISSION=False
+STDERR_HAS_INCOMPLETE=True
+SCORECARD_ROWS=1
+ROW_ID=des.production_call_shape
+ROW_ARM=old_build
+ROW_STATUS=pass
 ```
 
-Traceback (trimmed): `PermissionError: [WinError 32]` unlinking `…\Temp\tmp…\eval.db` inside `tempfile.TemporaryDirectory.__exit__` from `_production_call_shape_row` (`e2e_kernel.py:107`). `main()` dies at `rows.append(_production_call_shape_row())` (`:151`) **before** `write_scorecard` (`:160`) and **before** `assert_scorecard_complete` (`:164`).
+Stderr ends with `missing scorecard rows:` and 29 `(scenario_id, arm)` pairs (15×2 expected minus the synthesized `des.production_call_shape`/`old_build`). No `PermissionError` / `WinError 32`. Scorecard JSON includes `observed.stages` all true, `event_count=48`, `decision_count=32`.
 
-Cause: `bind_sqlite` creates a SQLAlchemy engine on that SQLite file and never `dispose()`s it. `result.db.close()` (`:135`) drops the session only. Windows will not unlink a file still held by the engine. Task 2’s specified success condition is “exit nonzero because 30 rows are missing.” What actually happens is an unhandled cleanup crash that happens to be nonzero, so the test stays green.
+Returncode is 1 because `assert_scorecard_complete` raised `IncompleteScorecardError` after `write_scorecard` (`e2e_kernel.py:172-179`), not because tempfile cleanup crashed.
 
-Plan Task 2 / brief: `--only des.production_call_shape` may synthesize one row so `--assert-complete` stays red on the missing 30. That path is not exercised on Windows.
+## Prior REJECT holes (re-checked)
 
-## Residual nits (not the reject reason)
+| Prior hole | This pass | Stands? |
+|---|---|---|
+| CLI crashes on WinError 32; no scorecard | Independent replay: file written, no PermissionError | no |
+| Test only checked `returncode != 0` | Test now checks scorecard + missing-rows stderr + no PermissionError (`test_e2e_kernel.py:96-102`) | no |
+| `assert_scorecard_complete` never reached | Stderr lists 29 missing pairs from that function | no |
 
-- `seeded_decision_insert is False` is an unmeasured constant; the no-insert claim is proven by source scan, not by the test.
-- Test helper writes empty labels; `kernel_fixtures.write_mini_pipeline_jsonl` writes one benign label (allowed by Task 2).
-- Interfaces list `bind_sqlite_engine(url)`; Step 3 specifies `bind_sqlite(sqlite_path)`. Implementation follows Step 3.
-- Unused `monkeypatch` fixtures in both tests; ruff did not flag them.
+Named Task 2 holes from the first pass (kernel insert, `run_pipeline` signature, stages not from `run_pipeline`) were already closed and were not reopened by `c61eda0`.
+
+## Residual nits (not enough to REJECT)
+
+- `seeded_decision_insert` is still a hardcoded `False`; no-insert is proven by source scan, not measurement.
+- Stage test still does not call `dispose_eval_bind` (CLI path does). pytest `tmp_path` cleanup did not fail this run.
+- CLI test matches substrings rather than `ScorecardRow.model_validate`; independent replay parsed one valid row.
 
 ## Verdict
 
-**REJECT.** `run_pipeline` is called on a rebound SQLite engine and the kernel does not insert decisions — those named holes do not stand. Completeness is still false: the required CLI `--assert-complete` path crashes on Windows file lock, writes no scorecard, never runs `assert_scorecard_complete`, and the official test cannot see that because it only checks nonzero exit.
-
-Fix that is sufficient to re-verify: dispose the bound engine (and any leftover connection) before `TemporaryDirectory` cleanup, then make the CLI test assert scorecard exists, contains the synthesized `des.production_call_shape` row, stderr/exit come from `IncompleteScorecardError` / missing rows, and `returncode != 0`.
+**ACCEPT.** The Windows dispose fix and the strengthened CLI test hold under an independent subprocess replay: scorecard exists, exit is nonzero because 29 scorecard rows are missing, and WinError 32 is gone.
