@@ -824,6 +824,81 @@ def scenario_cell(db: Session, scenario: str) -> dict:
     return {"n": n, "attributed_tp": tp, "recall": recall, "vacuous_r1": vacuous}
 
 
+def format_capability_headline(cells: dict[str, dict]) -> str:
+    s2 = cells.get("scenario_2_slow_roll")
+    s3 = cells.get("scenario_3_subtle")
+    s5 = cells.get("scenario_5_patient_cycle")
+    if not (s2 and s3 and s5) or min(s2["n"], s3["n"], s5["n"]) < 1:
+        s1 = cells.get("scenario_1_sharp_misuse")
+        s4 = cells.get("scenario_4_service_abuse")
+        if s1 or s4:
+            return "REFUSED: S1/S4-only headline is not a decision criterion"
+        return "REFUSED: S2/S3/S5 with n are required"
+    return (
+        f"attributed S2 n={s2['n']} R={s2['recall']}; "
+        f"S3 n={s3['n']} R={s3['recall']}; "
+        f"S5 n={s5['n']} R={s5['recall']}"
+    )
+
+
+def _eval_cap_no_n1_headline(
+    spec: ScenarioSpec, *, sqlite_root: Path
+) -> list[ScorecardRow]:
+    scenarios = (
+        "scenario_2_slow_roll",
+        "scenario_3_subtle",
+        "scenario_5_patient_cycle",
+    )
+    run_dir = Path(sqlite_root) / spec.scenario_id / "shared"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    events_path, labels_path = write_compact_seed42_s2_s3_s5_jsonl(run_dir)
+    call = run_production_call(
+        events_path, labels_path, sqlite_path=run_dir / "eval.db"
+    )
+    try:
+        cells = {s: scenario_cell(call.db, s) for s in scenarios}
+        headline = format_capability_headline(cells)
+        s1_s4_refused = format_capability_headline(
+            {
+                "scenario_1_sharp_misuse": {"n": 1, "recall": 1.0},
+                "scenario_4_service_abuse": {"n": 1, "recall": 1.0},
+            }
+        ).startswith("REFUSED:")
+        live_has_s2_s3_s5 = not headline.startswith("REFUSED:")
+        n1_headline_rejected = s1_s4_refused and live_has_s2_s3_s5
+        theater_tripped, theater_detail = run_theater_detector(
+            spec.theater_detector,
+            TheaterContext(headline_text=headline),
+        )
+        observed = {
+            "corpus": "ci_compact_seed42_shaped",
+            "headline": headline,
+            "n1_headline_rejected": n1_headline_rejected,
+        }
+        if theater_tripped:
+            status, failure_class = "fail", "theater_detector"
+        elif n1_headline_rejected:
+            status, failure_class = "pass", "none"
+        else:
+            status, failure_class = "fail", "harness"
+        rows: list[ScorecardRow] = []
+        for arm in ("old_build", "new_build"):
+            rows.append(
+                _row(
+                    spec,
+                    arm=arm,
+                    status=status,
+                    failure_class=failure_class,
+                    expected=spec.arms[arm].expected,
+                    observed=observed,
+                    notes=theater_detail,
+                )
+            )
+        return rows
+    finally:
+        dispose_eval_bind(call.db)
+
+
 def _eval_cap_attributed_s2_s3_s5(
     spec: ScenarioSpec, *, sqlite_root: Path
 ) -> list[ScorecardRow]:
@@ -1243,6 +1318,9 @@ def evaluate_scenario(scenario_id: str, *, sqlite_root: Path) -> list[ScorecardR
             spec, sqlite_root=sqlite_root
         ),
         "cap.drift_vs_point_axes": lambda: _eval_cap_drift_vs_point_axes(
+            spec, sqlite_root=sqlite_root
+        ),
+        "cap.no_n1_headline": lambda: _eval_cap_no_n1_headline(
             spec, sqlite_root=sqlite_root
         ),
     }

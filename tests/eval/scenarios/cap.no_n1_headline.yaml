@@ -1,0 +1,17 @@
+schema_version: "1"
+scenario_id: cap.no_n1_headline
+realm: capability
+description: Kernel refuses S1/S4-only headlines as the decision criterion.
+runner: e2e_kernel
+setup:
+  call: run_pipeline
+  events: seed42_s2_s3_s5
+arms:
+  old_build:
+    expected: {n1_headline_rejected: true}
+    fixture: deterministic
+  new_build:
+    expected: {n1_headline_rejected: true}
+    fixture: deterministic
+scorecard_pins: [n1_headline_rejected, headline]
+theater_detector: n1_headline
