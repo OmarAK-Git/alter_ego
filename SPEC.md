@@ -5,7 +5,7 @@
 **Last updated:** July 2026
 **Version:** 2.2 — interim operating point at Threshold = 45.0 (Phase 2 not closed)
 
-**Metrics authority:** `docs/calibration_final_metrics.json`, `docs/phase2-s3-operating-point.md`, and `memory-bank/progress.md`. At thr=45: P≈0.019, R≈0.817, FP=3448; per-scenario S1/S2/S4 recall 1.0, S3 recall 0.667 (15 FN).
+**Metrics authority:** Series I workflow metrics (`.workflow/2026-08-02-series-i-serial-calibration/`, `calibrated: false`) supersede Series A. The Series A numbers in `docs/calibration_final_metrics.json` (P≈0.019, R≈0.817, FP=3448, S3=0.667) are **archival**. Eval gate: `docs/eval-kernel.md`.
 
 ---
 

@@ -19,6 +19,8 @@ Local-first UEBA-style engine for a portfolio / single-operator deployment. It i
 
 **Program status (2026-07-14):** S0–S6 portfolio-ready T3 run is **drained** (all packets + exit gates closed). Phases 0–4 remain **Partial** — **not CALIBRATED.** Operator-owned next step is personal drift-methodology research ([`docs/residual-risk-drift-hypotheses.md`](docs/residual-risk-drift-hypotheses.md)).
 
+**Detector SoT (2026-09-08):** Series I is current (`calibrated: false`; P≈0.00684 @ thr=45). Series A figures below (P≈0.019, FP=3448, S3=0.667) are **archival**. Eval gate: [`docs/eval-kernel.md`](docs/eval-kernel.md). Not canary (PR #5 NO-GO). Not useful yet.
+
 ## Pipeline
 
 ```mermaid

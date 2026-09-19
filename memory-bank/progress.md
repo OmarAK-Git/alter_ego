@@ -8,7 +8,7 @@
 **Queue:** `.workflow/autopilot-queue.json`  
 **Authority:** PR #7 + PR #8 ACCEPT WITH FOLLOW-UPS.
 
-GSD loaded 2026-09-18. Drain in progress on `gsd/eval-kernel-sprint1`.
+GSD loaded 2026-09-18. Drain in progress on `gsd/eval-kernel-sprint1`. Sprint 1 kernel is the eval gate; Series I remains detector SoT (`calibrated: false`).
 
 **Done:** S1-1 scorecard, S1-2 `run_pipeline` kernel, S1-3 YAML loader (verifier ACCEPT).  
 **Next:** S1-4 theater registry → S1-P0-GATE → 15 scenario IDs.  
