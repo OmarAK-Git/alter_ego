@@ -93,4 +93,10 @@ def test_cli_writes_scorecard_and_exits_nonzero_on_missing_row(tmp_path, monkeyp
         text=True,
     )
     # After Task 2 only the kernel stub exists; completeness must fail until all 15 land.
-    assert proc.returncode != 0
+    assert proc.returncode != 0, proc.stdout + proc.stderr
+    assert "PermissionError" not in (proc.stderr or "")
+    assert "missing scorecard rows" in (proc.stderr or "")
+    assert out.exists()
+    text = out.read_text(encoding="utf-8")
+    assert "des.production_call_shape" in text
+    assert "old_build" in text

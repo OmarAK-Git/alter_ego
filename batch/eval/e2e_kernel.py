@@ -66,6 +66,18 @@ def bind_sqlite(sqlite_path: Path) -> None:
     runner_module.SessionLocal = bound_session
 
 
+def dispose_eval_bind(db: Session | None = None) -> None:
+    """Close the eval session and dispose the rebound SQLite engine (Windows file lock)."""
+    if db is not None:
+        db.close()
+    bound = getattr(runner_module, "engine", None)
+    if bound is not None:
+        bound.dispose()
+    core_bound = getattr(database_module, "engine", None)
+    if core_bound is not None and core_bound is not bound:
+        core_bound.dispose()
+
+
 def run_production_call(
     events_path: Path | str,
     labels_path: Path | str,
@@ -99,7 +111,7 @@ def run_production_call(
             seeded_decision_insert=False,
         )
     except Exception:
-        db.close()
+        dispose_eval_bind(db)
         raise
 
 
@@ -132,7 +144,7 @@ def _production_call_shape_row() -> ScorecardRow:
                 notes="",
             )
         finally:
-            result.db.close()
+            dispose_eval_bind(result.db)
 
 
 def _scenarios_dir() -> Path:
