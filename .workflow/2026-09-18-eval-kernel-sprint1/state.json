@@ -37,7 +37,7 @@
     "test_runner_policy": "gates_and_major_sections"
   },
   "packets": [
-    {"id": "S1-1", "status": "pending"},
+    {"id": "S1-1", "status": "done", "notes": "ScorecardRow extra=forbid frozen; 15 IDs; pending triples locked. Commits 0c682d2 8ab4178. Reviewer APPROVED. Verifier ACCEPT 8 passed.", "evidence": ["results/S1-1-verifier-result.md"]},
     {"id": "S1-2", "status": "pending"},
     {"id": "S1-3", "status": "pending"},
     {"id": "S1-4", "status": "pending"},

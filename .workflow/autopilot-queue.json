@@ -18,7 +18,7 @@
     "No scoring_config.yaml knob edits. No /api/ingest. No Series J. No FakeProvider."
   ],
   "items": [
-    {"id": "S1-1", "phase": 0, "type": "implement", "title": "Scorecard schema + Pydantic", "depends_on": [], "status": "pending", "plan_task": 1},
+    {"id": "S1-1", "phase": 0, "type": "implement", "title": "Scorecard schema + Pydantic", "depends_on": [], "status": "done", "plan_task": 1, "commits": ["0c682d2", "8ab4178"]},
     {"id": "S1-2", "phase": 0, "type": "implement", "title": "E2E kernel sibling of run_pipeline", "depends_on": ["S1-1"], "status": "pending", "plan_task": 2},
     {"id": "S1-3", "phase": 0, "type": "implement", "title": "Scenario YAML loader / contract", "depends_on": ["S1-2"], "status": "pending", "plan_task": 3},
     {"id": "S1-4", "phase": 0, "type": "implement", "title": "Theater detector registry", "depends_on": ["S1-2"], "status": "pending", "plan_task": 4},
