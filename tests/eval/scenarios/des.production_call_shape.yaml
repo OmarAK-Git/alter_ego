@@ -1,0 +1,17 @@
+schema_version: "1"
+scenario_id: des.production_call_shape
+realm: design
+description: Kernel invokes ingest→resolve→build→score→record; a missing stage is harness.
+runner: e2e_kernel
+setup:
+  call: run_pipeline
+  events: mini
+arms:
+  old_build:
+    expected: {stages_complete: true, seeded_decision_insert: false}
+    fixture: deterministic
+  new_build:
+    expected: {stages_complete: true, seeded_decision_insert: false}
+    fixture: deterministic
+scorecard_pins: [stages_complete, seeded_decision_insert]
+theater_detector: unit_as_e2e
