@@ -12,8 +12,11 @@
 | S1-1 scorecard schema | **done** (0c682d2, 8ab4178; verifier ACCEPT) |
 | S1-2 e2e kernel | **done** (81e99ae, c61eda0; verifier ACCEPT) |
 | S1-3 scenario YAML loader | **done** (c39f75c; verifier ACCEPT) |
-| S1-4 theater registry | pending (next) |
-| S1-5..S1-16 gov/des/thr/use | pending (after P0 gate) |
+| S1-4 theater registry | **done** (78caae2; verifier ACCEPT) |
+| S1-P0-GATE | **done** ACCEPT-WITH-GAPS (pre-existing precision_gate test vs enabled=true) |
+| S1-5 gov.no_knob_without_sweep | **done** (4db2398; verifier ACCEPT) |
+| S1-6 gov.anomaly_opens_workflow | **done** (e0bf028; verifier ACCEPT) |
+| S1-7..S1-16 remaining gov/des/thr/use | pending (next: S1-7) |
 | S1-17..S1-19 capability | pending |
 | S1-21 docs + S1-20 GHA | pending |
 | S1-EXIT-GATE | pending |

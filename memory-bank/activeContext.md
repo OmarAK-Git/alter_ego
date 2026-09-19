@@ -7,7 +7,7 @@
 PRs #7 (design) and #8 (Sprint 1 plan) accepted with non-blocking follow-ups.
 Queue: `.workflow/autopilot-queue.json` (25 items: 21 implement + 3 phase_exit + 1 run_exit).
 T3 run: `.workflow/2026-09-18-eval-kernel-sprint1/`.
-Branch: `gsd/eval-kernel-sprint1`.
+Branch: `gsd/eval-kernel-sprint1` @ `e0bf028`. Foundation + S1-5/S1-6 done. Next: S1-7 integrity skip pin.
 
 Sprint 1 is a harness earn. Detector SoT remains Series I (`calibrated: false`). Do not claim usefulness. Do not staff Sprint 2/3.
 

@@ -43,7 +43,7 @@
     {"id": "S1-4", "status": "done", "notes": "THEATER_DETECTOR_NAMES single source; 10 spec §8 names. Commit 78caae2. Reviewer APPROVED. Verifier ACCEPT 16/16.", "evidence": ["results/S1-4-verifier-result.md"]},
     {"id": "S1-P0-GATE", "status": "done", "notes": "ACCEPT-WITH-GAPS. Packet 26 passed. Full suite 229/1 pre-existing precision_gate test vs enabled=true. Do not revert YAML.", "evidence": ["results/S1-P0-GATE-packet.txt", "results/S1-P0-GATE-full-suite.txt", "results/S1-P0-GATE-verdict.md"]},
     {"id": "S1-5", "status": "done", "notes": "evaluate_scenario + SHA pin. Commit 4db2398. Reviewer APPROVED. Verifier ACCEPT 2/2.", "evidence": ["results/S1-5-verifier-result.md"]},
-    {"id": "S1-6", "status": "pending"},
+    {"id": "S1-6", "status": "done", "notes": "night_login + two attack weekdays produce 7 scored anomalies all state=new. Commit e0bf028. Reviewer APPROVED. Verifier ACCEPT 5/5.", "evidence": ["results/S1-6-verifier-result.md"]},
     {"id": "S1-7", "status": "pending"},
     {"id": "S1-8", "status": "pending"},
     {"id": "S1-9", "status": "pending"},

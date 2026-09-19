@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session, sessionmaker
 import batch.eval.runner as runner_module
 import core.database as database_module
 from batch.eval.kernel_fixtures import write_mini_pipeline_jsonl
+from batch.audit_integrity import run_integrity_check
 from batch.eval.runner import run_pipeline
 from batch.eval.scenario_loader import ScenarioSpec, load_scenario
 from batch.eval.scorecard import (
@@ -290,12 +291,62 @@ def _eval_gov_anomaly_opens_workflow(
     return rows
 
 
+def _eval_gov_integrity_job_sees_decisions(
+    spec: ScenarioSpec, *, sqlite_root: Path
+) -> list[ScorecardRow]:
+    rows: list[ScorecardRow] = []
+    theater_tripped, theater_detail = run_theater_detector(
+        spec.theater_detector,
+        TheaterContext(used_run_pipeline=True),
+    )
+    for arm in ("old_build", "new_build"):
+        arm_dir = Path(sqlite_root) / spec.scenario_id / arm
+        arm_dir.mkdir(parents=True, exist_ok=True)
+        events_path, labels_path = write_mini_pipeline_jsonl(arm_dir)
+        call = run_production_call(
+            events_path, labels_path, sqlite_path=arm_dir / "eval.db"
+        )
+        try:
+            result = run_integrity_check(call.db, raise_on_failure=False)
+            skip = None
+            if result.count_check_skipped and (result.decision_audit_count in {0, None}):
+                skip = "decision_audit_count==0"
+            observed = {
+                "decision_count_gt_0": call.decision_count > 0,
+                "count_check_skipped": result.count_check_skipped,
+                "integrity_skip": skip,
+                "decision_audit_count": result.decision_audit_count,
+            }
+            if theater_tripped:
+                status, failure_class = "fail", "theater_detector"
+            elif skip == "decision_audit_count==0" and call.decision_count > 0:
+                status, failure_class = "pass", "none"
+            else:
+                status, failure_class = "fail", "harness"
+            rows.append(
+                _row(
+                    spec,
+                    arm=arm,
+                    status=status,
+                    failure_class=failure_class,
+                    expected=spec.arms[arm].expected,
+                    observed=observed,
+                    notes=theater_detail,
+                )
+            )
+        finally:
+            dispose_eval_bind(call.db)
+    return rows
+
+
 def evaluate_scenario(scenario_id: str, *, sqlite_root: Path) -> list[ScorecardRow]:
     spec = load_scenario(_scenarios_dir() / f"{scenario_id}.yaml")
     if spec.scenario_id == "gov.no_knob_without_sweep":
         return _eval_gov_no_knob_without_sweep(spec)
     if spec.scenario_id == "gov.anomaly_opens_workflow":
         return _eval_gov_anomaly_opens_workflow(spec, sqlite_root=sqlite_root)
+    if spec.scenario_id == "gov.integrity_job_sees_decisions":
+        return _eval_gov_integrity_job_sees_decisions(spec, sqlite_root=sqlite_root)
     raise NotImplementedError(f"evaluate_scenario dispatch missing for {scenario_id}")
 
 
