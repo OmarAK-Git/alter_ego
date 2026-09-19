@@ -6,22 +6,8 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, model_validator
 
+from batch.eval.theater import THEATER_DETECTOR_NAMES
 from core.schemas.scorecard import LOCKED_SCENARIO_IDS, REALM_FOR_ID
-
-ALLOWED_THEATER = frozenset(
-    {
-        "seeded_decision_e2e",
-        "n1_headline",
-        "unearned_demo_claim",
-        "unit_as_e2e",
-        "f1_only_usefulness",
-        "stage_a_as_fp_win",
-        "gt_in_scorer",
-        "fake_ingest_api",
-        "series_j_fold",
-        "auto_resolved_as_precision",
-    }
-)
 
 
 class ArmSpec(BaseModel):
@@ -59,7 +45,7 @@ class ScenarioSpec(BaseModel):
     @field_validator("theater_detector")
     @classmethod
     def _theater(cls, value: str) -> str:
-        if value not in ALLOWED_THEATER:
+        if value not in THEATER_DETECTOR_NAMES:
             raise ValueError(value)
         return value
 
