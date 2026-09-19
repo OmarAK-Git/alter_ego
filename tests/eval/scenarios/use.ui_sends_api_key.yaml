@@ -1,0 +1,17 @@
+schema_version: "1"
+scenario_id: use.ui_sends_api_key
+realm: usability
+description: Kernel names that app.js omits X-API-KEY; privileged click cannot be a silent 401.
+runner: e2e_kernel
+setup:
+  call: run_pipeline
+  events: mini
+arms:
+  old_build:
+    expected: {named_gap: "app.js omits X-API-KEY"}
+    fixture: deterministic
+  new_build:
+    expected: {named_gap: "app.js omits X-API-KEY"}
+    fixture: deterministic
+scorecard_pins: [ui_sends_api_key, named_gap]
+theater_detector: unit_as_e2e

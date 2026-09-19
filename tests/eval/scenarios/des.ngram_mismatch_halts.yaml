@@ -1,0 +1,17 @@
+schema_version: "1"
+scenario_id: des.ngram_mismatch_halts
+realm: design
+description: Non-alter-ego-ngram-v1 metadata in an ngram fleet → score 0 + halt flag.
+runner: e2e_kernel
+setup:
+  call: run_pipeline
+  events: mini
+arms:
+  old_build:
+    expected: {halt_score: 0.0, halt_flag: embedding_metadata_mismatch_halt}
+    fixture: deterministic
+  new_build:
+    expected: {halt_score: 0.0, halt_flag: embedding_metadata_mismatch_halt}
+    fixture: deterministic
+scorecard_pins: [halt_score, halt_flag]
+theater_detector: unit_as_e2e

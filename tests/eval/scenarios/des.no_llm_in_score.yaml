@@ -1,0 +1,18 @@
+schema_version: "1"
+scenario_id: des.no_llm_in_score
+realm: design
+description: worker/scorer.py does not import explainer or LLM providers.
+runner: e2e_kernel
+setup:
+  call: run_pipeline
+  events: mini
+  notes: AST guard plus a real production call so the row is not unit-as-e2e.
+arms:
+  old_build:
+    expected: {import_llm: false, import_explainer: false}
+    fixture: deterministic
+  new_build:
+    expected: {import_llm: false, import_explainer: false}
+    fixture: deterministic
+scorecard_pins: [import_llm, import_explainer]
+theater_detector: gt_in_scorer

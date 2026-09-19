@@ -1,0 +1,18 @@
+schema_version: "1"
+scenario_id: thr.api_key_required
+realm: threat
+description: Missing/wrong X-API-KEY returns 401 without the pytest sys.modules bypass.
+runner: e2e_kernel
+setup:
+  call: run_pipeline
+  events: mini
+  notes: Production call plus isolated subprocess probe. Not TestClient under pytest.
+arms:
+  old_build:
+    expected: {missing_status: 401, wrong_status: 401, pytest_loaded: false}
+    fixture: deterministic
+  new_build:
+    expected: {missing_status: 401, wrong_status: 401, pytest_loaded: false}
+    fixture: deterministic
+scorecard_pins: [missing_status, wrong_status, pytest_loaded]
+theater_detector: unit_as_e2e

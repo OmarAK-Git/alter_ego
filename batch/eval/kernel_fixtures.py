@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -117,3 +118,54 @@ def write_mini_pipeline_jsonl(
         encoding="utf-8",
     )
     return events_path, labels_path
+
+
+def write_sanctuary_jsonl(dir_path: Path) -> tuple[Path, Path]:
+    """FP-before-ladder topology for T-PATIENT P0. Does not claim a detection win."""
+    events_path, labels_path = write_mini_pipeline_jsonl(dir_path, night_login=True)
+    ladder_day = datetime(2026, 1, 19)
+    extras: list[Event] = []
+    label_lines = [
+        '{"event_id":"evt_night_20260115","is_malicious":false,"scenario":"none"}',
+        '{"event_id":"evt_night_20260116","is_malicious":false,"scenario":"none"}',
+    ]
+    names = ("git.exe", "git.exe", "python.exe", "python.exe", "git.exe")
+    cmds = (
+        "git.exe --silent",
+        "git.exe --silent",
+        "python.exe -v --workdir=/home/eng",
+        "python.exe -v --workdir=/home/eng",
+        "git.exe --silent",
+    )
+    for burst, (name, cmd) in enumerate(zip(names, cmds, strict=True)):
+        event_id = f"evt_ladder_{burst}"
+        extras.append(
+            Event(
+                event_id=event_id,
+                timestamp=ladder_day.replace(hour=10, minute=burst * 10, second=0),
+                event_type="process",
+                raw_entity_id="user_engineer_0",
+                simulation_partition="eval_scenario_2",
+                event_data=ProcessEventData(
+                    process_name=name,
+                    command_line=cmd,
+                    parent_process_name="explorer.exe",
+                    endpoint_id="ep_0",
+                ),
+            )
+        )
+        label_lines.append(
+            json.dumps(
+                {
+                    "event_id": event_id,
+                    "is_malicious": True,
+                    "scenario": "scenario_2_slow_roll",
+                }
+            )
+        )
+    with events_path.open("a", encoding="utf-8") as fh:
+        for event in extras:
+            fh.write(event.model_dump_json() + "\n")
+    labels_path.write_text("\n".join(label_lines) + "\n", encoding="utf-8")
+    return events_path, labels_path
+
