@@ -1,0 +1,11 @@
+S1-P0-GATE packet commands (controller, 2026-09-18)
+
+Command 1:
+pytest tests/eval/test_scorecard_schema.py tests/eval/test_e2e_kernel.py tests/eval/test_scenario_loader.py tests/eval/test_theater.py -v --tb=short
+
+Result: 26 passed, 3 warnings (pre-existing builder utcnow), exit 0
+
+Command 2:
+ruff check core/schemas/scorecard.py batch/eval
+
+Result: All checks passed

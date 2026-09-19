@@ -1,0 +1,20 @@
+S1-P0-GATE standing full suite (controller, 2026-09-18)
+
+Command: pytest -v --tb=short --ignore=tests/live
+Result: 229 passed, 1 failed, 394 warnings
+
+FAILED tests/worker/test_precision_gate_stage_a.py::test_precision_gate_disabled_does_not_change_containment_flag
+
+This test fails in isolation on this branch AND is unchanged vs origin/main
+(`git diff origin/main -- tests/worker/test_precision_gate_stage_a.py config/scoring_config.yaml` is empty).
+
+Root cause: Series I accepted `precision_gate.enabled=true`. The test still assumes
+the pre-Series-I shipped default `enabled: false` and expects `simulated_containment_queued`.
+Live YAML enables Stage A, so the same event is `containment_deferred_single_family`.
+
+Not introduced by Sprint 1 eval kernel. Do not change scoring_config.yaml in this sprint.
+
+Command: ruff check .
+Result: All checks passed
+
+Packet commands: 26 passed, ruff clean (see S1-P0-GATE-packet.txt)
