@@ -1,0 +1,9 @@
+S1-P1-GATE packet
+Date: 2026-09-18
+Branch: gsd/eval-kernel-sprint1
+
+pytest tests/eval/test_gov_no_knob_without_sweep.py tests/eval/test_gov_anomaly_opens_workflow.py tests/eval/test_gov_integrity_job_sees_decisions.py tests/eval/test_des_production_call_shape.py tests/eval/test_des_no_llm_in_score.py tests/eval/test_des_ngram_mismatch_halts.py tests/eval/test_thr_cmdline_injection_survives.py tests/eval/test_thr_api_key_required.py tests/eval/test_thr_fp_block_sanctuary.py tests/eval/test_use_pipeline_to_triage.py tests/eval/test_use_ui_sends_api_key.py tests/eval/test_use_demo_honesty.py -v --tb=short
+→ 16 passed, 0 failed (52.07s)
+
+ruff check .
+→ All checks passed
