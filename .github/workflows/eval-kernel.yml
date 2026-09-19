@@ -1,4 +1,4 @@
-name: CI
+name: Eval kernel
 
 on:
   push:
@@ -7,32 +7,32 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  eval-kernel:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11", "3.12", "3.13"]
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-
-      - name: Run tests
+      - name: Default unit/invariant suite
         env:
           PYTHONPATH: .
-        # Live HTTP smoke is opt-in (`pytest --live`); default suite skips tests/live.
         run: pytest -v --tb=short
-
-      - name: Eval kernel scorecard
+      - name: E2E kernel suite
+        env:
+          PYTHONPATH: .
+        run: pytest tests/eval -v --tb=short
+      - name: Scorecard completeness
         env:
           PYTHONPATH: .
         run: python -m batch.eval.e2e_kernel --scorecard-out artifacts/eval-kernel-scorecard.jsonl --assert-complete
+      - name: Upload scorecard
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-kernel-scorecard
+          path: artifacts/eval-kernel-scorecard.jsonl

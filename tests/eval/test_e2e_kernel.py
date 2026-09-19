@@ -71,32 +71,19 @@ def test_run_production_call_invokes_all_five_stages_and_does_not_insert_decisio
     assert result.seeded_decision_insert is False
 
 
-def test_cli_writes_scorecard_and_exits_nonzero_on_missing_row(tmp_path, monkeypatch):
+def test_cli_assert_complete_exits_zero(tmp_path):
+    import os
     import subprocess
     import sys
+    from pathlib import Path
 
     out = tmp_path / "scorecard.jsonl"
     proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "batch.eval.e2e_kernel",
-            "--scorecard-out",
-            str(out),
-            "--assert-complete",
-            "--only",
-            "des.production_call_shape",
-        ],
+        [sys.executable, "-m", "batch.eval.e2e_kernel", "--scorecard-out", str(out), "--assert-complete"],
         cwd=Path(__file__).resolve().parents[2],
-        env={**__import__("os").environ, "PYTHONPATH": "."},
+        env={**os.environ, "PYTHONPATH": "."},
         capture_output=True,
         text=True,
     )
-    # After Task 2 only the kernel stub exists; completeness must fail until all 15 land.
-    assert proc.returncode != 0, proc.stdout + proc.stderr
-    assert "PermissionError" not in (proc.stderr or "")
-    assert "missing scorecard rows" in (proc.stderr or "")
+    assert proc.returncode == 0, proc.stdout + proc.stderr
     assert out.exists()
-    text = out.read_text(encoding="utf-8")
-    assert "des.production_call_shape" in text
-    assert "old_build" in text

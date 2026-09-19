@@ -24,7 +24,7 @@ from batch.eval.kernel_fixtures import (
 )
 from batch.audit_integrity import run_integrity_check
 from batch.eval.runner import run_pipeline
-from batch.eval.scenario_loader import ScenarioSpec, load_scenario
+from batch.eval.scenario_loader import ScenarioSpec, load_all_scenarios, load_scenario
 from batch.eval.scorecard import (
     IncompleteScorecardError,
     assert_scorecard_complete,
@@ -1277,6 +1277,15 @@ def _eval_use_ui_sends_api_key(
     return rows
 
 
+def evaluate_all(*, sqlite_root: Path) -> list[ScorecardRow]:
+    rows: list[ScorecardRow] = []
+    for spec in load_all_scenarios(_scenarios_dir()):
+        rows.extend(
+            evaluate_scenario(spec.scenario_id, sqlite_root=sqlite_root / spec.scenario_id)
+        )
+    return rows
+
+
 def evaluate_scenario(scenario_id: str, *, sqlite_root: Path) -> list[ScorecardRow]:
     spec = load_scenario(_scenarios_dir() / f"{scenario_id}.yaml")
     dispatch = {
@@ -1336,16 +1345,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--only", dest="only_scenario", default=None)
     args = parser.parse_args(argv)
 
-    rows: list[ScorecardRow] = []
     if args.only_scenario == "des.production_call_shape":
-        rows.append(_production_call_shape_row())
+        rows: list[ScorecardRow] = [_production_call_shape_row()]
     elif args.only_scenario is not None:
         print(f"unknown scenario: {args.only_scenario}", file=sys.stderr)
         return 1
     else:
-        scenarios_dir = _scenarios_dir()
-        if scenarios_dir.is_dir():
-            pass  # YAML loader lands in Task 3+
+        with tempfile.TemporaryDirectory() as tmp:
+            rows = evaluate_all(sqlite_root=Path(tmp))
 
     write_scorecard(args.scorecard_out, rows)
 
