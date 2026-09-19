@@ -6,6 +6,7 @@ def test_axes_split_old_recorded_new_pending(tmp_path):
     old = rows["old_build"]
     new = rows["new_build"]
     assert old.status == "pass"
+    assert old.observed["corpus"] == "ci_compact_seed42_shaped"
     assert "drift_alerts" in old.observed
     assert "point_anomaly_fp" in old.observed
     assert "f1_at_45" in old.observed

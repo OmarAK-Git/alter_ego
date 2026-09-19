@@ -909,7 +909,7 @@ def _eval_cap_drift_vs_point_axes(
                     status="pending",
                     failure_class="none",
                     expected=spec.arms[arm].expected,
-                    observed={"quality": "pending"},
+                    observed={"quality": "pending", "corpus": "ci_compact_seed42_shaped"},
                     notes="Stage B unbuilt",
                 )
             )
@@ -927,6 +927,7 @@ def _eval_cap_drift_vs_point_axes(
             f1_at_45 = _f1_at_45(call.db, malicious)
             axes_split = isinstance(drift_alerts, int) and isinstance(point_anomaly_fp, int)
             observed = {
+                "corpus": "ci_compact_seed42_shaped",
                 "drift_alerts": drift_alerts,
                 "point_anomaly_fp": point_anomaly_fp,
                 "f1_at_45": f1_at_45,
