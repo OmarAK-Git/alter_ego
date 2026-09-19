@@ -4,6 +4,7 @@ import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from batch.synthetic.generator import EventGenerator
 from core.schemas.events import AuthEventData, Event, ProcessEventData
 
 
@@ -168,4 +169,55 @@ def write_sanctuary_jsonl(dir_path: Path) -> tuple[Path, Path]:
             fh.write(event.model_dump_json() + "\n")
     labels_path.write_text("\n".join(label_lines) + "\n", encoding="utf-8")
     return events_path, labels_path
+
+
+def write_compact_seed42_s2_s3_s5_jsonl(dir_path: Path) -> tuple[Path, Path]:
+    gen = EventGenerator(seed=42)
+    keep = {
+        eid: ent
+        for eid, ent in gen.entities.items()
+        if (
+            (eid.startswith("user_engineer_") and int(eid.rsplit("_", 1)[1]) < 12)
+            or (eid.startswith("user_finance_") and int(eid.rsplit("_", 1)[1]) < 12)
+        )
+    }
+    gen.entities = keep
+    start = datetime(2026, 1, 1, 0, 0, 0)
+    events: list[Event] = []
+    labels: list[dict] = []
+    day = start
+    while day < start + timedelta(days=10):
+        if day.weekday() < 5:
+            for ent in gen.entities.values():
+                if ent.entity_type != "human":
+                    continue
+                for hour in range(9, 17):
+                    ts = day.replace(hour=hour, minute=0, second=0)
+                    events.append(
+                        Event(
+                            event_id=f"base_{ent.entity_id}_{ts.strftime('%Y%m%d%H')}",
+                            timestamp=ts,
+                            event_type="auth",
+                            raw_entity_id=ent.entity_id,
+                            simulation_partition="production",
+                            event_data=AuthEventData(
+                                action="login",
+                                ip_address="192.0.2.10",
+                                geolocation=ent.geography,
+                                endpoint_id=ent.primary_endpoint,
+                            ),
+                        )
+                    )
+        day += timedelta(days=1)
+    events, labels = gen.inject_scenario_2_slow_roll(events, labels, datetime(2026, 1, 2))
+    events, labels = gen.inject_scenario_3_coordinated(events, labels, datetime(2026, 1, 6))
+    s2_label = next(lb for lb in labels if lb.get("scenario") == "scenario_2_slow_roll")
+    s2_event = next(e for e in events if e.event_id == s2_label["event_id"])
+    events, labels = gen.inject_scenario_5_patient_cycle(
+        events, labels, datetime(2026, 1, 2), exclude_entity_ids={s2_event.raw_entity_id}
+    )
+    gen.save_to_disk(
+        events, labels, str(dir_path / "events.jsonl"), str(dir_path / "labels.jsonl")
+    )
+    return dir_path / "events.jsonl", dir_path / "labels.jsonl"
 

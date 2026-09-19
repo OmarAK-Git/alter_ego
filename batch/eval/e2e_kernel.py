@@ -17,7 +17,11 @@ from sqlalchemy.orm import Session, sessionmaker
 
 import batch.eval.runner as runner_module
 import core.database as database_module
-from batch.eval.kernel_fixtures import write_mini_pipeline_jsonl, write_sanctuary_jsonl
+from batch.eval.kernel_fixtures import (
+    write_compact_seed42_s2_s3_s5_jsonl,
+    write_mini_pipeline_jsonl,
+    write_sanctuary_jsonl,
+)
 from batch.audit_integrity import run_integrity_check
 from batch.eval.runner import run_pipeline
 from batch.eval.scenario_loader import ScenarioSpec, load_scenario
@@ -728,6 +732,96 @@ def attributed_tp(db: Session, scenario: str) -> int:
     return n
 
 
+def count_malicious(db: Session, scenario: str) -> int:
+    return (
+        db.scalar(
+            select(func.count())
+            .select_from(EvalGroundTruthModel)
+            .where(
+                EvalGroundTruthModel.is_malicious.is_(True),
+                EvalGroundTruthModel.scenario == scenario,
+            )
+        )
+        or 0
+    )
+
+
+def scenario_cell(db: Session, scenario: str) -> dict:
+    n = count_malicious(db, scenario)
+    tp = attributed_tp(db, scenario)
+    recall = (tp / n) if n else 0.0
+    vacuous = n == 0 or (tp == 0 and recall == 1.0)
+    return {"n": n, "attributed_tp": tp, "recall": recall, "vacuous_r1": vacuous}
+
+
+def _eval_cap_attributed_s2_s3_s5(
+    spec: ScenarioSpec, *, sqlite_root: Path
+) -> list[ScorecardRow]:
+    theater_tripped, theater_detail = run_theater_detector(
+        spec.theater_detector,
+        TheaterContext(f1_treated_as_primary=False, used_run_pipeline=True),
+    )
+    scenarios = (
+        "scenario_2_slow_roll",
+        "scenario_3_subtle",
+        "scenario_5_patient_cycle",
+    )
+    rows: list[ScorecardRow] = []
+    for arm in ("old_build", "new_build"):
+        if arm == "new_build":
+            rows.append(
+                _row(
+                    spec,
+                    arm=arm,
+                    status="pending",
+                    failure_class="none",
+                    expected=spec.arms[arm].expected,
+                    observed={
+                        "quality": "pending",
+                        "corpus": "ci_compact_seed42_shaped",
+                    },
+                    notes="Stage B unbuilt",
+                )
+            )
+            continue
+        arm_dir = Path(sqlite_root) / spec.scenario_id / arm
+        arm_dir.mkdir(parents=True, exist_ok=True)
+        events_path, labels_path = write_compact_seed42_s2_s3_s5_jsonl(arm_dir)
+        call = run_production_call(
+            events_path, labels_path, sqlite_path=arm_dir / "eval.db"
+        )
+        try:
+            cells = {s: scenario_cell(call.db, s) for s in scenarios}
+            observed = {
+                "corpus": "ci_compact_seed42_shaped",
+                **cells,
+                "f1_treated_as_primary": False,
+            }
+            all_ok = all(
+                cells[s]["n"] >= 1 and not cells[s]["vacuous_r1"] for s in scenarios
+            )
+            if theater_tripped:
+                status, failure_class = "fail", "theater_detector"
+            elif all_ok:
+                status, failure_class = "pass", "none"
+            else:
+                status, failure_class = "fail", "harness"
+            rows.append(
+                _row(
+                    spec,
+                    arm=arm,
+                    status=status,
+                    failure_class=failure_class,
+                    expected=spec.arms[arm].expected,
+                    observed=observed,
+                    notes=theater_detail,
+                )
+            )
+        finally:
+            dispose_eval_bind(call.db)
+    return rows
+
+
 def _eval_thr_fp_block_sanctuary(
     spec: ScenarioSpec, *, sqlite_root: Path
 ) -> list[ScorecardRow]:
@@ -1009,6 +1103,9 @@ def evaluate_scenario(scenario_id: str, *, sqlite_root: Path) -> list[ScorecardR
             spec, sqlite_root=sqlite_root
         ),
         "use.demo_honesty": lambda: _eval_use_demo_honesty(
+            spec, sqlite_root=sqlite_root
+        ),
+        "cap.attributed_s2_s3_s5": lambda: _eval_cap_attributed_s2_s3_s5(
             spec, sqlite_root=sqlite_root
         ),
     }

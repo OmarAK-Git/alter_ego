@@ -1,0 +1,18 @@
+# tests/eval/scenarios/cap.attributed_s2_s3_s5.yaml
+schema_version: "1"
+scenario_id: cap.attributed_s2_s3_s5
+realm: capability
+description: Record attributed S2/S3/S5 TP via B3a on a compact seed-42-shaped fixture; new_build pending.
+runner: e2e_kernel
+setup:
+  call: run_pipeline
+  events: seed42_s2_s3_s5
+arms:
+  old_build:
+    expected: {recorded_s2: true, recorded_s3: true, recorded_s5: true, vacuous_recall: false}
+    fixture: deterministic
+  new_build:
+    expected: {quality: pending}
+    fixture: deterministic
+scorecard_pins: [s2, s3, s5, vacuous_recall]
+theater_detector: f1_only_usefulness
